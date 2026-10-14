@@ -1,0 +1,100 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page home-page">
+  <view class="top-row">
+    <view>
+      <view class="hello">你好，{{user.name}}</view>
+      <view class="address">{{user.building}}{{user.room}} <text class="change" bindtap="goProfile">修改</text></view>
+    </view>
+    <!-- 下单时间窗，固定 08:00—20:00。注意别改回 closeTime：那是「最晚送达时间」(23:00)，两者不是一回事。
+         用户 2026-09-12 明确要求写死、以后不再改动；真要调窗口得手工回来改这一行 -->
+    <view class="service-pill">可下单时间 08:00—20:00</view>
+  </view>
+
+  <view wx:if="{{serviceClosed}}" class="service-closed-banner">
+    <view class="service-closed-icon">⚠️</view>
+    <view class="service-closed-text">{{serviceNotice || '节假日小程序暂停服务，恢复时间另行通知'}}</view>
+  </view>
+
+  <view class="hero {{serviceClosed ? 'hero-closed' : ''}}" bindtap="goCreate">
+    <view class="hero-copy">
+      <view class="hero-kicker">CAMPUS EXPRESS</view>
+      <view class="hero-title">我要找代拿</view>
+      <view class="hero-sub">{{reviewMode ? '添加取件凭证，提交一笔代拿服务订单' : '上传截图，最快 1 小时送到宿舍门口'}}</view>
+      <view class="hero-action">{{serviceClosed ? '暂停服务' : (reviewMode ? '提交订单' : '现在下单')}}<text wx:if="{{!serviceClosed}}">→</text></view>
+    </view>
+  </view>
+
+  <view class="section-head row between">
+    <view class="section-title">当前订单</view>
+    <view class="all-link" bindtap="goOrders">全部订单</view>
+  </view>
+
+  <view wx:if="{{activeOrder}}" class="card active-card" bindtap="goOrder">
+    <view class="row between">
+      <view class="tag tag-blue">{{activeOrder.statusText}}</view>
+      <view class="order-no">{{activeOrder.id}}</view>
+    </view>
+    <view class="route-row">
+      <view class="route-dot start"></view>
+      <view class="route-line"></view>
+      <view class="route-dot end"></view>
+      <view class="route-copy">
+        <view>{{activeOrder.pieces}}件快递</view>
+        <view>{{activeOrder.building}}{{activeOrder.room}}</view>
+      </view>
+    </view>
+    <view class="divider"></view>
+    <view class="row between">
+      <view>
+        <view class="deadline-label">预计送达</view>
+        <view class="deadline">{{activeOrder.deadline}}</view>
+      </view>
+      <view class="detail-btn">查看进度</view>
+    </view>
+  </view>
+
+  <view wx:elif="{{homeLoading}}" class="card active-card" aria-hidden="true">
+    <view class="sk sk-title"></view>
+    <view class="sk sk-line"></view>
+    <view class="sk sk-line"></view>
+    <view class="sk sk-line short"></view>
+  </view>
+  <view wx:else class="card empty-card">
+    <view class="empty-icon">✓</view>
+    <view class="strong">暂时没有进行中的订单</view>
+    <view class="muted small">{{reviewMode ? '有需要时，点击上方入口提交代拿订单' : '有需要时，点击上方按钮发布代拿需求'}}</view>
+  </view>
+
+  <view class="notice-card">
+    <view class="notice-icon">i</view>
+    <view>
+      <view class="strong">{{reviewMode ? '取件凭证仅用于本单履约' : '下单前请确认取件截图清晰'}}</view>
+      <view class="muted small">{{reviewMode ? '凭证不公开展示，提交后仅配送员可见' : '截图仅在骑手接单后解锁，保护取件信息安全'}}</view>
+    </view>
+  </view>
+</view>
+
+<view wx:if="{{showCouponGift}}" class="gift-mask" catchtouchmove="noop">
+  <view class="gift-modal">
+    <view class="gift-head">
+      <view class="gift-icon"><view class="gift-check">🎁</view></view>
+      <view class="gift-kicker">COUPON GIFT</view>
+      <view class="gift-title">你收到了新的优惠券</view>
+      <view class="gift-subtitle">平台已发放至你的券包，下单时自动抵扣</view>
+    </view>
+    <view wx:for="{{couponGifts}}" wx:key="id" class="coupon-card">
+      <view class="coupon-value"><text>¥</text>{{item.amount}}</view>
+      <view class="coupon-divider"></view>
+      <view class="coupon-copy">
+        <view class="coupon-name">{{item.name}}</view>
+        <view class="coupon-rule">{{item.minSpend > 0 ? '满¥' + item.minSpend + '可用' : '无门槛'}} · 下单自动选择</view>
+        <view class="coupon-expire">{{item.expireText}}</view>
+      </view>
+    </view>
+    <view class="gift-foot">
+      <view class="gift-button" bindtap="dismissCouponGift">收下优惠券</view>
+      <view class="gift-tip">可在「我的」→「我的券包」中查看所有优惠券</view>
+    </view>
+  </view>
+</view>

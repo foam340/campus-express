@@ -1,0 +1,98 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page profile-page">
+  <view class="profile-head">
+    <view class="avatar">{{avatar}}</view>
+    <view class="profile-copy"><view class="name">{{user.name}}</view><view class="muted small">{{user.phone}}</view></view>
+    <view class="edit" bindtap="editProfile">编辑</view>
+  </view>
+
+  <view class="card address-panel">
+    <view class="mini-label">默认收货地址</view>
+    <view class="address-big" wx:if="{{user.building}}">{{user.building}}{{user.room}}</view>
+    <view class="address-big" wx:else>未填写收货地址</view>
+    <view class="muted small">下单时自动填入，可临时修改</view>
+  </view>
+
+  <view wx:if="{{mode==='rider'}}" class="mode-banner rider-banner">
+    <view><view class="mode-label">当前模式</view><view class="mode-name">骑手模式</view></view>
+    <view class="switch" bindtap="switchUser">返回用户模式</view>
+  </view>
+  <view wx:else class="mode-banner">
+    <view><view class="mode-label">当前模式</view><view class="mode-name">普通用户</view></view>
+    <view class="switch" bindtap="switchRider">切换至骑手</view>
+  </view>
+
+  <view wx:if="{{mode==='rider' && user.riderApproved}}" class="level-panel">
+    <view class="level-panel-head">
+      <view><view class="level-kicker">骑手等级</view><view class="level-title">Lv{{riderProgress.level}} {{riderProgress.levelName}}</view></view>
+      <view class="level-cap">可同时接 <text>{{riderProgress.maxActiveOrders}}</text> 单</view>
+    </view>
+    <view class="level-track"><view class="level-progress" style="width:{{riderProgress.progressPercent}}%;"></view></view>
+    <view class="level-meta"><text>累计 {{riderProgress.experiencePoints}} 经验</text><text>{{riderProgress.isMaxLevel?'已达最高等级':'再获得 '+riderProgress.experienceToNext+' 经验升级'}}</text></view>
+    <view class="level-rule">每笔订单完成后获得10经验，收入仍需经过24小时售后观察期</view>
+    <view class="rider-email">
+      <view class="rider-email-head"><text>收单通知邮箱</text><text class="rider-email-save" bindtap="saveRiderEmail">{{savingEmail?'保存中…':'保存'}}</text></view>
+      <input class="rider-email-input" value="{{riderEmail}}" placeholder="选填，留空不接收新单邮件" bindinput="inputRiderEmail" />
+    </view>
+  </view>
+
+  <view class="menu-title">常用功能</view>
+  <view class="menu-card">
+    <view wx:if="{{mode!=='rider'}}" class="menu-item" bindtap="openCoupons"><view class="menu-icon coupon-icon"><image src="/assets/icons/menu-coupon.png" /></view><text>我的券包</text><text class="status">{{couponCount}}张可用</text><text class="arrow">〉</text></view>
+    <view class="menu-item" bindtap="service"><view class="menu-icon orange"><image src="/assets/icons/menu-service.png" /></view><text>联系客服</text><text class="arrow">〉</text></view>
+    <view class="menu-item" bindtap="openFeedback"><view class="menu-icon feedback-icon"><text class="feedback-glyph">✎</text></view><text>意见反馈</text><text class="arrow">〉</text></view>
+    <view wx:if="{{mode==='rider' && !reviewMode}}" class="menu-item" bindtap="wallet"><view class="menu-icon blue"><image src="/assets/icons/menu-wallet.png" /></view><text>我的余额</text><text class="arrow">〉</text></view>
+    <view class="menu-item" bindtap="applyRider"><view class="menu-icon green"><image src="/assets/icons/menu-rider.png" /></view><text>骑手申请与审核</text><text class="status">{{user.riderApproved?'已通过':user.riderStatus==='pending'?'审核中':user.riderStatus==='suspended'?'已暂停':'去申请'}}</text><text class="arrow">〉</text></view>
+    <view class="menu-item" bindtap="openRules"><view class="menu-icon purple"><image src="/assets/icons/menu-rules.png" /></view><text>服务规则与隐私说明</text><text class="arrow">〉</text></view>
+    <view class="menu-item" bindtap="openCampusChange"><view class="menu-icon blue"><text class="feedback-glyph">⇄</text></view><text>申请变更校区</text><text class="arrow">〉</text></view>
+  </view>
+
+  <view class="menu-title">外观</view>
+  <view class="menu-card theme-card">
+    <view class="theme-row">
+      <view class="theme-label">深色模式</view>
+      <view class="theme-options">
+        <view class="theme-option {{themePref==='system'?'on':''}}" data-theme="system" bindtap="setTheme">跟随系统</view>
+        <view class="theme-option {{themePref==='light'?'on':''}}" data-theme="light" bindtap="setTheme">浅色</view>
+        <view class="theme-option {{themePref==='dark'?'on':''}}" data-theme="dark" bindtap="setTheme">深色</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="version">校园代拿</view>
+</view>
+
+<view wx:if="{{showRules}}" class="rules-mask" catchtouchmove="noop">
+  <view class="rules-modal">
+    <view class="rules-head">
+      <view class="rules-close" bindtap="closeRules">✕</view>
+      <view class="rules-title">服务规则与隐私说明</view>
+    </view>
+    <view class="rules-tabs">
+      <view class="rules-tab {{rulesTab==='terms'?'on':''}}" data-tab="terms" bindtap="switchRulesTab">用户服务规则</view>
+      <view class="rules-tab {{rulesTab==='privacy'?'on':''}}" data-tab="privacy" bindtap="switchRulesTab">隐私说明</view>
+    </view>
+    <scroll-view class="rules-body" scroll-y enhanced show-scrollbar="{{false}}">
+      <view wx:if="{{rulesTab==='terms'}}">
+        <view class="sec"><view class="sec-title">一、总则与适用范围</view><view class="sec-text">校园代拿（以下简称"本平台"）是由校园快递代拿团队开发和运营的校内互助配送服务平台。注册并使用本平台即表示您已阅读、理解并同意遵守本服务规则。</view></view>
+        <view class="sec"><view class="sec-title">二、用户注册与账号</view><view class="sec-text">1. 用户须通过微信授权登录，提供真实有效的联系方式（手机号、宿舍楼栋及门牌号）。</view><view class="sec-text">2. 请妥善保管账号信息，不得将账号出借、转让或授权他人使用。</view><view class="sec-text">3. 对于提供虚假信息、恶意注册或违规使用的账号，平台有权暂停或永久封禁。</view></view>
+        <view class="sec"><view class="sec-title">三、下单与配送规则</view><view class="sec-text">1. 下单时请准确填写取件信息（取件码、件数、是否大件、取件地点等），并上传清晰的取件截图。</view><view class="sec-text">2. 送达时限分为两档：「很急」接单后1小时内送达；「今天」当天{{closeTime}}前送达。</view><view class="sec-text">3. 取件地点分为「校内」「校外」两档，校外需加收费用。</view><view class="sec-text">4. 骑手接单前可自由取消订单；接单后如需取消，请联系客服处理。</view><view class="sec-text">5. 大件快递需额外加收费用，下单时请如实标注。</view></view>
+        <view class="sec"><view class="sec-title">四、确认收货与售后</view><view class="sec-text">1. 骑手送达后，请在12小时内确认收货；超时未确认的订单将自动完成。</view><view class="sec-text">2. 订单完成后进入24小时售后观察期，期间可联系客服申请理赔。</view><view class="sec-text">3. 单笔订单理赔上限为 ¥200.00。</view><view class="sec-text">4. 因用户提供错误信息导致配送失败的，责任由用户自行承担。</view></view>
+        <view class="sec"><view class="sec-title">五、支付与费用</view><view class="sec-text">1. 订单价格由基础配送费、加件费、大件附加费及优惠券抵扣共同组成。</view><view class="sec-text">2. 平台将根据运营成本收取一定比例的服务费。</view><view class="sec-text">3. 每笔订单限用一张优惠券，不可与其他优惠叠加。</view></view>
+        <view class="sec"><view class="sec-title">六、骑手行为规范</view><view class="sec-text">1. 骑手应按订单约定时限完成取件和配送。</view><view class="sec-text">2. 取件和送达时须拍摄清晰凭证，不得拍摄用户本人或宿舍内部环境。</view><view class="sec-text">3. 因骑手原因导致快递丢失、损坏的，平台将协助用户追偿。</view><view class="sec-text">4. 骑手累计违规（超时3次以上、恶意弃单、骚扰用户等），平台将暂停或永久取消其接单资格。</view></view>
+        <view class="sec"><view class="sec-title">七、禁止行为</view><view class="sec-text">1. 禁止利用本平台从事任何违法违规活动，包括但不限于配送违禁品、侵犯他人隐私、骚扰他人等。</view><view class="sec-text">2. 禁止通过虚假交易、刷单等方式套取平台优惠或骑手收益。</view><view class="sec-text">3. 禁止在平台内外对骑手或用户进行辱骂、威胁、人身攻击或其他不当行为。</view></view>
+        <view class="sec"><view class="sec-title">八、免责声明</view><view class="sec-text">1. 本平台作为信息撮合平台，不对快递内容物的质量或合法性承担保证责任。</view><view class="sec-text">2. 因不可抗力（自然灾害、校园封闭、网络中断等）导致服务中断的，平台不承担责任。</view><view class="sec-text">3. 本规则的解释和修订权归校园代拿团队所有。</view></view>
+      </view>
+      <view wx:if="{{rulesTab==='privacy'}}">
+        <view class="sec"><view class="sec-title">一、信息的收集</view><view class="sec-text">根据《中华人民共和国个人信息保护法》和《中华人民共和国网络安全法》，本平台仅在提供服务所必需的最小范围内收集您的个人信息，包括：微信OpenID/UnionID/昵称（账号标识）、手机号码（配送联系）、宿舍楼栋及门牌号（送达地址）、订单记录（含取件截图及送达凭证），以及骑手申请时的认证信息（如学号）。</view></view>
+        <view class="sec"><view class="sec-title">二、信息的使用</view><view class="sec-text">1. 您的个人信息仅用于订单匹配、配送沟通、售后处理及平台管理。</view><view class="sec-text">2. 手机号码和门牌号在订单完成24小时后对骑手自动隐藏。</view><view class="sec-text">3. 平台不会将您的个人信息用于任何无关的商业用途。</view><view class="sec-text">4. 平台不会基于您的个人信息进行用户画像分析或个性化推荐。</view></view>
+        <view class="sec"><view class="sec-title">三、信息的存储与保护</view><view class="sec-text">1. 您的个人信息存储于中国大陆境内的阿里云服务器，采用HTTPS/TLS加密传输和数据库加密存储。</view><view class="sec-text">2. 平台已采取必要的技术和管理措施（访问控制、日志审计、定期备份等）保障信息安全。</view><view class="sec-text">3. 如发生个人信息安全事件，平台将依法及时通知您并向主管部门报告。</view></view>
+        <view class="sec"><view class="sec-title">四、信息的共享与披露</view><view class="sec-text">1. 配送过程中，您的手机号和门牌号将向接单骑手展示，完成后24小时自动隐藏。</view><view class="sec-text">2. 除上述场景外，未经您的明确同意，平台不会向任何第三方提供您的个人信息。</view><view class="sec-text">3. 法律法规要求或维护平台合法权益所必需时，平台可依法提供相关信息。</view></view>
+        <view class="sec"><view class="sec-title">五、您的权利</view><view class="sec-text">根据《中华人民共和国个人信息保护法》，您享有以下权利：</view><view class="sec-text">1. 知情权和决定权：知悉个人信息处理方式，并有权限制或拒绝处理。</view><view class="sec-text">2. 查阅和复制权：查阅、复制您在平台上的个人信息。</view><view class="sec-text">3. 更正权：发现信息有误时，可通过「编辑资料」进行更正。</view><view class="sec-text">4. 删除权：在特定情况下要求删除信息（目的已实现、撤回同意、违法处理等）。</view><view class="sec-text">5. 账号注销权：联系客服申请注销账号，注销后个人信息将被删除或匿名化。</view></view>
+        <view class="sec"><view class="sec-title">六、未成年人保护</view><view class="sec-text">本平台主要面向在校大学生，原则上不收集未满14周岁未成年人的个人信息。如发现误收集，核实后将及时删除。</view></view>
+        <view class="sec"><view class="sec-title">七、联系方式</view><view class="sec-text">• 平台内通过「联系客服」添加管理员微信</view><view class="sec-text">• 服务邮箱：zhuanghaoyang670@gmail.com</view><view class="sec-text">• 个人信息保护负责人：校园代拿团队</view></view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

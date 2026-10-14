@@ -1,0 +1,28 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view wx:if="{{needLogin}}" class="login-gate">
+  <view class="login-gate-icon">🔐</view>
+  <view class="login-gate-title">登录后可查看订单</view>
+  <view class="login-gate-desc">请先授权登录，查看您的快递订单记录</view>
+  <view class="login-gate-btn" bindtap="goLogin">去登录</view>
+</view>
+<view wx:else class="page orders-page">
+  <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="filters">
+    <view class="filter-row">
+      <view class="filter {{filter==='all'?'active':''}}" data-value="all" bindtap="setFilter">全部</view>
+      <view class="filter {{filter==='active'?'active':''}}" data-value="active" bindtap="setFilter">进行中</view>
+      <view class="filter {{filter==='done'?'active':''}}" data-value="done" bindtap="setFilter">已完成</view>
+      <view class="filter {{filter==='after'?'active':''}}" data-value="after" bindtap="setFilter">退款/售后</view>
+    </view>
+  </scroll-view>
+  <view wx:if="{{loading}}" class="sk-list" aria-hidden="true"><view class="sk sk-row"></view><view class="sk sk-row"></view><view class="sk sk-row"></view></view>
+  <view wx:else class="list-stage" style="height:{{listHeight}}px;">
+    <recycle-view id="userOrderRecycle" class="order-list {{listTotal ? '' : 'list-hidden'}}" batch="{{batchSetRecycleData}}" width="{{listWidth}}" height="{{listHeight}}" lower-threshold="120" bindscrolltolower="loadMore">
+      <recycle-item wx:for="{{recycleOrders}}" wx:key="id" class="recycle-row order-row" style="width:{{listWidth}}px;height:{{listItemHeight}}px;padding-bottom:{{listItemGap}}px;box-sizing:border-box;">
+        <order-list-item order="{{item}}" variant="user" bind:open="openOrder" />
+      </recycle-item>
+      <view slot="after" wx:if="{{hasMore}}" class="load-more">继续上滑加载</view>
+    </recycle-view>
+    <view wx:if="{{!listTotal}}" class="empty-layer"><empty-state icon="单" title="这里还没有订单" description="发布一单试试吧" /></view>
+  </view>
+</view>

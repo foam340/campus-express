@@ -1,0 +1,30 @@
+<view class="tabbar-safe" style="{{themeStyle}}">
+  <view wx:if="{{mode === 'rider'}}" class="tabbar-main">
+    <view class="tab-indicator {{instant ? 'instant' : ''}}" style="transform: translateX({{indicatorIndex * 100}}%);">
+      <view class="tab-indicator-pill"></view>
+    </view>
+    <view class="tab-item {{visualActive === 'hall' ? 'active' : ''}}" data-key="hall" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'hall' ? '/assets/icons/tab-hall-active.png' : '/assets/icons/tab-hall.png'}}" /></view><text class="tab-label">接单</text>
+    </view>
+    <view class="tab-item {{visualActive === 'tasks' ? 'active' : ''}}" data-key="tasks" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'tasks' ? '/assets/icons/tab-tasks-active.png' : '/assets/icons/tab-tasks.png'}}" /></view><text class="tab-label">任务</text>
+    </view>
+    <view class="tab-item {{visualActive === 'profile' ? 'active' : ''}}" data-key="profile" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'profile' ? '/assets/icons/tab-profile-active.png' : '/assets/icons/tab-profile.png'}}" /></view><text class="tab-label">我的</text>
+    </view>
+  </view>
+  <view wx:else class="tabbar-main">
+    <view class="tab-indicator {{instant ? 'instant' : ''}}" style="transform: translateX({{indicatorIndex * 100}}%);">
+      <view class="tab-indicator-pill"></view>
+    </view>
+    <view class="tab-item {{visualActive === 'home' ? 'active' : ''}}" data-key="home" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'home' ? '/assets/icons/tab-home-active.png' : '/assets/icons/tab-home.png'}}" /></view><text class="tab-label">首页</text>
+    </view>
+    <view class="tab-item {{visualActive === 'orders' ? 'active' : ''}}" data-key="orders" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'orders' ? '/assets/icons/tab-orders-active.png' : '/assets/icons/tab-orders.png'}}" /></view><text class="tab-label">订单</text>
+    </view>
+    <view class="tab-item {{visualActive === 'profile' ? 'active' : ''}}" data-key="profile" bindtap="navigate">
+      <view class="tab-icon"><image class="tab-icon-image" src="{{visualActive === 'profile' ? '/assets/icons/tab-profile-active.png' : '/assets/icons/tab-profile.png'}}" /></view><text class="tab-label">我的</text>
+    </view>
+  </view>
+</view>

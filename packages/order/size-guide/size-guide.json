@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "快递尺寸示例",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner"
+  }
+}

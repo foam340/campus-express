@@ -1,0 +1,22 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page feedback-page">
+  <view class="feedback-head">
+    <view class="feedback-title">意见反馈</view>
+    <view class="muted">你的建议会帮助我们改进校园代拿</view>
+  </view>
+
+  <view class="card form-card">
+    <view class="field-label">意见类型</view>
+    <picker mode="selector" range="{{categories}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+      <view class="picker-value">{{categories[categoryIndex]}}<text class="arrow">〉</text></view>
+    </picker>
+
+    <view class="field-label">意见内容</view>
+    <textarea class="content-input" maxlength="500" placeholder="请描述你的建议或遇到的问题…" bindinput="onContentInput" />
+    <view class="counter">{{content.length}}/500</view>
+  </view>
+
+  <button class="submit-btn {{submitting?'disabled':''}}" disabled="{{submitting}}" bindtap="submit">{{submitting?'提交中…':'提交意见'}}</button>
+  <view class="feedback-note">每天最多提交 3 条意见，管理员会及时查看处理。</view>
+</view>

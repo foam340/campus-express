@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "发布代拿订单",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner"
+  }
+}

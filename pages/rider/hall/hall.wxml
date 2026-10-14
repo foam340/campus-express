@@ -1,0 +1,55 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page hall-page">
+  <view class="hall-head">
+    <view><view class="hall-title">接单大厅</view><view class="muted small">{{reviewMode?'顺路帮同学取快递':'顺路接一单'}}</view></view>
+    <view class="hall-actions">
+      <view class="task-count">当前任务 <text>{{taskCount}}/{{maxActiveOrders}}</text></view>
+      <button class="refresh-button {{refreshing?'refreshing':''}}" aria-label="刷新可接订单" disabled="{{refreshing}}" hover-class="refresh-button-hover" bindtap="manualRefresh">
+        <text class="refresh-icon">↻</text><text>{{refreshing?'刷新中':'刷新'}}</text>
+      </button>
+    </view>
+  </view>
+  <view wx:if="{{taskCount >= maxActiveOrders}}" class="limit-banner">已达接单上限（{{taskCount}}/{{maxActiveOrders}}），当前不可再抢单</view>
+  <view class="filter-dock">
+    <view class="filter-bar">
+      <view class="filter-trigger {{filterOpen?'open':''}}" hover-class="filter-trigger-hover" bindtap="toggleFilterPanel">
+        <text class="filter-trigger-icon">⚙</text>
+        <text>筛选</text>
+        <text wx:if="{{activeCount}}" class="filter-badge">{{activeCount}}</text>
+      </view>
+      <scroll-view wx:if="{{activeCount}}" scroll-x enhanced show-scrollbar="{{false}}" class="filter-chips"><view class="filter-chip-row">
+        <view wx:for="{{activeChips}}" wx:key="key" class="filter-chip" data-group="{{item.key}}" bindtap="clearFilterChip">
+          <text>{{item.label}}</text><text class="filter-chip-x">×</text>
+        </view>
+      </view></scroll-view>
+      <view wx:else class="filter-hint">不限条件</view>
+    </view>
+    <view wx:if="{{filterOpen}}" class="filter-panel">
+      <view class="filter-panel-head">
+        <text class="filter-panel-title">筛选条件</text>
+        <text class="filter-reset {{activeCount?'':'disabled'}}" bindtap="resetFilters">重置</text>
+      </view>
+      <view wx:for="{{filterGroups}}" wx:key="key" wx:for-item="group" class="filter-group">
+        <view class="filter-group-label">{{group.label}}</view>
+        <view class="filter-group-options">
+          <view wx:for="{{group.options}}" wx:key="value" wx:for-item="option" class="filter-option {{option.active?'active':''}}" data-group="{{group.key}}" data-value="{{option.value}}" bindtap="pickFilterOption">{{option.label}}</view>
+        </view>
+      </view>
+      <view class="filter-panel-foot">
+        <text class="filter-panel-count">{{activeCount?'已选 '+activeCount+' 项':'未选择条件'}}</text>
+        <view class="filter-done" hover-class="filter-done-hover" bindtap="closeFilterPanel">完成</view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{loading}}" class="sk-list" aria-hidden="true"><view class="sk sk-row"></view><view class="sk sk-row"></view><view class="sk sk-row"></view></view>
+  <view wx:else class="list-stage {{filterOpen?'list-hidden':''}}" style="height:{{listHeight}}px;">
+    <recycle-view id="hallOrderRecycle" class="order-list {{listTotal ? '' : 'list-hidden'}}" batch="{{batchSetRecycleData}}" width="{{listWidth}}" height="{{listHeight}}" lower-threshold="120" bindscrolltolower="loadMore">
+      <recycle-item wx:for="{{recycleOrders}}" wx:key="id" class="recycle-row hall-row" style="width:{{listWidth}}px;height:{{item.heightPx}}px;padding-bottom:{{listItemGap}}px;box-sizing:border-box;">
+        <order-list-item order="{{item}}" variant="hall" task-count="{{taskCount}}" max-task-count="{{maxActiveOrders}}" review-mode="{{reviewMode}}" bind:grab="grab" />
+      </recycle-item>
+      <view slot="after" wx:if="{{hasMore}}" class="load-more">继续上滑加载</view>
+    </recycle-view>
+    <view wx:if="{{!listTotal}}" class="empty-layer"><empty-state icon="✓" tone="green" title="暂时没有可接订单" description="稍后再来看看" /></view>
+  </view>
+</view>

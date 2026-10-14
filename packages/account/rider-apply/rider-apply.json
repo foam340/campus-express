@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "骑手申请",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner",
+    "safe-image": "/components/safe-image/safe-image"
+  }
+}

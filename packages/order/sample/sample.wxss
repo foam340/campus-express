@@ -1,0 +1,43 @@
+.sample-page {
+  min-height: 100vh;
+  width: 100%;
+  padding: 24rpx 24rpx calc(48rpx + env(safe-area-inset-bottom));
+  background: var(--color-bg);
+}
+.guide-card {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 24rpx;
+  border-radius: 22rpx;
+  background: var(--color-warning-soft);
+}
+.guide-icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 16rpx;
+  background: var(--color-surface);
+}
+.guide-icon image { width:30rpx; height:30rpx; }
+.guide-copy { flex: 1; min-width: 0; }
+.guide-copy view { color: var(--color-text); font-weight: 700; }
+.guide-copy text { display: block; margin-top: 6rpx; color: var(--color-warm); font-size: 22rpx; line-height: 1.5; }
+.image-card {
+  width: 100%;
+  margin-top: 24rpx;
+  overflow: hidden;
+  border-radius: 24rpx;
+  background: var(--color-surface);
+  box-shadow: 0 10rpx 30rpx var(--shadow-color);
+}
+.sample-image { display:block; width:100%; height:auto; }
+.preview-tip { margin-top: 14rpx; color: var(--color-muted); font-size: 21rpx; text-align: center; }
+.notice-card { margin-top: 24rpx; padding: 26rpx; border-radius: 24rpx; background: var(--color-surface); }
+.notice-title { margin-bottom: 20rpx; font-size: 30rpx; font-weight: 700; }
+.notice-item { display: flex; align-items: flex-start; gap: 14rpx; margin-top: 16rpx; color: var(--color-text-2); font-size: 24rpx; line-height: 1.55; }
+.notice-item text { display: flex; flex: none; align-items: center; justify-content: center; width: 36rpx; height: 36rpx; border-radius: 50%; color: var(--color-primary); background: var(--color-primary-soft); font-size: 20rpx; font-weight: 800; }
+.notice-item view { flex: 1; min-width: 0; }

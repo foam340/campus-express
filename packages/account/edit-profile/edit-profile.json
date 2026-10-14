@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "收货资料",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner"
+  }
+}

@@ -1,0 +1,30 @@
+.coupon-page { padding-top:24rpx; }
+.coupon-hero { display:flex; align-items:center; justify-content:space-between; padding:34rpx; color: var(--color-on-accent); border-radius:30rpx; background:linear-gradient(135deg,var(--color-primary),#6a9fff); box-shadow:0 16rpx 38rpx rgba(47,109,246,.18); }
+.hero-label { color:rgba(255,255,255,.78); font-size:23rpx; }
+.hero-count { margin-top:5rpx; font-size:58rpx; line-height:1.2; font-weight:800; }
+.hero-count text { margin-left:7rpx; font-size:24rpx; font-weight:600; }
+.hero-copy { text-align:right; color:rgba(255,255,255,.82); font-size:22rpx; line-height:1.65; }
+.redeem-card { margin-top:22rpx; padding:28rpx; border-radius:28rpx; background:var(--color-surface); box-shadow:0 10rpx 30rpx var(--shadow-color); }
+.redeem-row { display:flex; align-items:center; gap:14rpx; margin-top:20rpx; }
+.redeem-input { flex:1; height:78rpx; padding:0 22rpx; border-radius:20rpx; background:var(--color-surface-2); font-size:25rpx; }
+.redeem-btn { display:flex; flex:none; align-items:center; justify-content:center; width:150rpx; height:78rpx; padding:0; margin:0; color: var(--color-on-accent); border-radius:20rpx; background:var(--color-primary); font-size:25rpx; font-weight:700; }
+.redeem-btn.disabled { color:var(--color-hint); background:var(--color-surface-2); }
+.redeem-tip { margin-top:14rpx; color:var(--color-hint); font-size:20rpx; }
+.coupon-tabs { display:flex; margin:30rpx 0 20rpx; padding:7rpx; border-radius:22rpx; background:var(--color-divider); }
+.coupon-tab { flex:1; height:66rpx; line-height:66rpx; text-align:center; color:var(--color-muted); border-radius:17rpx; font-size:23rpx; font-weight:700; }
+.coupon-tab.active { color:var(--color-primary); background:var(--color-surface); box-shadow:0 4rpx 14rpx var(--shadow-color); }
+.coupon-list { display:flex; flex-direction:column; gap:18rpx; }
+.coupon-ticket { position:relative; display:flex; align-items:center; min-height:154rpx; padding:24rpx 22rpx; overflow:hidden; border:2rpx solid var(--color-divider); border-radius:26rpx; background:linear-gradient(135deg,var(--color-primary-soft),var(--color-primary-soft)); box-shadow:0 10rpx 28rpx var(--shadow-color); }
+.coupon-ticket::before,.coupon-ticket::after { content:''; position:absolute; right:196rpx; width:24rpx; height:24rpx; border-radius:50%; background:var(--color-bg); }
+.coupon-ticket::before { top:-12rpx; }.coupon-ticket::after { bottom:-12rpx; }
+.ticket-value { flex:none; width:142rpx; text-align:center; color:var(--color-primary); font-size:52rpx; font-weight:800; line-height:1; }
+.ticket-value text { margin-right:3rpx; font-size:24rpx; }
+.ticket-divider { align-self:stretch; width:1rpx; margin:0 22rpx 0 10rpx; border-left:2rpx dashed var(--color-divider); }
+.ticket-copy { flex:1; min-width:0; padding-right:120rpx; }
+.ticket-name { overflow:hidden; color:var(--color-text); font-size:27rpx; font-weight:800; white-space:nowrap; text-overflow:ellipsis; }
+.ticket-rule { margin-top:13rpx; color:var(--color-primary); font-size:20rpx; line-height:1.5; }
+.ticket-status { position:absolute; right:24rpx; top:55rpx; color:var(--color-primary); font-size:22rpx; font-weight:700; }
+.ticket-disabled { filter:grayscale(1); opacity:.57; }
+.ticket-disabled .ticket-status { color:var(--color-muted); }
+.coupon-rule { margin-top:30rpx; padding:24rpx 8rpx; color:var(--color-muted); font-size:21rpx; line-height:1.9; }
+.rule-title { margin-bottom:8rpx; color:var(--color-text-2); font-size:23rpx; font-weight:700; }

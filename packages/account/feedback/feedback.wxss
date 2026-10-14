@@ -1,0 +1,14 @@
+.feedback-page { padding-top:35rpx; }
+.feedback-head { text-align:center; }
+.feedback-title { font-size:38rpx; font-weight:800; }
+.feedback-head .muted { margin-top:10rpx; font-size:23rpx; }
+.form-card { margin-top:30rpx; padding:32rpx; }
+.field-label { margin:22rpx 0 12rpx; color:var(--color-text-2); font-size:25rpx; font-weight:700; }
+.field-label:first-child { margin-top:0; }
+.picker-value { display:flex; align-items:center; justify-content:space-between; height:78rpx; padding:0 22rpx; border-radius:18rpx; background:var(--color-surface-2); font-size:27rpx; }
+.picker-value .arrow { color:var(--color-hint); }
+.content-input { width:100%; height:280rpx; padding:22rpx; box-sizing:border-box; border-radius:18rpx; background:var(--color-surface-2); font-size:27rpx; line-height:1.6; }
+.counter { margin-top:12rpx; text-align:right; color:var(--color-hint); font-size:21rpx; }
+.submit-btn { margin-top:34rpx; height:88rpx; line-height:1; color: var(--color-on-accent); border-radius:22rpx; background:var(--color-primary); font-size:29rpx; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0; }
+.submit-btn.disabled { color:var(--color-hint); background:var(--color-surface-2); }
+.feedback-note { margin-top:20rpx; text-align:center; color:var(--color-hint); font-size:21rpx; }

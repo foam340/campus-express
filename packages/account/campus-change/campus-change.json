@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "申请变更校区",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner"
+  }
+}

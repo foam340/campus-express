@@ -1,0 +1,13 @@
+.campus-change-page { padding-top:30rpx; }
+.campus-change-page .card { margin-bottom:22rpx; }
+.current-campus { margin-top:12rpx; font-size:38rpx; font-weight:800; color:var(--color-primary); }
+.campus-section { margin-top:26rpx; }
+.campus-options { display:flex; gap:16rpx; margin-top:16rpx; }
+.campus-option { flex:1; padding:24rpx 20rpx; text-align:center; border:2rpx solid var(--color-divider); border-radius:18rpx; }
+.campus-option view { font-size:24rpx; font-weight:700; color:var(--color-text); }
+.campus-option text { display:block; margin-top:8rpx; color:var(--color-muted); font-size:20rpx; }
+.campus-option.selected { border-color:var(--color-primary); background:var(--color-primary-soft); }
+.campus-option.selected view { color:var(--color-primary); }
+.campus-option.disabled { opacity:.45; }
+.campus-tip { margin-top:16rpx; color:var(--color-muted); font-size:21rpx; line-height:1.6; }
+.reason-input { width:100%; min-height:180rpx; margin-top:16rpx; padding:20rpx; box-sizing:border-box; border-radius:16rpx; background:var(--color-surface-2); font-size:25rpx; color:var(--color-text); }

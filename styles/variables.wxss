@@ -1,0 +1,77 @@
+/* 设计令牌：Apple 风格（iOS 语义色 + 材质 + 排版 + 动效）。
+   浅色默认，深色在 @media (prefers-color-scheme: dark) 下覆盖。
+   手动切换（跟随系统/浅色/深色）通过 page-meta 的 page-style 注入同一套变量，
+   变量值与 utils/theme.js 的 LIGHT_VARS / DARK_VARS 严格保持一致。 */
+page {
+  /* 背景与表面（iOS grouped 背景 / 卡片 / 分隔线 / 浮层） */
+  --color-bg: #f2f2f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f2f2f7;
+  --color-divider: #e5e5ea;
+  --color-tabbar: rgba(255, 255, 255, 0.82);
+
+  /* 文字（iOS label 层级：主 / 次 / 弱 / 占位） */
+  --color-text: #000000;
+  --color-text-2: rgba(60, 60, 67, 0.6);
+  --color-muted: rgba(60, 60, 67, 0.4);
+  --color-hint: rgba(60, 60, 67, 0.3);
+
+  /* 品牌色（iOS 系统色 + 半透明着色填充） */
+  --color-primary: #007aff;
+  --color-primary-soft: rgba(0, 122, 255, 0.12);
+  --color-on-accent: #ffffff;
+  --color-success: #34c759;
+  --color-success-soft: rgba(52, 199, 89, 0.14);
+  --color-warning: #ff9500;
+  --color-warning-soft: rgba(255, 149, 0, 0.14);
+  --color-danger: #ff3b30;
+  --color-danger-soft: rgba(255, 59, 48, 0.12);
+  --color-purple: #af52de;
+  --color-purple-soft: rgba(175, 82, 222, 0.14);
+  --color-gray-soft: rgba(120, 120, 128, 0.16);
+  --color-tabbar-indicator: rgba(120, 120, 128, 0.28);
+  --color-warm: #c93400;
+
+  /* 阴影（Apple 用中性黑阴影，非蓝灰） */
+  --shadow-color: rgba(0, 0, 0, 0.08);
+
+  /* 动效（临界阻尼近似 / 动量过冲） */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* 布局 */
+  --radius-card: 24rpx;
+  --page-gap: 24rpx;
+}
+
+@media (prefers-color-scheme: dark) {
+  page {
+    --color-bg: #000000;
+    --color-surface: #1c1c1e;
+    --color-surface-2: #2c2c2e;
+    --color-divider: #38383a;
+    --color-tabbar: rgba(28, 28, 30, 0.82);
+
+    --color-text: #ffffff;
+    --color-text-2: rgba(235, 235, 245, 0.6);
+    --color-muted: rgba(235, 235, 245, 0.4);
+    --color-hint: rgba(235, 235, 245, 0.3);
+
+    --color-primary: #0a84ff;
+    --color-primary-soft: rgba(10, 132, 255, 0.22);
+    --color-on-accent: #ffffff;
+    --color-success: #30d158;
+    --color-success-soft: rgba(48, 209, 88, 0.22);
+    --color-warning: #ff9f0a;
+    --color-warning-soft: rgba(255, 159, 10, 0.22);
+    --color-danger: #ff453a;
+    --color-danger-soft: rgba(255, 69, 58, 0.22);
+    --color-purple: #bf5af2;
+    --color-purple-soft: rgba(191, 90, 242, 0.22);
+    --color-gray-soft: rgba(120, 120, 128, 0.36);
+    --color-tabbar-indicator: rgba(120, 120, 128, 0.48);
+    --color-warm: #ff9f0a;
+
+    --shadow-color: rgba(0, 0, 0, 0.55);
+  }
+}

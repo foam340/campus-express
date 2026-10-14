@@ -1,0 +1,23 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="sample-page">
+  <view class="guide-card">
+    <view class="guide-icon"><image src="/assets/icons/ui-image.png" /></view>
+    <view class="guide-copy">
+      <view>请截取完整取件信息</view>
+      <text>确保取件地点、快递柜编号和取件码清晰可见</text>
+    </view>
+  </view>
+
+  <view class="image-card">
+    <image class="sample-image" src="{{imageUrl}}" mode="widthFix" lazy-load="{{false}}" bindtap="preview" />
+  </view>
+  <view class="preview-tip">点击图片可放大查看</view>
+
+  <view class="notice-card">
+    <view class="notice-title">提交前检查</view>
+    <view class="notice-item"><text>1</text><view>截图中能够看到取件码</view></view>
+    <view class="notice-item"><text>2</text><view>截图中能够判断取件地点</view></view>
+    <view class="notice-item"><text>3</text><view>不要上传此示例图，请上传自己的真实截图</view></view>
+  </view>
+</view>

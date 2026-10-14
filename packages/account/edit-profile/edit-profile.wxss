@@ -1,0 +1,13 @@
+.edit-page { padding-top:34rpx; }
+.intro { display:flex; align-items:center; margin:0 6rpx 28rpx; }
+.intro-icon { display:flex; align-items:center; justify-content:center; width:82rpx; height:82rpx; margin-right:18rpx; background:var(--color-primary-soft); border-radius:26rpx; }.intro-icon image { width:42rpx; height:42rpx; }
+.form-card { padding:0 30rpx; }
+.field { display:flex; align-items:center; justify-content:space-between; min-height:112rpx; border-bottom:1rpx solid var(--color-divider); }
+.field:last-child { border:0; }
+.field>text { width:150rpx; font-weight:700; }
+.field input { flex:1; text-align:right; font-size:26rpx; }
+.field>view { color:var(--color-text-2); }
+.room-field { align-items:flex-start; padding:30rpx 0; }.room-input { flex:1; }.room-input input { width:100%; }.room-input view { margin-top:8rpx; text-align:right; color:var(--color-hint); font-size:20rpx; }
+.privacy { display:flex; gap:14rpx; margin:22rpx 0 34rpx; padding:22rpx; color:var(--color-text-2); background:var(--color-primary-soft); border-radius:22rpx; font-size:22rpx; line-height:1.6; }
+.privacy-icon { display:flex; flex:none; align-items:center; justify-content:center; width:42rpx; height:42rpx; background:var(--color-surface); border-radius:13rpx; }.privacy-icon image { width:25rpx; height:25rpx; }
+.building-select { display:flex; align-items:center; gap:14rpx; }.building-select text:first-child { color:var(--color-text-2); font-size:26rpx; }.building-select text:last-child { padding:8rpx 12rpx; color:var(--color-primary); border-radius:12rpx; background:var(--color-primary-soft); font-size:19rpx; }

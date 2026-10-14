@@ -1,0 +1,69 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view wx:if="{{authenticating}}" class="auth-loading-page">
+  <view class="auth-loading-mark"></view>
+  <view class="auth-loading-title">正在进入校园代拿</view>
+  <view class="auth-loading-sub">正在确认账号信息…</view>
+</view>
+
+<view wx:else class="welcome-page">
+  <view class="welcome-copy">
+    <view class="eyebrow">WELCOME</view>
+    <view class="welcome-title"><view>认识一下你，</view><view>快递送到哪里？</view></view>
+    <view class="welcome-sub">资料只需填写一次，下单时会自动带入。</view>
+  </view>
+
+  <view class="form-panel">
+    <picker range="{{campusLabels}}" value="{{campusIndex}}" bindchange="chooseCampus">
+      <view class="field selectable-field">
+        <view class="field-icon blue-icon"><image src="/assets/icons/field-building.png" /></view>
+        <view class="field-body">
+          <text>所在校区</text>
+          <view class="picker-line"><view class="picker-value">{{campusLabels[campusIndex]}}</view><view class="select-hint">点击选择<view class="down-caret"></view></view></view>
+        </view>
+      </view>
+    </picker>
+    <view class="field">
+      <view class="field-icon blue-icon"><image src="/assets/icons/field-user.png" /></view>
+      <view class="field-body"><text>你的称呼</text><input maxlength="12" placeholder="例如：小林" bindinput="inputName" /></view>
+    </view>
+    <view class="field">
+      <view class="field-icon green-icon"><image src="/assets/icons/field-phone.png" /></view>
+      <view class="field-body"><text>手机号码</text><input type="number" maxlength="11" placeholder="请输入11位手机号" bindinput="inputPhone" /></view>
+    </view>
+    <block wx:if="{{roomRule === 'free'}}">
+      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding">
+        <view class="field selectable-field">
+          <view class="field-icon orange-icon"><image src="/assets/icons/field-building.png" /></view>
+          <view class="field-body">
+            <text>宿舍楼</text>
+            <view class="picker-line"><view class="picker-value">{{buildingLabels[buildingIndex]}}</view><view class="select-hint">点击选择<view class="down-caret"></view></view></view>
+          </view>
+        </view>
+      </picker>
+      <view class="field room-field">
+        <view class="field-icon purple-icon"><image src="/assets/icons/field-door.png" /></view>
+        <view class="field-body"><text>房号</text><input maxlength="20" placeholder="请填写房号" bindinput="inputRoom" /></view>
+      </view>
+    </block>
+    <block wx:else>
+      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding">
+        <view class="field selectable-field">
+          <view class="field-icon orange-icon"><image src="/assets/icons/field-building.png" /></view>
+          <view class="field-body">
+            <text>宿舍楼</text>
+            <view class="picker-line"><view class="picker-value">{{buildingLabels[buildingIndex]}}</view><view class="select-hint">点击选择<view class="down-caret"></view></view></view>
+          </view>
+        </view>
+      </picker>
+      <view class="field room-field">
+        <view class="field-icon purple-icon"><image src="/assets/icons/field-door.png" /></view>
+        <view class="field-body"><text>门牌号</text><input type="number" maxlength="4" placeholder="例如：123" bindinput="inputRoom" /><view class="field-helper">123表示1楼23号</view></view>
+      </view>
+    </block>
+    <view class="agree" bindtap="toggleAgree"><view class="check {{agreed?'checked':''}}">{{agreed?'✓':''}}</view><text>我已阅读并同意<text class="link-text" catchtap="showRulesTip">《用户服务规则》</text>和<text class="link-text" catchtap="showRulesTip">《隐私说明》</text></text></view>
+    <view class="enter-btn {{submitting?'button-disabled':''}}" bindtap="enter">{{submitting?'正在注册…':'完成注册'}}</view>
+  </view>
+
+  <view class="privacy-note"><text>锁</text> 取件截图、手机号和门牌号仅在骑手接单后展示</view>
+</view>

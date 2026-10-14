@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "校园代拿",
+  "navigationStyle": "default",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner"
+  }
+}

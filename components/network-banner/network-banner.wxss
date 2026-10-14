@@ -1,0 +1,3 @@
+.network-banner { height:0; padding:0 24rpx; overflow:hidden; color:var(--color-warm); background:var(--color-warning-soft); font-size:22rpx; line-height:56rpx; text-align:center; opacity:0; transition:height .2s ease,opacity .2s ease; }
+.network-banner.show { height:56rpx; opacity:1; }
+.network-banner.offline { color:var(--color-danger); background:var(--color-danger-soft); }

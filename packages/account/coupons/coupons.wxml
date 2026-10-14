@@ -1,0 +1,48 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page coupon-page">
+  <view class="coupon-hero">
+    <view>
+      <view class="hero-label">可用优惠券</view>
+      <view class="hero-count">{{counts.available}}<text>张</text></view>
+    </view>
+    <view class="hero-copy"><view>结账自动选最优惠</view><view>也可以手动不使用</view></view>
+  </view>
+
+  <view class="redeem-card">
+    <view class="section-title">兑换优惠券</view>
+    <view class="redeem-row">
+      <input class="redeem-input" value="{{redeemInput}}" maxlength="20" placeholder="输入官方活动兑换码" bindinput="inputCode" />
+      <button class="redeem-btn {{redeeming?'disabled':''}}" bindtap="redeem">{{redeeming?'兑换中':'兑换'}}</button>
+    </view>
+    <view class="redeem-tip">兑换码不区分大小写，每个兑换码仅可使用一次</view>
+  </view>
+
+  <view class="coupon-tabs">
+    <view wx:for="{{tabs}}" wx:key="key" class="coupon-tab {{activeTab===item.key?'active':''}}" data-key="{{item.key}}" bindtap="switchTab">
+      {{item.label}} {{item.count || 0}}
+    </view>
+  </view>
+
+  <view wx:if="{{displayCoupons.length}}" class="coupon-list">
+    <view wx:for="{{displayCoupons}}" wx:key="id" class="coupon-ticket {{item.status!=='available'?'ticket-disabled':''}}">
+      <view class="ticket-value"><text>¥</text>{{item.amount}}</view>
+      <view class="ticket-divider"></view>
+      <view class="ticket-copy">
+        <view class="ticket-name">{{item.name}}</view>
+        <view class="ticket-rule">{{item.ruleText}} · {{item.expireText}}</view>
+      </view>
+      <view class="ticket-status">{{item.statusText}}</view>
+    </view>
+  </view>
+  <empty-state wx:else title="这里还没有优惠券" description="关注官方活动，兑换后会显示在这里" />
+
+  <view class="coupon-rule">
+    <view class="rule-title">使用说明</view>
+    <view>· 多件满减后可继续使用优惠券，每个订单限用一张</view>
+    <view>· 优惠券一次性使用，不兑现、不找零</view>
+    <view>· 优惠最多抵扣至0元，0元订单无需发起微信支付</view>
+    <view>· 未接单订单取消后，未过期优惠券会自动退回</view>
+    <view wx:if="{{!reviewMode}}">· 平台优惠不影响骑手的本单收入</view>
+  </view>
+</view>

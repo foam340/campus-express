@@ -1,0 +1,24 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page campus-change-page">
+  <view class="card">
+    <view class="section-title">当前校区</view>
+    <view class="current-campus">{{currentCampusLabel}}</view>
+
+    <view class="section-title campus-section">变更为</view>
+    <view class="campus-options">
+      <view wx:for="{{campuses}}" wx:key="*this" class="campus-option {{targetCampus===item?'selected':''}} {{currentCampus===item?'disabled':''}}" data-value="{{item}}" bindtap="chooseTarget">
+        <view>{{campusLabels[index]}}</view>
+        <text>{{currentCampus===item?'当前校区':(targetCampus===item?'已选择':'点击选择')}}</text>
+      </view>
+    </view>
+    <view class="campus-tip">变更需管理员审核，通过后生效；有未完成订单时审核不予通过。</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">变更原因</view>
+    <textarea class="reason-input" maxlength="300" placeholder="请说明您变更校区的原因，方便我们进行登记🌹" bindinput="inputReason" />
+  </view>
+
+  <view class="primary-btn {{submitting?'disabled-btn':''}}" bindtap="submit">{{submitting?'正在提交…':'提交申请'}}</view>
+</view>

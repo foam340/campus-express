@@ -1,0 +1,4 @@
+{
+  "desc": "校园快递代拿",
+  "rules": [{ "action": "allow", "page": "*" }]
+}

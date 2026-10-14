@@ -1,0 +1,11 @@
+.service-page { padding-top:35rpx; }.service-head { text-align:center; }.service-icon { display:flex; align-items:center; justify-content:center; width:90rpx; height:90rpx; margin:0 auto 20rpx; background:var(--color-warning-soft); border-radius:30rpx; }.service-icon image { width:48rpx; height:48rpx; }.service-title { font-size:38rpx; font-weight:800; }.service-head .muted { margin-top:10rpx; font-size:23rpx; }.qr-card { margin-top:30rpx; padding:35rpx; }.qr-image { display:block; width:420rpx; margin:0 auto; border-radius:22rpx; box-shadow:0 6rpx 24rpx var(--shadow-color); }.qr-hint { margin:18rpx 0 30rpx; text-align:center; color:var(--color-hint); font-size:21rpx; }.copy-row { display:flex; align-items:center; justify-content:space-between; min-height:100rpx; border-top:1rpx solid var(--color-divider); }.copy-label { display:block; margin-bottom:6rpx; color:var(--color-muted); font-size:21rpx; }.copy-value { font-weight:700; }.copy-btn { padding:12rpx 22rpx; border-radius:16rpx; color:var(--color-primary); background:var(--color-primary-soft); font-size:23rpx; font-weight:700; }.notice { margin-top:22rpx; padding:26rpx; border-radius:24rpx; background:var(--color-warning-soft); }.notice-title { color:var(--color-warm); font-weight:800; }.notice-text { margin-top:10rpx; color:var(--color-warm); font-size:23rpx; line-height:1.7; }.claim-limit { display:inline-block; margin-top:16rpx; padding:10rpx 14rpx; color:var(--color-danger); background:var(--color-surface); border-radius:12rpx; font-size:21rpx; font-weight:700; }
+
+.qr-image { width:100%; max-width:420rpx; height:auto; }
+.copy-row { gap:20rpx; }
+.copy-row>view:first-child { flex:1; min-width:0; }
+.copy-btn { flex:none; }
+
+/* QR images need an explicit host height on real devices. */
+.qr-image { width:420rpx; max-width:100%; height:589rpx; overflow:hidden; background:var(--color-surface); }
+.contact-title { margin-bottom:24rpx; font-size:28rpx; font-weight:700; }
+.additional-qr-image { height:535rpx; }

@@ -1,0 +1,145 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view wx:if="{{reviewChecking}}" class="page loading-page">正在加载…</view>
+
+<view wx:else class="page create-page">
+  <view class="intro-block">
+    <view class="intro-kicker">逐件填写</view>
+    <view class="intro-title">一件快递，一张卡片</view>
+    <view class="intro-subtitle">{{hasOffCampus ? '校内、校外可以混合添加，最后一次结算。' : '取件驿站自由选择，最后一起结算。'}}</view>
+  </view>
+
+  <view class="section-head">
+    <view><text class="section-index">1</text><text class="section-name">我的快递</text></view>
+    <text class="section-count">{{cards.length}} 件</text>
+  </view>
+
+  <view wx:for="{{cards}}" wx:key="id" class="item-card {{item.complete ? 'item-complete' : ''}}">
+    <view class="item-head">
+      <view class="item-number">{{index + 1}}</view>
+      <view class="item-head-copy">
+        <view class="item-title">快递 {{index + 1}}</view>
+        <view class="item-state">{{item.complete ? (hasOffCampus ? item.scopeLabel + ' · ' + item.sizeLabel : item.sizeLabel) : '请补充取件信息'}}</view>
+      </view>
+      <view wx:if="{{item.size && !reviewMode}}" class="item-price">¥{{item.priceText}}</view>
+      <view wx:if="{{!item.expanded}}" class="edit-pill" data-id="{{item.id}}" hover-class="tap-soft" bindtap="editCard">修改</view>
+    </view>
+
+    <view wx:if="{{item.expanded}}" class="item-body">
+      <view class="field-title"><view class="field-title-label"><text>取件截图</text><text class="field-required">必填</text></view><view class="field-guide-action" hover-class="tap-soft" bindtap="previewSampleImage">查看截图示例 <text>›</text></view></view>
+      <view class="privacy-hint">取件码照片仅用于本次配送核验，不对外展示</view>
+      <view wx:if="{{!item.image}}" class="single-upload" data-id="{{item.id}}" hover-class="tap-soft" bindtap="chooseImage">
+        <view class="upload-plus">＋</view><view>上传这一件的截图</view><text>取件地点和取件码要清晰</text>
+      </view>
+      <view wx:else class="image-line">
+        <image class="item-image" src="{{item.image}}" mode="aspectFill" data-id="{{item.id}}" bindtap="previewImage" />
+        <view class="image-copy"><view>截图已添加</view><text>点击图片可查看大图</text></view>
+        <view class="text-action danger-text" data-id="{{item.id}}" bindtap="clearImage">移除</view>
+      </view>
+      <view wx:if="{{hasOffCampus}}" class="field-title spacing-title">在哪里取？</view>
+      <view wx:if="{{hasOffCampus}}" class="segment-grid {{scopeStations.length > 2 ? 'three-column' : 'two-column'}}">
+        <view wx:for="{{scopeStations}}" wx:key="value" wx:for-item="station" class="segment scope-segment {{item.scope===station.value?'selected':''}}" data-id="{{item.id}}" data-value="{{station.value}}" hover-class="tap-soft" bindtap="selectScope"><view>{{station.title}}</view><text>{{station.label}}</text></view>
+      </view>
+
+      <view class="field-title spacing-title"><text>大概多大？</text><view class="field-guide-action" hover-class="tap-soft" bindtap="viewSizeGuide">查看尺寸图例 <text>›</text></view></view>
+      <view class="segment-grid three-column">
+        <view class="segment size-segment {{item.size==='small'?'selected':''}}" data-id="{{item.id}}" data-value="small" hover-class="tap-soft" bindtap="selectSize"><view>小件</view><text>单手可拿</text></view>
+        <view class="segment size-segment {{item.size==='medium'?'selected':''}}" data-id="{{item.id}}" data-value="medium" hover-class="tap-soft" bindtap="selectSize"><view>中件</view><text>双手可拿</text></view>
+        <view class="segment size-segment {{item.size==='large'?'selected':''}}" data-id="{{item.id}}" data-value="large" hover-class="tap-soft" bindtap="selectSize"><view>大件</view><text>箱装/较重</text></view>
+      </view>
+      <view class="size-hint">超过20kg或体积超过0.3m³的超大件，请先联系客服</view>
+
+      <view class="card-actions">
+        <view class="delete-action" data-id="{{item.id}}" bindtap="removeCard">删除这件</view>
+        <view class="finish-action" data-id="{{item.id}}" hover-class="button-pressed" bindtap="finishCard">完成这件</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="add-card {{canAdd?'':'add-card-disabled'}}" hover-class="tap-soft" bindtap="addCard">
+    <text class="add-icon">＋</text><view><view>再添加一件快递</view><text>{{hasOffCampus ? '自动沿用上一件的取件范围' : '每一件单独上传截图和选尺寸'}}</text></view>
+  </view>
+
+  <view class="section-head order-section-head">
+    <view><text class="section-index">2</text><text class="section-name">整单配送</text></view>
+  </view>
+  <view class="order-card">
+    <view wx:if="{{stations.length}}" class="field-title no-top"><text>在哪个驿站取件？</text></view>
+    <view wx:if="{{stations.length}}" class="segment-grid two-column">
+      <view wx:for="{{stations}}" wx:key="value" class="segment station-segment {{pickupStation===item.value?'selected':''}}" data-value="{{item.value}}" hover-class="tap-soft" bindtap="selectStation"><view>{{item.label}}</view></view>
+    </view>
+    <view wx:if="{{stations.length}}" class="sub-divider"></view>
+    <view class="field-title no-top"><text>希望什么时候送到？</text></view>
+    <view class="segment-grid two-column">
+      <view class="segment {{urgency==='today'?'selected':''}}" data-value="today" hover-class="tap-soft" bindtap="selectUrgency"><view>今天</view><text wx:if="{{!reviewMode}}">不加价</text></view>
+      <view class="segment {{urgency==='urgent'?'urgent-selected':''}}" data-value="urgent" hover-class="tap-soft" bindtap="selectUrgency"><view>很急</view><text wx:if="{{!reviewMode}}">整单 +¥{{urgentOptionFeeText}}</text></view>
+    </view>
+    <view class="urgency-hint">节假日或骑手较少时，可能次日送达</view>
+    <view class="sub-divider"></view>
+    <view class="address-line">
+      <view class="address-icon">⌖</view>
+      <view class="address-copy"><view>{{user.building ? ('送到 ' + user.building + (user.room || '')) : '请先完善收货地址'}}</view><text>{{user.name || '当前用户'}} · {{user.phone || '手机号未填写'}}</text></view>
+      <view class="text-action" bindtap="editAddress">修改</view>
+    </view>
+    <view class="segment-grid two-column delivery-grid">
+      <view class="segment compact-segment {{deliveryMode==='downstairs'?'selected':''}}" data-value="downstairs" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>送到宿舍楼下</view><text wx:if="{{!reviewMode}}">不加价</text></view>
+      <view class="segment compact-segment {{deliveryMode==='door'?'selected':''}}" data-value="door" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>送到宿舍门口</view><text wx:if="{{!reviewMode}}"><block wx:if="{{isBuilding9}}">+￥{{doorOptionFeeText}}</block><block wx:else>{{doorOptionHint}} +¥{{doorOptionFeeText}}</block></text></view>
+    </view>
+    <view class="sub-divider"></view>
+    <view class="field-title no-top"><text>订单备注（选填）</text><text class="note-limit">最多100字</text></view>
+    <textarea class="order-note" maxlength="100" placeholder="例如：到门口后请敲门" placeholder-class="order-note-placeholder" show-confirm-bar="{{false}}" bindinput="inputNote" />
+  </view>
+
+  <view wx:if="{{!reviewMode}}" class="section-head order-section-head">
+    <view><text class="section-index">3</text><text class="section-name">费用明细</text></view>
+  </view>
+  <view wx:if="{{!reviewMode}}" class="summary-card">
+    <view class="summary-row"><text>{{selectedCount}} 件快递小计</text><text>¥{{subtotalText}}</text></view>
+    <view class="summary-row discount-row"><text>多件满减</text><text>-¥{{discountText}}</text></view>
+    <view wx:if="{{urgency==='urgent'}}" class="summary-row"><text>很急服务</text><text>+¥{{urgencyFeeText}}</text></view>
+    <view wx:if="{{deliveryMode==='door'}}" class="summary-row"><text>送到宿舍门口</text><text>+¥{{deliveryFeeText}}</text></view>
+    <view wx:if="{{isBuilding9}}" class="summary-row"><text>9栋距离附加费</text><text>+¥{{buildingFeeText}}</text></view>
+    <view class="discount-hint">{{nextDiscountText}}</view>
+    <view class="coupon-picker" hover-class="tap-soft" bindtap="openCouponSheet">
+      <view><view>优惠券</view><text>{{selectedCouponName || '满减后可继续叠加使用'}}</text></view>
+      <view class="coupon-picker-value {{selectedCouponId?'coupon-active':''}}"><text>{{couponRowText}}</text><text class="coupon-arrow">〉</text></view>
+    </view>
+    <view wx:if="{{selectedCouponId}}" class="summary-row discount-row"><text>优惠券抵扣</text><text>-¥{{couponDiscountText}}</text></view>
+    <view class="sub-divider"></view>
+    <view class="summary-total"><view><view>应付金额</view><text>原价 ¥{{originalTotalText}}，优惠券由平台承担</text></view><text>¥{{totalText}}</text></view>
+  </view>
+</view>
+
+<view wx:if="{{!reviewChecking}}" class="submit-bar">
+  <view wx:if="{{!reviewMode}}" class="submit-copy"><text>应付</text><view>¥{{totalText}}</view></view>
+  <view class="submit-button {{incompleteCount||submitting?'submit-incomplete':''}}" hover-class="button-pressed" bindtap="submit">{{submitting ? '正在提交…' : (incompleteCount ? '还有' + incompleteCount + '件未完成' : '提交订单')}}</view>
+</view>
+
+<view wx:if="{{!reviewChecking}}" class="coupon-mask {{showCouponSheet?'show':''}}" catchtap="closeCouponSheet" catchtouchmove="noop"></view>
+<view wx:if="{{!reviewChecking}}" class="coupon-sheet {{showCouponSheet?'show':''}}" catchtap="noop">
+  <view class="coupon-sheet-head"><view><view>选择优惠券</view><text>系统已优先选择本单优惠最多的券</text></view><view class="coupon-close" bindtap="closeCouponSheet">×</view></view>
+  <scroll-view class="coupon-sheet-list" scroll-y="true">
+    <view wx:if="{{couponOptions.length}}">
+      <view wx:for="{{couponOptions}}" wx:key="id" class="coupon-option {{item.selected?'selected':''}} {{item.eligible?'':'disabled'}}" data-id="{{item.id}}" bindtap="selectCoupon">
+        <view class="coupon-option-value"><text>¥</text>{{item.amountText}}</view>
+        <view class="coupon-option-copy"><view>{{item.name}}</view><text>{{item.ruleText}} · {{item.eligibilityText}}</text></view>
+        <view class="coupon-check">{{item.selected?'✓':''}}</view>
+      </view>
+    </view>
+    <view wx:else class="coupon-empty">{{couponsLoaded ? '当前没有优惠券' : '正在加载优惠券…'}}</view>
+    <view class="coupon-none-option {{selectedCouponId?'':'selected'}}" data-id="none" bindtap="selectCoupon"><text>不使用优惠券</text><text>{{selectedCouponId?'':'✓'}}</text></view>
+  </scroll-view>
+</view>
+
+<view wx:if="{{!reviewChecking}}" class="pay-qr-mask {{showPayQr?'show':''}}" catchtap="closePayQr" catchtouchmove="noop"></view>
+<view wx:if="{{!reviewChecking}}" class="pay-qr-modal {{showPayQr?'show':''}}">
+  <view class="qr-card">
+    <view class="qr-title">微信扫码支付</view>
+    <view class="qr-price">¥{{orderPayableText}}</view>
+    <image class="qr-image" src="{{payQrImage}}" mode="aspectFit" show-menu-by-longpress="{{true}}" bindtap="previewPayQr" />
+    <view class="qr-tip">由于个体工商证还没下来，暂时只能扫码支付</view>
+    <view class="qr-tip">长按二维码保存图片 → 退出小程序扫码 → 支付后返回</view>
+    <view class="qr-tip">支付成功后本页会自动确认</view>
+    <button class="qr-done-btn" bindtap="closePayQr">我已支付完成</button>
+  </view>
+</view>

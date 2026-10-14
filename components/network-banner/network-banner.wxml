@@ -1,0 +1,1 @@
+<view class="network-banner {{visible ? 'show' : ''}} {{offline ? 'offline' : 'weak'}}">{{text}}</view>

@@ -1,0 +1,80 @@
+# Replace all example.edu domains and certificate paths before deployment.
+# Put limit_req_zone in the nginx http {} block, not inside server {}.
+limit_req_zone $binary_remote_addr zone=campus_api:10m rate=20r/s;
+
+upstream campus_api_backend {
+    server 127.0.0.1:3000;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name api.example.edu upload.example.edu cdn.example.edu;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.example.edu upload.example.edu cdn.example.edu;
+
+    ssl_certificate     /etc/letsencrypt/live/api.example.edu/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.example.edu/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    server_tokens off;
+    client_max_body_size 12m;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+    gzip on;
+    gzip_vary on;
+    gzip_comp_level 6;
+    gzip_min_length 1024;
+    gzip_types application/json application/javascript text/css text/plain image/svg+xml;
+
+    location /api/ {
+        limit_req zone=campus_api burst=40 nodelay;
+        proxy_pass http://campus_api_backend/;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+
+        # Mini Program requests do not need CORS. This allowlist is only for the web admin.
+        add_header Access-Control-Allow-Origin "https://admin.example.edu" always;
+        add_header Access-Control-Allow-Credentials "true" always;
+        add_header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS" always;
+        add_header Access-Control-Allow-Headers "Authorization,Content-Type,Idempotency-Key,X-Request-Id" always;
+        add_header Vary Origin always;
+        if ($request_method = OPTIONS) { return 204; }
+    }
+
+    location /upload/ {
+        limit_req zone=campus_api burst=10 nodelay;
+        proxy_pass http://campus_api_backend/upload/;
+        proxy_request_buffering on;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+    }
+
+    location /static/ {
+        alias /srv/campus-express/static/;
+        try_files $uri =404;
+        expires 30d;
+        add_header Cache-Control "public,max-age=2592000,immutable";
+        access_log off;
+    }
+
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+}

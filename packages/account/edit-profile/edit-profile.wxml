@@ -1,0 +1,19 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page edit-page">
+  <view class="intro"><view class="intro-icon"><image src="/assets/icons/profile-address.png" /></view><view><view class="section-title">默认收货资料</view><view class="muted small">下单时自动带入，仍可随时修改</view></view></view>
+  <view class="card form-card">
+    <view class="field"><text>称呼</text><input value="{{user.name}}" maxlength="12" placeholder="请输入称呼" bindinput="inputName"/></view>
+    <view class="field"><text>手机号</text><input value="{{user.phone}}" type="number" maxlength="11" placeholder="请输入手机号" bindinput="inputPhone"/></view>
+    <block wx:if="{{roomRule !== 'free'}}">
+      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{buildingLabels[buildingIndex] || user.building}}</text><text>点击选择</text></view></view></picker>
+      <view class="field room-field"><text>门牌号</text><view class="room-input"><input value="{{user.room}}" maxlength="10" placeholder="例如：421" bindinput="inputRoom"/><view>门牌号首位表示楼层，如421表示4楼21号</view></view></view>
+    </block>
+    <block wx:else>
+      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{buildingLabels[buildingIndex] || user.building}}</text><text>点击选择</text></view></view></picker>
+      <view class="field room-field"><text>房号</text><view class="room-input"><input value="{{user.room}}" maxlength="20" placeholder="请填写房号" bindinput="inputRoom"/></view></view>
+    </block>
+  </view>
+  <view class="privacy"><view class="privacy-icon"><image src="/assets/icons/ui-lock.png" /></view><text>具体门牌号和手机号仅在骑手成功接单后展示，订单完成24小时后对骑手隐藏。</text></view>
+  <view class="primary-btn {{saving?'button-disabled':''}}" bindtap="save">{{saving?'正在保存…':'保存资料'}}</view>
+</view>

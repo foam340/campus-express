@@ -1,0 +1,49 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page apply-page">
+  <view wx:if="{{user.riderApproved}}" class="approved-card">
+    <view class="approved-icon">✓</view><view class="approved-title">骑手审核已通过</view><view class="approved-sub">骑手资格正常，可进入骑手模式接单。</view><view class="primary-btn" bindtap="switchRider">进入骑手模式</view>
+  </view>
+  <view wx:elif="{{user.riderStatus==='pending'}}" class="approved-card pending-card">
+    <view class="approved-icon pending-icon"><image src="/assets/icons/status-pending.png" /></view><view class="approved-title">骑手申请审核中</view><view class="approved-sub">管理员将核对姓名、学号、手机号和微信添加情况。</view><view class="secondary-btn">请耐心等待审核</view>
+  </view>
+  <view wx:elif="{{user.riderStatus==='suspended'}}" class="approved-card pending-card">
+    <view class="approved-icon suspended-icon"><image src="/assets/icons/status-suspended.png" /></view><view class="approved-title">接单资格已暂停</view><view class="approved-sub">累计3次有效超时。请联系管理员说明情况，由管理员决定是否恢复。</view><view class="secondary-btn" bindtap="contactAdmin">联系管理员</view>
+  </view>
+  <block wx:else>
+    <view class="card form-card">
+      <view class="section-title">基本信息</view>
+      <view class="field"><text>真实姓名</text><input placeholder="请输入真实姓名" bindinput="inputRealName" maxlength="20"/></view>
+      <view class="field"><text>学号</text><input placeholder="请输入学号" bindinput="inputStudentId"/></view>
+      <picker range="{{genderLabels}}" bindchange="onPickGender"><view class="field"><text>性别</text><view class="gender-choice"><text>{{gender==='male'?'男':gender==='female'?'女':'请选择性别'}}</text><text>点击选择</text></view></view></picker>
+      <view class="field"><text>手机号</text><input type="number" maxlength="11" value="{{user.phone}}" placeholder="接单联系电话，可修改" bindinput="inputPhone"/></view>
+    </view>
+    <view class="card admin-card">
+      <view class="section-title">添加管理员微信（必做）</view>
+      <view class="qr-tip">请先添加管理员微信，添加完成后再提交申请，否则审核无法通过</view><safe-image class="qr-image" src="{{qr}}" mode="aspectFit" lazy-load="{{false}}" show-menu-by-longpress bind:tap="previewQr" /><view class="qr-tip">点击图片可放大，长按识别二维码</view><view class="wechat-line">微信号：{{adminWechat}} <text bindtap="copyWechat">复制</text></view>
+      <view class="check-row"><view class="check {{wechatAdded?'checked':''}}" bindtap="toggleWechatAdded">{{wechatAdded?'✓':''}}</view><text bindtap="toggleWechatAdded">我已添加管理员微信</text></view>
+      <view class="check-row"><view class="check {{agreed?'checked':''}}" bindtap="toggleAgreed">{{agreed?'✓':''}}</view><text bindtap="toggleAgreed">我已阅读并同意</text><text class="rule-link" catchtap="showRules">《骑手服务规则》</text></view>
+    </view>
+    <view class="primary-btn" bindtap="submit">提交申请</view>
+  </block>
+</view>
+
+<view wx:if="{{rulesVisible}}" class="rules-mask" catchtouchmove="noop">
+  <view class="rules-modal">
+    <view class="rules-head"><view><view class="rules-title">骑手服务规则</view><view class="rules-version">版本：{{rulesVersion}}</view></view><view class="rules-close" bindtap="closeRules">×</view></view>
+    <scroll-view class="rules-scroll" scroll-y enhanced show-scrollbar="{{false}}" lower-threshold="40" bindscrolltolower="markRulesRead">
+      <view class="rules-content">
+        <view class="rules-lead">申请骑手前，请完整阅读以下规则。规则涉及接单时限、隐私保护、收入结算、超时处理及损失责任。</view>
+        <view wx:for="{{ruleSections}}" wx:key="title" wx:for-item="section" class="rule-section">
+          <view class="rule-title">{{section.title}}</view>
+          <view wx:for="{{section.items}}" wx:key="*this" wx:for-item="rule" class="rule-item"><text>•</text><view>{{rule}}</view></view>
+        </view>
+        <view class="scroll-end">— 已阅读至底部 —</view>
+      </view>
+    </scroll-view>
+    <view class="rules-foot">
+      <view class="rules-cancel" bindtap="closeRules">暂不同意</view>
+      <view class="rules-accept {{rulesReachedBottom?'':'rules-disabled'}}" bindtap="acceptRules">{{rulesReachedBottom?'已阅读并同意':'请阅读至底部'}}</view>
+    </view>
+  </view>
+</view>

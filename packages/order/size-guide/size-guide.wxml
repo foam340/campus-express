@@ -1,0 +1,16 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="size-guide-page">
+  <view class="guide-card">
+    <view class="guide-mark">?</view>
+    <view class="guide-copy">
+      <view>按每件快递的实际包装选择</view>
+      <text>不确定时可点击图片放大，对照常见示例判断</text>
+    </view>
+  </view>
+
+  <view class="image-card">
+    <image class="guide-image" src="{{imageUrl}}" mode="widthFix" lazy-load="{{false}}" bindtap="preview" />
+  </view>
+  <view class="preview-tip">点击图片可放大查看</view>
+</view>

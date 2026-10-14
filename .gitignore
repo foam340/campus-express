@@ -1,0 +1,52 @@
+# Dependencies and generated builds
+node_modules/
+miniprogram_npm/
+dist/
+coverage/
+.npm-cache/
+
+# Private configuration and credentials
+.env
+.env.*
+!.env.example
+project.private.config.json
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Runtime data, exports and operational backups
+uploads/
+logs/
+backups/
+dumps/
+*.log
+*.bak*
+*.backup*
+*.dump
+*.sql.gz
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.sha256
+_reassign_order.js
+*.nginx.conf.production
+
+# Local tools and workstation state
+.agents/
+.claude/
+.workbuddy/
+.deploy-tmp/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Private operating notes are maintained outside this repository
+docs/HANDOFF*
+docs/*CAPACITY*
+docs/*SERVER-INFO*

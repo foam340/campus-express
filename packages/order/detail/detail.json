@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "订单详情",
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner",
+    "safe-image": "/components/safe-image/safe-image"
+  }
+}

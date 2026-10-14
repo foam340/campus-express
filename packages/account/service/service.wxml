@@ -1,0 +1,19 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page service-page">
+  <view class="service-head"><view class="service-icon"><image src="/assets/icons/menu-service.png" /></view><view class="service-title">{{sceneTitle}}</view><view class="muted">添加客服微信，人工为你处理</view></view>
+  <view class="card qr-card">
+    <view wx:if="{{additionalContacts.length}}" class="contact-title">客服 1</view>
+    <safe-image class="qr-image" src="{{qr}}" mode="aspectFit" lazy-load="{{false}}" show-menu-by-longpress bind:tap="previewQr" />
+    <view class="qr-hint">点击图片可放大，长按识别二维码</view>
+    <view class="copy-row"><view><text class="copy-label">微信号</text><text class="copy-value">{{adminWechat}}</text></view><view class="copy-btn" bindtap="copyWechat">复制</view></view>
+    <view wx:if="{{orderId}}" class="copy-row"><view><text class="copy-label">订单编号</text><text class="copy-value">{{orderId}}</text></view><view class="copy-btn" bindtap="copyOrder">复制</view></view>
+  </view>
+  <view wx:for="{{additionalContacts}}" wx:key="wechat" class="card qr-card">
+    <view class="contact-title">{{item.label}}</view>
+    <image class="qr-image additional-qr-image" src="{{item.qr}}" mode="aspectFit" show-menu-by-longpress="{{true}}" data-index="{{index}}" bindtap="previewAdditionalQr" />
+    <view class="qr-hint">点击图片可放大，长按识别二维码</view>
+    <view class="copy-row"><view><text class="copy-label">微信号</text><text class="copy-value">{{item.wechat}}</text></view><view class="copy-btn" data-index="{{index}}" bindtap="copyAdditionalWechat">复制</view></view>
+  </view>
+  <view class="notice"><view class="notice-title">联系时请说明</view><view class="notice-text">{{hint}}</view><view wx:if="{{scene==='claim'}}" class="claim-limit">理赔上限：每个订单累计 ¥200</view></view>
+</view>

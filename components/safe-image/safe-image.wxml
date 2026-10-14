@@ -1,0 +1,10 @@
+<image
+  class="safe-image custom-class {{mode === 'widthFix' ? 'width-fix' : ''}} {{failed ? 'is-fallback' : ''}}"
+  src="{{displaySrc}}"
+  mode="{{mode}}"
+  lazy-load="{{lazyLoad}}"
+  show-menu-by-longpress="{{showMenuByLongpress}}"
+  bindload="handleLoad"
+  binderror="handleError"
+  bindtap="handleTap"
+/>

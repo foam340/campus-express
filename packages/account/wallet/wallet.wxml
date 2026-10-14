@@ -1,0 +1,22 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page wallet-page">
+  <block wx:if="{{!reviewMode}}">
+    <view class="balance-card">
+    <view class="balance-label">可提现余额</view>
+    <view class="balance-num"><text>¥</text>{{balance.available}}</view>
+    <view class="balance-meta"><view><text>¥{{balance.pending}}</text><text>观察期金额</text></view><view class="meta-line"></view><view><text>{{balance.withdrawLeft}}/5</text><text>本月剩余提现</text></view></view>
+      <view class="withdraw" bindtap="withdraw">申请提现</view>
+    </view>
+    <view class="observe-tip"><view class="tip-icon">i</view><text>订单完成后经过24小时售后观察期，收入才会进入可提现余额。</text></view>
+    <view class="section-title record-title">收支明细</view>
+    <view class="card record-card">
+      <view wx:for="{{records}}" wx:key="id" class="record-row">
+        <view class="record-icon {{item.type==='income'?'in':'out'}}"><image lazy-load src="{{item.type==='income'?'/assets/icons/transaction-in.png':'/assets/icons/transaction-out.png'}}" /></view>
+        <view class="record-copy"><view>{{item.title}}</view><view>{{item.date}}</view></view>
+        <view class="record-amount {{item.type==='income'?'green':''}}">{{item.amountText}}</view>
+      </view>
+    </view>
+  </block>
+  <view wx:else class="card"><view class="section-title">功能暂未开放</view><view class="muted small">请稍后再试</view></view>
+</view>

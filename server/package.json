@@ -1,0 +1,31 @@
+{
+  "name": "campus-express-api",
+  "version": "5.6.0",
+  "private": true,
+  "description": "校园快递代拿统一后端 API",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "check": "node scripts/check.js",
+    "test:security": "node scripts/security-regression.js",
+    "email:verify": "node scripts/verify-urgent-email.js",
+    "admin:create": "node scripts/create-admin.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "bcryptjs": "3.0.3",
+    "cors": "2.8.6",
+    "dotenv": "17.4.2",
+    "express": "5.2.1",
+    "express-rate-limit": "8.6.2",
+    "helmet": "8.3.0",
+    "jsonwebtoken": "9.0.3",
+    "multer": "2.2.0",
+    "mysql2": "3.24.3",
+    "nodemailer": "9.1.1",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.35.4"
+  }
+}

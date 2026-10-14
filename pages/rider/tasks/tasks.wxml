@@ -1,0 +1,15 @@
+<page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
+<network-banner />
+<view class="page tasks-page">
+  <view class="summary"><view><view class="summary-title">当前任务</view><view class="summary-sub">Lv{{riderProgress.level}} {{riderProgress.levelName}} · {{riderProgress.experiencePoints}}经验</view></view><view class="count">{{activeCount}}<text>/{{maxActiveOrders}}</text></view></view>
+  <view wx:if="{{loading}}" class="sk-list" aria-hidden="true"><view class="sk sk-row"></view><view class="sk sk-row"></view></view>
+  <view wx:else class="list-stage" style="height:{{listHeight}}px;">
+    <recycle-view id="riderTaskRecycle" class="task-list {{listTotal ? '' : 'list-hidden'}}" batch="{{batchSetRecycleData}}" width="{{listWidth}}" height="{{listHeight}}" lower-threshold="120" bindscrolltolower="loadMore">
+      <recycle-item wx:for="{{recycleTasks}}" wx:key="id" class="recycle-row task-row" style="width:{{listWidth}}px;height:{{listItemHeight}}px;padding-bottom:{{listItemGap}}px;box-sizing:border-box;">
+        <order-list-item order="{{item}}" variant="task" bind:open="openTask" />
+      </recycle-item>
+      <view slot="after" wx:if="{{hasMore}}" class="load-more">继续上滑加载</view>
+    </recycle-view>
+    <view wx:if="{{!listTotal}}" class="empty-layer"><empty-state icon="✓" tone="green" title="任务都完成了" description="去接单大厅看看新订单吧" action-text="去接单" bind:action="goHall" /></view>
+  </view>
+</view>

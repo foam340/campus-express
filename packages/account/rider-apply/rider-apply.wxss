@@ -1,0 +1,35 @@
+.apply-page { padding-top:30rpx; }.approved-card { margin-top:80rpx; padding:48rpx 34rpx; text-align:center; border-radius:34rpx; background:var(--color-surface); box-shadow:0 14rpx 38rpx var(--shadow-color); }.approved-icon { width:100rpx; height:100rpx; line-height:100rpx; margin:0 auto 24rpx; color:#20b486; background:var(--color-success-soft); border-radius:34rpx; font-size:45rpx; font-weight:800; }.approved-title { font-size:38rpx; font-weight:800; }.approved-sub { margin:14rpx 0 40rpx; color:var(--color-muted); font-size:24rpx; }.form-card,.admin-card { margin-bottom:22rpx; }.field { display:flex; align-items:center; min-height:102rpx; border-bottom:1rpx solid var(--color-divider); }.field:last-child { border:0; }.field text { width:130rpx; font-weight:700; }.field input { flex:1; text-align:right; font-size:26rpx; }.qr-image { display:block; width:360rpx; margin:30rpx auto 12rpx; border-radius:20rpx; box-shadow:0 5rpx 20rpx var(--shadow-color); }.qr-tip { margin-bottom:20rpx; text-align:center; color:var(--color-hint); font-size:20rpx; }.wechat-line { text-align:center; color:var(--color-text-2); }.wechat-line text { margin-left:12rpx; color:var(--color-primary); }.check-row { display:flex; align-items:center; flex-wrap:wrap; margin-top:24rpx; color:var(--color-text-2); font-size:23rpx; }.check { flex:none; width:42rpx; height:42rpx; line-height:42rpx; margin-right:14rpx; text-align:center; border:2rpx solid var(--color-divider); border-radius:13rpx; color: var(--color-on-accent); }.check.checked { border-color:var(--color-primary); background:var(--color-primary); }.rule-link { margin-left:6rpx; color:var(--color-primary); font-weight:700; }
+
+.qr-image { width:100%; max-width:360rpx; height:auto; }
+.field { gap:16rpx; }
+.field input { min-width:0; }
+/* 性别选择（picker 内）：显式覆盖 .field text 的 130rpx 标签宽度 */
+.gender-choice { display:flex; align-items:center; justify-content:flex-end; flex:1; min-width:0; gap:14rpx; }
+.gender-choice text { width:auto; font-weight:400; }
+.gender-choice text:first-child { color:var(--color-text-2); font-size:26rpx; }
+.gender-choice text:last-child { flex:none; padding:8rpx 12rpx; color:var(--color-primary); border-radius:12rpx; background:var(--color-primary-soft); font-size:19rpx; }
+.pending-card { margin-top:60rpx; }.pending-icon { display:flex; align-items:center; justify-content:center; background:var(--color-warning-soft); }
+.suspended-icon { display:flex; align-items:center; justify-content:center; background:var(--color-danger-soft); }
+.pending-icon image,.suspended-icon image { width:52rpx; height:52rpx; }
+
+.rules-mask { position:fixed; z-index:120; left:0; top:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; padding:26rpx; background:rgba(18,29,45,.56); animation:rules-fade .18s ease-out; }
+.rules-modal { width:100%; max-width:680rpx; overflow:hidden; border-radius:32rpx; background:var(--color-surface); box-shadow:0 28rpx 80rpx var(--shadow-color); animation:rules-pop .22s ease-out; }
+.rules-head { display:flex; align-items:center; justify-content:space-between; padding:28rpx 30rpx 22rpx; border-bottom:1rpx solid var(--color-divider); }
+.rules-title { color:var(--color-text); font-size:33rpx; font-weight:800; }.rules-version { margin-top:5rpx; color:var(--color-hint); font-size:18rpx; }.rules-close { display:flex; flex:none; align-items:center; justify-content:center; width:54rpx; height:54rpx; color:var(--color-text-2); border-radius:18rpx; background:var(--color-surface-2); font-size:34rpx; }
+.rules-scroll { width:100%; height:820rpx; max-height:60vh; overflow-x:hidden; box-sizing:border-box; }
+.rules-content { width:100%; padding:0 30rpx; overflow:hidden; box-sizing:border-box; }
+.rules-lead { margin:26rpx 0; padding:20rpx; color:var(--color-text-2); border-radius:18rpx; background:var(--color-primary-soft); font-size:22rpx; line-height:1.65; }
+.rule-section { width:100%; margin:28rpx 0; overflow:hidden; }.rule-title { margin-bottom:15rpx; color:var(--color-text); font-size:27rpx; font-weight:800; }.rule-item { display:flex; align-items:flex-start; width:100%; gap:12rpx; margin-top:13rpx; color:var(--color-text-2); font-size:22rpx; line-height:1.72; }.rule-item>text { flex:none; color:var(--color-primary); font-weight:800; }.rule-item>view { flex:1; min-width:0; overflow-wrap:break-word; word-break:break-all; }
+.scroll-end { padding:12rpx 0 30rpx; text-align:center; color:var(--color-hint); font-size:19rpx; }
+.rules-foot { display:flex; gap:16rpx; padding:22rpx 26rpx calc(22rpx + env(safe-area-inset-bottom)); border-top:1rpx solid var(--color-divider); background:var(--color-surface); }.rules-cancel,.rules-accept { display:flex; align-items:center; justify-content:center; height:82rpx; border-radius:22rpx; font-size:25rpx; font-weight:700; }.rules-cancel { flex:0 0 180rpx; color:var(--color-text-2); background:var(--color-surface-2); }.rules-accept { flex:1; color: var(--color-on-accent); background:var(--color-primary); }.rules-disabled { color:var(--color-hint); background:var(--color-divider); }
+
+@keyframes rules-fade { from { opacity:0; } to { opacity:1; } }
+@keyframes rules-pop { from { opacity:0; transform:translateY(24rpx) scale(.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+
+/* QR images need an explicit host height on real devices. */
+.qr-image { width:360rpx; max-width:100%; height:505rpx; overflow:hidden; background:var(--color-surface); }
+
+@media (prefers-reduced-motion: reduce) {
+  .rules-mask { animation:rules-fade .12s linear; }
+  .rules-modal { animation:rules-fade .12s linear; }
+}

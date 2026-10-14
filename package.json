@@ -1,0 +1,32 @@
+{
+  "name": "campus-express-miniprogram",
+  "version": "5.4.4",
+  "private": true,
+  "description": "校园快递代拿微信小程序",
+  "scripts": {
+    "build:npm": "node scripts/build-npm.js",
+    "prepare:dev": "node scripts/build-npm.js && node scripts/set-env.js development && node scripts/validate.js",
+    "env:dev": "node scripts/set-env.js development",
+    "env:test": "node scripts/set-env.js test",
+    "env:prod": "node scripts/set-env.js production",
+    "validate": "node scripts/build-npm.js && node scripts/validate.js",
+    "test": "node scripts/test.js",
+    "check": "npm run validate && node scripts/validate-admin.js && node scripts/validate-server.js && npm run test",
+    "check:server": "node scripts/validate-server.js",
+    "build:admin:dev": "node scripts/build-admin.js development",
+    "build:admin:test": "node scripts/build-admin.js test",
+    "build:admin:prod": "node scripts/build-admin.js production",
+    "admin:dev": "node scripts/build-admin.js development && node scripts/serve-admin.js dist/admin-web/development 4173",
+    "build:release:test": "npm run build:test && npm run build:admin:test",
+    "build:release:prod": "npm run build:prod && npm run build:admin:prod",
+    "build:dev": "node scripts/build.js development",
+    "build:test": "node scripts/build.js test",
+    "build:prod": "node scripts/build.js production"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "miniprogram-recycle-view": "0.1.5"
+  }
+}

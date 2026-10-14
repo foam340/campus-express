@@ -1,0 +1,114 @@
+{
+  "entryPagePath": "pages/auth/welcome/welcome",
+  "darkmode": true,
+  "themeLocation": "theme.json",
+  "pages": [
+    "pages/auth/welcome/welcome",
+    "pages/user/home/home",
+    "pages/user/orders/orders",
+    "pages/user/profile/profile",
+    "pages/rider/hall/hall",
+    "pages/rider/tasks/tasks"
+  ],
+  "subPackages": [
+    {
+      "name": "orderPackage",
+      "root": "packages/order",
+      "pages": [
+        "create/create",
+        "detail/detail",
+        "sample/sample",
+        "size-guide/size-guide"
+      ]
+    },
+    {
+      "name": "accountPackage",
+      "root": "packages/account",
+      "pages": [
+        "edit-profile/edit-profile",
+        "rider-apply/rider-apply",
+        "wallet/wallet",
+        "coupons/coupons",
+        "service/service",
+        "feedback/feedback",
+        "campus-change/campus-change"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/user/home/home": {
+      "network": "wifi",
+      "packages": [
+        "orderPackage"
+      ]
+    },
+    "pages/user/profile/profile": {
+      "network": "wifi",
+      "packages": [
+        "accountPackage"
+      ]
+    },
+    "pages/rider/hall/hall": {
+      "network": "wifi",
+      "packages": [
+        "orderPackage"
+      ]
+    }
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#8e8e93",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/user/home/home",
+        "text": "首页",
+        "iconPath": "assets/icons/tab-home.png",
+        "selectedIconPath": "assets/icons/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/user/orders/orders",
+        "text": "订单",
+        "iconPath": "assets/icons/tab-orders.png",
+        "selectedIconPath": "assets/icons/tab-orders-active.png"
+      },
+      {
+        "pagePath": "pages/user/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/tab-profile.png",
+        "selectedIconPath": "assets/icons/tab-profile-active.png"
+      },
+      {
+        "pagePath": "pages/rider/hall/hall",
+        "text": "接单",
+        "iconPath": "assets/icons/tab-hall.png",
+        "selectedIconPath": "assets/icons/tab-hall-active.png"
+      },
+      {
+        "pagePath": "pages/rider/tasks/tasks",
+        "text": "任务",
+        "iconPath": "assets/icons/tab-tasks.png",
+        "selectedIconPath": "assets/icons/tab-tasks-active.png"
+      }
+    ]
+  },
+  "window": {
+    "navigationBarBackgroundColor": "@navigationBarBackgroundColor",
+    "navigationBarTextStyle": "@navigationBarTextStyle",
+    "navigationBarTitleText": "校园代拿",
+    "backgroundColor": "@backgroundColor",
+    "backgroundTextStyle": "@backgroundTextStyle",
+    "onReachBottomDistance": 100
+  },
+  "networkTimeout": {
+    "request": 10000,
+    "connectSocket": 10000,
+    "uploadFile": 30000,
+    "downloadFile": 30000
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

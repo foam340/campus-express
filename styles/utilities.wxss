@@ -1,0 +1,5 @@
+.u-flex { display: flex; }
+.u-flex-1 { flex: 1; min-width: 0; }
+.u-center { display: flex; align-items: center; justify-content: center; }
+.u-ellipsis { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.u-break { overflow-wrap: break-word; word-break: break-all; }

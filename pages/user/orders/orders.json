@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "我的订单",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "network-banner": "/components/network-banner/network-banner",
+    "empty-state": "/components/empty-state/empty-state",
+    "order-list-item": "/components/order-list-item/order-list-item",
+    "recycle-view": "/miniprogram_npm/miniprogram-recycle-view/recycle-view",
+    "recycle-item": "/miniprogram_npm/miniprogram-recycle-view/recycle-item"
+  }
+}

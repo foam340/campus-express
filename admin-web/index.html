@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>校园代拿管理台</title>
+  <link rel="icon" href="./assets/logo.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem('campus_admin_theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark')}catch(e){}</script>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <main id="loginScreen" class="login-screen">
+    <section class="login-brand" aria-label="校园代拿管理台介绍">
+      <div class="brand-mark">校</div>
+      <div>
+        <p class="eyebrow">CAMPUS DELIVERY</p>
+        <h1>校园代拿<br>运营管理台</h1>
+        <p class="login-copy">订单、骑手、售后、优惠券和资金审核统一在电脑端处理。</p>
+      </div>
+      <div class="brand-points">
+        <span>独立权限</span><span>操作留痕</span><span>数据看板</span>
+      </div>
+    </section>
+    <section class="login-panel">
+      <form id="loginForm" class="login-card" novalidate>
+        <div class="mobile-logo"><div class="brand-mark">校</div><strong>校园代拿管理台</strong></div>
+        <p class="eyebrow">ADMIN SIGN IN</p>
+        <h2>管理员登录</h2>
+        <p class="form-hint">仅授权运营人员可以访问</p>
+        <label>管理员账号<input name="username" autocomplete="username" maxlength="40" required placeholder="请输入管理员账号"></label>
+        <label>登录密码<input name="password" type="password" autocomplete="current-password" maxlength="80" required placeholder="请输入登录密码"></label>
+        <button class="primary-button full-button" type="submit">安全登录</button>
+        <p id="mockCredential" class="mock-credential" hidden></p>
+      </form>
+    </section>
+  </main>
+
+  <div id="adminApp" class="admin-app" hidden>
+    <aside class="sidebar">
+      <div class="sidebar-brand"><div class="brand-mark small-mark">校</div><div><strong>校园代拿</strong><span>运营管理台</span></div></div>
+      <nav id="navList" class="nav-list" aria-label="管理功能">
+        <button data-view="overview" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>运营概览</button>
+        <button data-view="income"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><rect x="5" y="11" width="3" height="7" rx="1"/><rect x="10.5" y="6" width="3" height="12" rx="1"/><rect x="16" y="14" width="3" height="4" rx="1"/></svg>净收入明细</button>
+        <button data-view="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12a1 1 0 0 1 1 1v18l-3-2-2 2-2-2-2 2-2-2-3 2V3a1 1 0 0 1 1-1z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>订单管理</button>
+        <button data-view="riders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="4"/><path d="M5 21c0-3.9 3.1-6 7-6s7 2.1 7 6"/></svg>骑手管理</button>
+        <button data-view="afterSales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>售后理赔</button>
+        <button data-view="feedbacks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg>意见反馈</button>
+        <button data-view="coupons"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9V7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 5v2M13 11v2M13 17v2"/></svg>优惠券运营</button>
+        <button data-view="finance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>提现审核</button>
+        <button data-view="campusChange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>改校区审核</button>
+        <button data-view="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>平台设置</button>
+      </nav>
+      <div class="sidebar-foot"><button id="logoutButton" type="button">退出登录</button></div>
+    </aside>
+
+    <div id="mobileMask" class="mobile-mask"></div>
+    <section class="workspace">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="menuButton" class="menu-button" aria-label="收起或展开侧边栏">☰</button>
+          <div><p id="viewEyebrow" class="eyebrow">OVERVIEW</p><h2 id="viewTitle">运营概览</h2></div>
+        </div>
+        <div class="topbar-actions"><button id="themeToggle" class="theme-toggle" type="button" title="切换主题：跟随系统 → 浅色 → 深色">跟随系统</button><span id="environmentBadge" class="env-badge">开发环境</span><div id="campusSwitcher" class="campus-switcher" hidden></div><div class="admin-avatar">管</div><div class="admin-meta"><strong id="adminName">管理员</strong><span id="adminCampusLabel">南海</span></div></div>
+      </header>
+      <div id="offlineNotice" class="offline-notice" hidden>网络连接不可用，请恢复网络后重试。</div>
+      <div id="pageContent" class="page-content"></div>
+    </section>
+  </div>
+
+  <div id="attachmentModal" class="modal-backdrop" hidden>
+    <section class="attachment-modal" role="dialog" aria-modal="true" aria-labelledby="attachmentTitle">
+      <header class="attachment-modal-header">
+        <div><p class="eyebrow">PRIVATE EVIDENCE</p><h3 id="attachmentTitle">订单凭证</h3></div>
+        <button id="attachmentCloseButton" class="modal-close" type="button" aria-label="关闭凭证窗口">×</button>
+      </header>
+      <p class="attachment-security-note">图片仅在本次管理员会话中读取，下载会记录管理员、订单、时间与来源 IP。</p>
+      <div class="attachment-layout">
+        <div id="attachmentList" class="attachment-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="./runtime-config.js"></script>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
