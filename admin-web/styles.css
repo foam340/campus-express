@@ -3,10 +3,10 @@
   --success:#22A06B; --success-soft:rgba(34,160,107,0.1);
   --warning:#D08700; --warning-soft:rgba(208,135,0,0.1);
   --danger:#DC4848; --danger-soft:rgba(220,72,72,0.08);
-  --text:#1A1A1C; --muted:#999999; --faint:#B8B8BC;
+  --text:#1A1A1C; --muted:#66666C; --faint:#B8B8BC;
   --line:#E8E8EA; --line-soft:#F0F0F2;
   --bg:#F7F7F8; --card:#FFFFFF;
-  --sidebar:rgba(242,242,244,0.88); --sidebar-text:#1A1A1C; --sidebar-muted:#999999;
+  --sidebar:rgba(242,242,244,0.88); --sidebar-text:#1A1A1C; --sidebar-muted:#66666C;
   --sidebar-active:rgba(91,122,153,0.08); --sidebar-active-text:#1A1A1C;
   --sidebar-w:260px; --nav-h:46px; --page-pad:52px; --topbar-h:72px; --gap:32px;
   --radius-card:20px; --radius-ctl:12px; --radius-modal:28px;
@@ -82,7 +82,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 /* 桌面端侧边栏收起：点顶栏 ☰ 切换 .sidebar-collapsed，侧栏滑出、内容区铺满 */
 @media(min-width:761px){.admin-app.sidebar-collapsed .sidebar{transform:translateX(-100%)}.admin-app.sidebar-collapsed .workspace{margin-left:0}}
 .topbar{position:sticky;z-index:20;top:0;display:flex;align-items:center;justify-content:space-between;height:var(--topbar-h);padding:0 var(--page-pad);border-bottom:1px solid var(--line);background:rgba(255,255,255,0.72);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%)}
-.topbar h2{margin:0;font-size:var(--fs-page);font-weight:700;color:var(--text);letter-spacing:-.5px}
+.topbar h2{margin:0;font-size:var(--fs-page);font-weight:700;color:var(--text);letter-spacing:-.5px;white-space:nowrap}
 .topbar .eyebrow{margin-bottom:3px;font-size:11px;letter-spacing:.6px;color:var(--faint)}
 .topbar-actions{display:flex;align-items:center;gap:11px}
 .theme-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:36px;min-width:36px;padding:0;border:1px solid var(--line);border-radius:18px;color:var(--muted);background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.3));font-size:0;transition:all 200ms var(--ease-out)}
@@ -96,7 +96,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .admin-meta strong{font-size:var(--fs-body);color:var(--text)}
 .admin-meta span{margin-top:2px;color:var(--muted);font-size:11px}
 .campus-switcher{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
-.campus-switcher button{min-height:30px;padding:0 12px;border:0;color:var(--muted);background:transparent;font-size:12px;font-weight:500;transition:color 150ms var(--ease-out),background-color 150ms var(--ease-out)}
+.campus-switcher button{flex-shrink:0;min-height:30px;padding:0 12px;border:0;color:var(--muted);background:transparent;font-size:12px;font-weight:500;white-space:nowrap;transition:color 150ms var(--ease-out),background-color 150ms var(--ease-out)}
 .campus-switcher button+button{border-left:1px solid var(--line)}
 .campus-switcher button:hover{color:var(--text)}
 .campus-switcher button.active{color:var(--primary);background:var(--primary-soft)}
@@ -153,7 +153,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .price-cell.stacked .cell-sub:first-child{margin-top:0}
 /* 净收入正负着色：负值是平台发券补贴，属于常态而非异常，故用 warning 色而非 danger */
 .price-cell.positive{color:var(--success)}
-.price-cell.negative{color:var(--danger)}
+.price-cell.negative{color:var(--warning)}
 .data-table tfoot td{font-weight:600;background:#f5f5f7;border-top:1px solid var(--line-soft)}
 .table-actions{display:flex;gap:6px}
 .table-actions button{min-height:28px;padding:0 12px;font-size:12px}
@@ -268,6 +268,13 @@ body.modal-open{overflow:hidden}
 .spaced-panel{margin-top:var(--gap)}
 
 /* ---------- 响应式 ---------- */
+@media(max-width:1200px){
+  :root{--page-pad:24px;--fs-page:24px}
+  .topbar{height:auto;min-height:var(--topbar-h);padding:14px var(--page-pad);gap:12px;flex-wrap:wrap}
+  .topbar-left{flex-shrink:0}
+  .topbar-actions{max-width:100%;margin-left:auto;justify-content:flex-end;flex-wrap:wrap}
+  .campus-switcher{flex-shrink:0;max-width:100%;overflow-x:auto}
+}
 @media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr)}.content-grid{grid-template-columns:1fr}.login-brand{padding:70px}.login-brand h1{font-size:46px}}
 @media(max-width:760px){
   .login-screen{display:block}.login-brand{display:none}.login-panel{min-height:100vh;padding:22px;background:var(--card)}
@@ -279,7 +286,11 @@ body.modal-open{overflow:hidden}
   .mobile-mask{position:fixed;z-index:25;inset:0;display:block;background:rgba(0,0,0,0.15);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity 200ms var(--ease-out)}
   .admin-app.menu-open .mobile-mask{opacity:1;pointer-events:auto}
   .workspace{margin-left:0}
-  .topbar{height:64px;padding:0 18px}
+  .topbar{min-height:64px;padding:12px 18px}
+  .topbar-actions{display:grid;grid-template-columns:36px minmax(0,1fr) 32px;gap:8px;width:100%}
+  .theme-toggle{grid-column:1}
+  .campus-switcher{grid-column:2;min-width:0}
+  .admin-avatar{grid-column:3;width:32px;height:32px;margin-left:0}
   .menu-button{margin-right:0}
   .admin-meta,.env-badge{display:none}
   .page-content{padding:22px 16px 40px}
@@ -293,6 +304,7 @@ body.modal-open{overflow:hidden}
 /* ---------- 无障碍：减少动效 ---------- */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:1ms!important;transition-duration:1ms!important}
+  .login-brand::after{animation:none!important;opacity:.5}
   .primary-button:active,.secondary-button:active,.danger-button:active,.ghost-button:active{transform:none}
   .stat-card:hover,.price-extra:hover,.attachment-item:hover{transform:none}
 }
