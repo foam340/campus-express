@@ -20,10 +20,10 @@ function seedState() {
       { id:'KD20260714000017', contactName:'陈同学', phone:'13600005521', building:'3栋', room:'612', pieces:2, isLarge:true, urgency:'urgent', urgencyText:'很急', status:'waiting', statusText:'待接单', originalPrice:5.5, paidAmount:5.5, riderName:'', createdAtMs:now-18*60000, deadlineAtMs:now+42*60000 },
       { id:'KD20260714000016', contactName:'周同学', phone:'13500001890', building:'8栋', room:'208', pieces:1, isLarge:false, urgency:'tomorrow', urgencyText:'明天', status:'waiting', statusText:'待接单', originalPrice:1, paidAmount:1, riderName:'', createdAtMs:now-55*60000, deadlineAtMs:now+24*3600000 },
       { id:'KD20260714000015', contactName:'王同学', phone:'13700004628', building:'6栋', room:'315', pieces:2, isLarge:false, urgency:'today', urgencyText:'今天', status:'accepted', statusText:'已接单', originalPrice:2, paidAmount:2, riderName:'小林', createdAtMs:now-92*60000, deadlineAtMs:now+4*3600000 },
-      { id:'KD20260713000014', contactName:'许同学', phone:'13200003118', building:'1栋', room:'123', pieces:1, isLarge:false, urgency:'today', urgencyText:'今天', status:'completed', statusText:'已完成', originalPrice:1.5, paidAmount:0, riderName:'李同学', createdAtMs:now-20*3600000, deadlineAtMs:now-18*3600000 },
-      { id:'KD20260713000013', contactName:'赵同学', phone:'13100001276', building:'4栋', room:'502', pieces:4, isLarge:true, urgency:'today', urgencyText:'今天', status:'disputed', statusText:'售后中', originalPrice:5, paidAmount:5, riderName:'黄同学', createdAtMs:now-23*3600000, deadlineAtMs:now-21*3600000 },
+      { id:'KD20260713000014', contactName:'许同学', phone:'13200003118', building:'1栋', room:'123', pieces:1, isLarge:false, urgency:'today', urgencyText:'今天', status:'completed', statusText:'已完成', originalPrice:1.5, paidAmount:0, riderName:'李同学', incomeFrozenAtMs:now-8*3600000, createdAtMs:now-20*3600000, deadlineAtMs:now-18*3600000 },
+      { id:'KD20260713000013', contactName:'赵同学', phone:'13100001276', building:'4栋', room:'502', pieces:4, isLarge:true, urgency:'today', urgencyText:'今天', status:'disputed', statusText:'售后中', originalPrice:5, paidAmount:5, riderName:'黄同学', withholdRiderIncome:true, createdAtMs:now-23*3600000, deadlineAtMs:now-21*3600000 },
       { id:'KD20260713000012', contactName:'郭同学', phone:'13300006629', building:'2栋', room:'308', pieces:1, isLarge:false, urgency:'urgent', urgencyText:'很急', status:'cancelled', statusText:'已取消', originalPrice:3, paidAmount:3, riderName:'', createdAtMs:now-25*3600000, deadlineAtMs:now-24*3600000 },
-      { id:'KD20260712000011', contactName:'何同学', phone:'13400002021', building:'5栋', room:'417', pieces:2, isLarge:false, urgency:'tomorrow', urgencyText:'明天', status:'completed', statusText:'已完成', originalPrice:1.5, paidAmount:1.5, riderName:'张同学', createdAtMs:now-46*3600000, deadlineAtMs:now-22*3600000 }
+      { id:'KD20260712000011', contactName:'何同学', phone:'13400002021', building:'5栋', room:'417', pieces:2, isLarge:false, urgency:'tomorrow', urgencyText:'明天', status:'completed', statusText:'已完成', originalPrice:1.5, paidAmount:1.5, riderName:'张同学', incomeFrozenAtMs:now-32*3600000, settledAtMs:now-8*3600000, createdAtMs:now-46*3600000, deadlineAtMs:now-22*3600000 }
     ],
     applications: [
       { id:'RA20260714001', name:'吴同学', studentId:'2026123008', phone:'13900007118', status:'pending', statusText:'等待审核', rulesVersion:'2026.07-v1', submittedAtMs:now-35*60000 },
@@ -61,13 +61,33 @@ function seedState() {
   }
 }
 
+// 与后端订单映射一致：接单后、取消/收入冻结/结算之前可以选择不划给骑手。
+function normalizeMockOrder(order, riders, defaults = {}) {
+  const source = { ...defaults, ...order }
+  const rider = riders.find(item => item.name === source.riderName)
+  const riderId = source.riderId ?? (source.riderName ? (rider?.id || `mock-rider-${source.riderName}`) : 0)
+  const incomeFrozenAtMs = Number(source.incomeFrozenAtMs) || 0
+  const settledAtMs = Number(source.settledAtMs) || 0
+  return {
+    ...source, riderId,
+    riderIncome:Number(source.riderIncome ?? source.originalPrice) || 0,
+    withholdRiderIncome:Boolean(source.withholdRiderIncome),
+    incomeFrozenAtMs, settledAtMs,
+    riderPayoutPending:Boolean(riderId) && source.status !== 'cancelled' && !incomeFrozenAtMs && !settledAtMs
+  }
+}
+
 function readState() {
+  const defaults = seedState()
+  let state = defaults
   try {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
-    return parsed && typeof parsed === 'object' ? parsed : seedState()
-  } catch (error) {
-    return seedState()
-  }
+    if (parsed && typeof parsed === 'object') state = { ...defaults, ...parsed }
+  } catch (error) {}
+  const defaultOrders = new Map(defaults.orders.map(item => [item.id, item]))
+  // 兼容旧 Mock 缓存：补齐新增字段，保留已经修改过的订单状态、扣留标记和其他演示数据。
+  state.orders = state.orders.map(order => normalizeMockOrder(order, state.riders, defaultOrders.get(order.id)))
+  return state
 }
 
 function writeState(state) {
@@ -279,6 +299,19 @@ export async function handleMockRequest(options) {
       return matchKeyword && (!status || item.status === status)
     }).map(item => ({ ...item, attachmentCount:mockAttachments(item.id).length }))
     return pageResult(filtered, url.searchParams)
+  }
+  const withholdMatch = path.match(/^\/admin\/orders\/([^/]+)\/withhold-rider-income$/)
+  if (withholdMatch && method === 'POST') {
+    const order = state.orders.find(item => item.id === decodeURIComponent(withholdMatch[1]))
+    if (!order) throw new Error('订单不存在')
+    if (!order.riderId) throw new Error('该订单尚无骑手，无需设置')
+    if (order.withholdRiderIncome) throw new Error('该订单已标记为不划给骑手')
+    if (order.settledAtMs) throw new Error('该订单骑手收入已结算，无法再设置')
+    if (order.incomeFrozenAtMs) throw new Error('该订单骑手收入已冻结，无法再设置')
+    order.withholdRiderIncome = true
+    audit(state, '订单不划给骑手', `${order.id} · ${order.riderName} · 骑手佣金 ¥${order.riderIncome.toFixed(2)}`)
+    writeState(state)
+    return { id:order.id, withholdRiderIncome:true }
   }
   const attachmentContentMatch = path.match(/^\/admin\/orders\/([^/]+)\/attachments\/([^/]+)$/)
   if (attachmentContentMatch && method === 'GET') {
