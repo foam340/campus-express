@@ -14,7 +14,14 @@
   </view>
 
   <view class="form-panel">
-    <picker range="{{campusLabels}}" value="{{campusIndex}}" bindchange="chooseCampus">
+    <view wx:if="{{!reviewMode}}" class="field selectable-field" bindtap="promptCampusSelection" role="button" aria-label="选择所在校区">
+      <view class="field-icon blue-icon"><image src="/assets/icons/field-building.png" /></view>
+      <view class="field-body">
+        <text>所在校区</text>
+        <view class="picker-line"><view class="picker-value">{{campusLabels[campusIndex]}}</view><view class="select-hint">点击选择<view class="down-caret"></view></view></view>
+      </view>
+    </view>
+    <picker wx:else range="{{campusLabels}}" value="{{campusIndex}}" bindchange="chooseCampus">
       <view class="field selectable-field">
         <view class="field-icon blue-icon"><image src="/assets/icons/field-building.png" /></view>
         <view class="field-body">
