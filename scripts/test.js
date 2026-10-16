@@ -235,6 +235,92 @@ function testReviewModeRegistration() {
   assert.deepStrictEqual(selectBootstrapProfile(localProfile, { reviewMode: true, reviewProfile: REVIEW_REGISTRATION_PROFILE }), REVIEW_REGISTRATION_PROFILE)
 }
 
+async function testRegistrationCampusFallback() {
+  const fs = require('fs')
+  const path = require('path')
+  const vm = require('vm')
+  const constants = require('../config/constants')
+  const source = fs.readFileSync(path.join(__dirname, '../pages/auth/welcome/welcome.js'), 'utf8')
+  function load(reviewMode) {
+    let definition
+    const sheets = [], toasts = [], registrations = [], destinations = []
+    const dependencies = {
+      '../../../utils/page': value => { definition = value },
+      '../../../utils/store': {
+        getUser: () => null,
+        getSettings: () => ({ reviewMode }),
+        completeRegistration: user => user
+      },
+      '../../../utils/validators': require('../utils/validators'),
+      '../../../utils/mini-auth': { register: profile => {
+        registrations.push(profile)
+        return Promise.resolve({ user: profile })
+      } },
+      '../../../utils/mode': { setMode: () => {} },
+      '../../../config/constants': constants
+    }
+    vm.runInNewContext(source, {
+      require: name => { assert.ok(dependencies[name], `Unexpected registration dependency: ${name}`); return dependencies[name] },
+      getApp: () => ({ authReady: Promise.resolve({ registered: false }) }),
+      wx: {
+        showActionSheet: options => sheets.push(options),
+        showToast: options => toasts.push(options),
+        switchTab: options => destinations.push(options.url)
+      }
+    })
+    const page = Object.assign({}, definition, {
+      data: JSON.parse(JSON.stringify(definition.data)),
+      setData(patch) { Object.assign(this.data, patch) }
+    })
+    page.onLoad()
+    return { page, sheets, toasts, registrations, destinations }
+  }
+  for (let index = 0; index < constants.CAMPUSES.length; index++) {
+    const run = load(false)
+    await new Promise(resolve => setImmediate(resolve))
+    const { page, sheets, registrations, destinations } = run
+    page.inputName({ detail: { value: '小林' } })
+    page.inputPhone({ detail: { value: '13800000000' } })
+    page.inputRoom({ detail: { value: '421' } })
+    page.toggleAgree()
+    page.enter()
+    assert.strictEqual(sheets.length, 1, 'Unselected campus must open a usable selection instead of only a toast')
+    assert.deepStrictEqual(Array.from(sheets[0].itemList), constants.CAMPUS_LABELS)
+    assert.strictEqual(registrations.length, 0, 'Never submit before explicit campus choice')
+    assert.strictEqual(page.data.campus, '', 'Dismissing the sheet must not choose a campus')
+    const formBefore = JSON.stringify(page.form)
+    sheets[0].success({ tapIndex: index })
+    assert.strictEqual(page.data.campus, constants.CAMPUSES[index])
+    assert.strictEqual(page.data.campusIndex, index + 1)
+    assert.deepStrictEqual(Array.from(page.data.buildings), constants.getDormBuildings(constants.CAMPUSES[index]))
+    assert.strictEqual(page.data.roomRule, constants.getCampusConfig(constants.CAMPUSES[index]).roomRule)
+    assert.strictEqual(JSON.stringify(page.form), formBefore, 'Campus fallback must preserve typed registration details')
+    assert.strictEqual(page.data.agreed, true)
+    assert.strictEqual(registrations.length, 0, 'Allow checking the campus-specific building before resubmitting')
+    page.enter()
+    await new Promise(resolve => setImmediate(resolve))
+    assert.strictEqual(registrations.length, 1)
+    assert.strictEqual(registrations[0].campus, constants.CAMPUSES[index])
+    assert.strictEqual(registrations[0].room, '421')
+    assert.deepStrictEqual(destinations, [constants.ROUTES.home])
+    assert.strictEqual(page.data.submitting, false)
+  }
+  const review = load(true)
+  await new Promise(resolve => setImmediate(resolve))
+  review.page.enter()
+  review.page.promptCampusSelection()
+  assert.strictEqual(review.sheets.length, 0, 'Review mode must retain its existing registration behavior')
+  assert.strictEqual(review.toasts[0].title, '请选择校区')
+  const busy = load(false)
+  busy.page.promptCampusSelection()
+  assert.strictEqual(busy.sheets.length, 0, 'Do not open the fallback during authentication')
+  await new Promise(resolve => setImmediate(resolve))
+  busy.page.data.submitting = true
+  busy.page.enter()
+  busy.page.promptCampusSelection()
+  assert.strictEqual(busy.sheets.length, 0, 'Do not open the fallback while registering')
+}
+
 async function testAuthenticationGate() {
   let releaseAuthentication
   let authenticated = false
@@ -398,6 +484,7 @@ async function run() {
   testRiderLevels()
   testValidation()
   testReviewModeRegistration()
+  await testRegistrationCampusFallback()
   await testAuthenticationGate()
   testServerBusinessRules()
   testHallFilters()

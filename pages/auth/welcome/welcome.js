@@ -72,13 +72,29 @@ createPage({
       roomRule: getCampusConfig(campus).roomRule
     })
   },
+  promptCampusSelection() {
+    if (this.data.reviewMode || this.data.submitting || this.data.authenticating) return
+    wx.showActionSheet({
+      itemList: CAMPUS_LABELS,
+      success: result => {
+        const index = Number(result.tapIndex)
+        if (!Number.isInteger(index) || index < 0 || index >= CAMPUSES.length) return
+        this.chooseCampus({ detail: { value: index + 1 } })
+        wx.showToast({ title: '已选校区，请核对宿舍楼后再次提交', icon: 'none', duration: 2500 })
+      }
+    })
+  },
   toggleAgree() { this.setData({ agreed:!this.data.agreed }) },
   noop() {},
   showRulesTip() { wx.showToast({ title: '请在「我的」中查看服务规则与隐私说明', icon: 'none', duration: 2000 }) },
   enter() {
     if (this.data.submitting || this.data.authenticating) return
     const campus = this.data.campuses[this.data.campusIndex] || ''
-    if (!campus) { wx.showToast({ title: '请选择校区', icon: 'none' }); return }
+    if (!campus) {
+      if (this.data.reviewMode === false) this.promptCampusSelection()
+      else wx.showToast({ title: '请选择校区', icon: 'none' })
+      return
+    }
     const profile = {
       name: String(this.form.name || '').trim(),
       phone: String(this.form.phone || '').trim(),
