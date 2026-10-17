@@ -35,6 +35,8 @@ function copyDirectory(source, destination) {
   fs.mkdirSync(destination, {recursive:true})
   for (const entry of fs.readdirSync(source, {withFileTypes:true})) {
     if (ignored.has(entry.name) || ignoredFiles.has(entry.name)) continue
+    // 根目录下以下划线开头的是本地维护脚本，不属于小程序运行代码。
+    if (source === root && entry.isFile() && /^_.*\.js$/.test(entry.name)) continue
     const from = path.join(source,entry.name)
     const to = path.join(destination,entry.name)
     if (entry.isDirectory()) copyDirectory(from,to)

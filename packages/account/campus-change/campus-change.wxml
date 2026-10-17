@@ -12,7 +12,8 @@
         <text>{{currentCampus===item?'当前校区':(targetCampus===item?'已选择':'点击选择')}}</text>
       </view>
     </view>
-    <view class="campus-tip">变更需管理员审核，通过后生效；有未完成订单时审核不予通过。</view>
+    <view wx:if="{{reviewMode}}" class="campus-tip">变更需管理员审核，通过后生效；有未完成订单时审核不予通过。</view>
+    <view wx:else class="campus-tip">没有未完成的下单和配送任务时，提交申请即可转校区，无需人工审核。转区后须重新填写收货地址。</view>
   </view>
 
   <view class="card">

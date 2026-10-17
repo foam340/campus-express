@@ -5,6 +5,8 @@ const { pool, transaction } = require('../db')
 const { asyncRoute, HttpError, ok } = require('../http')
 const { requireMiniIdempotency, sendIdempotent } = require('../idempotency')
 const validate = require('../validation')
+const { writeAudit } = require('../audit')
+const { lockCampusUser, autoChangeCampus } = require('../campus-change')
 const { code2Session, imgSecCheck } = require('../wechat')
 const {
   authenticateMini,
@@ -266,6 +268,9 @@ router.post('/auth/register', loginLimiter, asyncRoute(async (request, response)
       user = await findUserById(connection, created.insertId)
     } else {
       if (user.status !== 'active') throw new HttpError(403, '用户账号已被停用', 'MINI_ACCOUNT_DISABLED')
+      if (normalizeCampusLenient(user.campus) !== profile.campus) {
+        throw new HttpError(409, '已有账号请通过变更校区入口转校区', 'CAMPUS_CHANGE_REQUIRED')
+      }
       await connection.execute(
         `UPDATE users
             SET nickname = ?, phone = ?, building = ?, room = ?, campus = ?, address = ?, updated_at = UTC_TIMESTAMP()
@@ -296,16 +301,21 @@ router.get('/settings', asyncRoute(async (request, response) => {
 }))
 
 router.put('/me', authenticateMini, requireMiniIdempotency, asyncRoute(async (request, response) => {
-  // 校区不可在此直接改（变更要走 /mini/campus-change-requests 审核流）；用鉴权得到的真实校区覆盖 body 里的 campus，
-  // 仅据此决定校验楼栋门牌还是自由地址。
-  const profile = readProfile(Object.assign({}, request.body || {}, { campus: request.miniUser.campus }))
-  await pool.execute(
-    `UPDATE users
-        SET nickname = ?, phone = ?, building = ?, room = ?, address = ?, updated_at = UTC_TIMESTAMP()
-      WHERE id = ?`,
-    [profile.name, profile.phone, profile.building, profile.room, profile.address, request.miniUser.id]
-  )
-  const user = await findUserById(pool, request.miniUser.id)
+  // 与转区串行，避免旧校区请求在转区后重新写回旧地址。
+  const user = await transaction(async connection => {
+    const current = await lockCampusUser(connection, request.miniUser.id, request.miniUser.campus)
+    if (request.body && request.body.campus && request.body.campus !== current.campus) {
+      throw new HttpError(409, '校区已变更，请刷新后重新填写地址', 'CAMPUS_CHANGED')
+    }
+    const profile = readProfile(Object.assign({}, request.body || {}, { campus: current.campus }))
+    await connection.execute(
+      `UPDATE users
+          SET nickname = ?, phone = ?, building = ?, room = ?, address = ?, updated_at = UTC_TIMESTAMP()
+        WHERE id = ?`,
+      [profile.name, profile.phone, profile.building, profile.room, profile.address, request.miniUser.id]
+    )
+    return findUserById(connection, request.miniUser.id)
+  })
   return sendIdempotent(request, response, { user: mapUser(user) })
 }))
 
@@ -839,6 +849,10 @@ router.post('/orders', authenticateMini, requireMiniIdempotency, asyncRoute(asyn
   const campus = normalizeCampusLenient(request.miniUser.campus)
   const input = readOrderInput(request.body || {}, campus)
   const created = await transaction(async connection => {
+    request.miniUser = await lockCampusUser(connection, request.miniUser.id, campus)
+    if (!request.miniUser.building || !request.miniUser.room) {
+      throw new HttpError(409, '请先完善新校区收货地址', 'PROFILE_ADDRESS_REQUIRED')
+    }
     const pricing = input.pricingModel === 'itemized_v1'
       ? await itemizedPricing(
         connection,
@@ -1012,6 +1026,7 @@ router.post('/rider/applications', authenticateMini, requireMiniIdempotency, asy
   const rawPhone = String(request.body && request.body.phone || '').trim()
   const phone = rawPhone ? validate.phone(rawPhone) : request.miniUser.phone
   const result = await transaction(async connection => {
+    request.miniUser = await lockCampusUser(connection, request.miniUser.id, request.miniUser.campus)
     const rider = await currentRider(connection, request.miniUser.id)
     if (rider) throw new HttpError(409, '骑手资格已经通过，无需重复申请', 'RIDER_ALREADY_APPROVED')
     const [pendingRows] = await connection.execute(
@@ -1100,6 +1115,7 @@ router.post('/rider/orders/:id/accept', authenticateMini, requireMiniIdempotency
   if (service.status === 'closed') throw new HttpError(403, '节假日暂停服务，暂不接单', 'SERVICE_CLOSED')
   const orderId = validate.string(request.params.id, '订单编号', { min: 8, max: 32 })
   const order = await transaction(async connection => {
+    request.miniUser = await lockCampusUser(connection, request.miniUser.id, request.miniUser.campus)
     const rider = await currentRider(connection, request.miniUser.id, true)
     if (!rider) throw new HttpError(403, '骑手资格未通过审核', 'RIDER_NOT_APPROVED')
     const [activeRows] = await connection.execute("SELECT COUNT(*) AS total FROM orders WHERE rider_id = ? AND status IN ('accepted','picked','delivering')", [rider.id])
@@ -1441,23 +1457,14 @@ const campusChangeStatusText = Object.freeze({ pending: '等待审核', approved
 router.post('/campus-change-requests', authenticateMini, requireMiniIdempotency, asyncRoute(async (request, response) => {
   const toCampus = validate.oneOf(request.body && request.body.toCampus, '目标校区', CAMPUSES)
   const reason = validate.string(request.body && request.body.reason, '申请原因', { min: 2, max: 300 })
-  const fromCampus = normalizeCampusLenient(request.miniUser.campus)
-  if (toCampus === fromCampus) throw new HttpError(400, '目标校区与当前校区相同', 'INVALID_CAMPUS_CHANGE')
   const result = await transaction(async connection => {
-    const [existing] = await connection.execute(
-      "SELECT id FROM campus_change_requests WHERE user_id = ? AND status = 'pending' ORDER BY id DESC LIMIT 1 FOR UPDATE",
-      [request.miniUser.id]
-    )
-    if (existing.length) throw new HttpError(409, '已有待审核的校区变更申请，请勿重复提交', 'CAMPUS_CHANGE_PENDING')
-    const [created] = await connection.execute(
-      `INSERT INTO campus_change_requests
-         (user_id, from_campus, to_campus, reason, status, submitted_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, 'pending', UTC_TIMESTAMP(), UTC_TIMESTAMP(), UTC_TIMESTAMP())`,
-      [request.miniUser.id, fromCampus, toCampus, reason]
-    )
-    return { id: String(created.insertId), fromCampus, toCampus, status: 'pending', statusText: campusChangeStatusText.pending }
+    const changed = await autoChangeCampus(connection, request.miniUser.id, toCampus, reason, request.miniUser.campus)
+    await writeAudit(connection, request, 'campus_change_auto_approved', 'campus_change_request', changed.id, {
+      userId: String(request.miniUser.id), ...changed, reason
+    })
+    return { request: changed, user: mapUser(await findUserById(connection, request.miniUser.id)) }
   })
-  return sendIdempotent(request, response, { request: result }, 201)
+  return sendIdempotent(request, response, result, 201)
 }))
 
 router.get('/campus-change-requests', authenticateMini, asyncRoute(async (request, response) => {

@@ -4,6 +4,7 @@ const fs = require('fs/promises')
 const { pool, transaction } = require('../db')
 const { authenticateAdmin, requireRoles } = require('../auth')
 const { writeAudit } = require('../audit')
+const { lockCampusUser, applyCampusChange } = require('../campus-change')
 const { requireIdempotency, sendIdempotent } = require('../idempotency')
 const { asyncRoute, HttpError, ok } = require('../http')
 const validate = require('../validation')
@@ -837,6 +838,9 @@ router.post('/rider-applications/:id/review', requireRoles('operator'), requireI
   const approved = validate.boolean(request.body && request.body.approved, '审核结果')
   const reason = validate.string(request.body && request.body.reason, '审核说明', { min: 2, max: 300 })
   const result = await transaction(async connection => {
+    const [initial] = await connection.execute('SELECT user_id FROM rider_applications WHERE id = ?', [id])
+    if (!initial[0]) throw new HttpError(404, '骑手申请不存在', 'RIDER_APPLICATION_NOT_FOUND')
+    const currentUser = await lockCampusUser(connection, initial[0].user_id)
     const [rows] = await connection.execute('SELECT * FROM rider_applications WHERE id = ? FOR UPDATE', [id])
     const application = rows[0]
     if (!application) throw new HttpError(404, '骑手申请不存在', 'RIDER_APPLICATION_NOT_FOUND')
@@ -849,7 +853,7 @@ router.post('/rider-applications/:id/review', requireRoles('operator'), requireI
       [status, reason, request.admin.id, id]
     )
     if (approved) {
-      const campus = normalizeCampusLenient(application.campus)
+      const campus = normalizeCampusLenient(currentUser.campus)
       // 申请人自报的真实姓名/性别随审核通过写入骑手记录（§79）；重复审核时只在自报值非空时覆盖，
       // 避免抹掉客服后来手改的姓名备注/性别。phone 同理不在更新列里（双号码设计，§78）。
       await connection.execute(
@@ -873,7 +877,7 @@ router.post('/rider-applications/:id/review', requireRoles('operator'), requireI
   return sendIdempotent(request, response, result)
 }))
 
-// 校区变更申请审核（§4）：仅 admin 角色。通过前先校验该用户无未完成订单，再改 users.campus；
+// 历史待审核校区申请仍供 admin/客服处理，使用与即时转区相同的订单约束。
 // 骑手同步改 riders.campus（骑手只能服务单一校区，跟随账号校区）；订单 campus 是创建时快照，历史订单不受影响。
 router.get('/campus-change-requests', requireRoles('admin', 'customer_service'), asyncRoute(async (request, response) => {
   const [items] = await pool.query(
@@ -912,30 +916,16 @@ router.post('/campus-change-requests/:id/review', requireRoles('admin', 'custome
   const approved = validate.boolean(request.body && request.body.approved, '审核结果')
   const reason = validate.string(request.body && request.body.reason, '审核说明', { min: 2, max: 300 })
   const result = await transaction(async connection => {
+    const [initial] = await connection.execute('SELECT user_id FROM campus_change_requests WHERE id = ?', [id])
+    if (!initial[0]) throw new HttpError(404, '校区变更申请不存在', 'CAMPUS_CHANGE_NOT_FOUND')
+    const currentUser = await lockCampusUser(connection, initial[0].user_id)
     const [rows] = await connection.execute('SELECT * FROM campus_change_requests WHERE id = ? FOR UPDATE', [id])
     const item = rows[0]
     if (!item) throw new HttpError(404, '校区变更申请不存在', 'CAMPUS_CHANGE_NOT_FOUND')
     if (item.status !== 'pending') throw new HttpError(409, '该申请已经处理', 'CAMPUS_CHANGE_REVIEWED')
     const status = approved ? 'approved' : 'rejected'
     if (approved) {
-      // 有未完成订单（未完成/取消之外）的不许改校区，避免跨校区订单扯皮
-      const [openOrders] = await connection.execute(
-        "SELECT id FROM orders WHERE user_id = ? AND status NOT IN ('completed', 'cancelled') LIMIT 1",
-        [item.user_id]
-      )
-      if (openOrders.length) {
-        throw new HttpError(409, '该用户仍有未完成订单，暂不能改校区', 'CAMPUS_CHANGE_HAS_OPEN_ORDERS')
-      }
-      // 转校区后楼栋体系不同（南海 1-9栋/25号楼 vs 石牌 32 栋白名单），旧地址会误导，直接清空让用户重新填。
-      await connection.execute(
-        'UPDATE users SET campus = ?, building = \'\', room = \'\', address = \'\', updated_at = UTC_TIMESTAMP() WHERE id = ?',
-        [normalizeCampusLenient(item.to_campus), item.user_id]
-      )
-      // 骑手校区跟随账号校区：改了 users.campus 后同步 riders.campus，否则新单邮件/大厅/接单会用旧校区。
-      await connection.execute(
-        'UPDATE riders SET campus = ?, updated_at = UTC_TIMESTAMP() WHERE user_id = ?',
-        [normalizeCampusLenient(item.to_campus), item.user_id]
-      )
+      await applyCampusChange(connection, currentUser, item.to_campus, item.from_campus)
     }
     await connection.execute(
       `UPDATE campus_change_requests

@@ -5,7 +5,7 @@ const { spawnSync } = require('child_process')
 const root = path.resolve(__dirname, '..')
 const requiredFiles = [
   'src/app.js', 'src/config.js', 'src/db.js', 'src/http.js', 'src/auth.js', 'src/audit.js',
-  'src/idempotency.js', 'src/validation.js', 'src/wechat.js', 'src/mini-auth.js', 'src/uploads.js', 'src/admin-attachments.js', 'src/business-rules.js', 'src/item-pricing.js',
+  'src/idempotency.js', 'src/validation.js', 'src/wechat.js', 'src/mini-auth.js', 'src/uploads.js', 'src/admin-attachments.js', 'src/business-rules.js', 'src/item-pricing.js', 'src/campus-change.js',
   'src/order-privacy.js', 'src/payment-money.js', 'src/payment-refunds.js', 'src/refund-sweep.js', 'src/rider-level.js', 'src/xorpay.js',
   'src/urgent-email.js', 'src/urgent-alert-rules.js', 'src/urgent-alert-queue.js', 'src/urgent-alert-sweep.js',
   'src/routes/auth.js', 'src/routes/admin.js', 'src/routes/mini.js', 'src/routes/payments.js',

@@ -114,10 +114,10 @@ function updateRiderEmail(email) {
       return { email: saved, warning }
     })
 }
-// 申请变更校区：提交后老板在管理台审核，通过才生效。
+// 申请变更校区：后端校验未完订单/配送任务后即时生效，并返回新资料。
 function submitCampusChange(payload) {
   return request({ url: '/mini/campus-change-requests', method: 'POST', idempotent: true, data: payload || {} })
-    .then(data => data && data.request ? data.request : null)
+    .then(data => data && data.request ? Object.assign({}, data.request, data.user ? { user: data.user } : {}) : null)
 }
 function listCampusChangeRequests() {
   return request({ url: '/mini/campus-change-requests', showLoading: false })

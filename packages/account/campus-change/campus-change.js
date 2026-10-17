@@ -1,7 +1,7 @@
 const createPage = require('../../../utils/page')
 const store = require('../../../utils/store')
 const orderApi = require('../../../utils/order-api')
-const { CAMPUSES, CAMPUS_LABELS, getCampusConfig } = require('../../../config/constants')
+const { CAMPUSES, CAMPUS_LABELS, getCampusConfig, ROUTES } = require('../../../config/constants')
 
 createPage({
   data: {
@@ -35,8 +35,26 @@ createPage({
     const reason = String(this.data.reason || '').trim()
     if (reason.length < 2) { wx.showToast({ title: '请填写变更原因', icon: 'none' }); return }
     this.setData({ submitting: true })
-    orderApi.submitCampusChange({ toCampus: this.data.targetCampus, reason }).then(() => {
+    return orderApi.submitCampusChange({ toCampus: this.data.targetCampus, reason }).then(result => {
       this.setData({ submitting: false })
+      if (!this.data.reviewMode && result && result.status === 'approved') {
+        // 使用返回的服务端资料，避免仍拿旧校区/旧地址下单。兼容暂未返回 user 的服务端。
+        const userReady = result.user ? Promise.resolve(result.user) : orderApi.getCurrentUser()
+        return userReady.then(user => {
+          if (!user || user.campus !== result.toCampus) throw new Error('校区已变更，请重新打开小程序同步资料')
+          store.setUser(Object.assign({}, store.getUser() || {}, user))
+          store.saveOrders([])
+          wx.removeStorageSync('cache_v1:remote_home_overview')
+          wx.removeStorageSync('cache_v1:remote_my_orders')
+          this.setData({ currentCampus: user.campus, currentCampusLabel: getCampusConfig(user.campus).label })
+          wx.showModal({
+            title: '校区已变更',
+            content: '已转入' + getCampusConfig(user.campus).label + '，请先填写新校区的收货地址。',
+            showCancel: false,
+            success: () => wx.redirectTo({ url: ROUTES.editProfile })
+          })
+        })
+      }
       wx.showModal({
         title: '申请已提交',
         content: '管理员审核通过后校区才会变更。',
