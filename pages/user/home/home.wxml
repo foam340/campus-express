@@ -8,7 +8,7 @@
     </view>
     <!-- 下单时间窗，固定 08:00—20:00。注意别改回 closeTime：那是「最晚送达时间」(23:00)，两者不是一回事。
          用户 2026-09-12 明确要求写死、以后不再改动；真要调窗口得手工回来改这一行 -->
-    <view class="service-pill">可下单时间 08:00—20:00</view>
+    <view class="service-pill">{{reviewMode ? '可登记时间 08:00—20:00' : '可下单时间 08:00—20:00'}}</view>
   </view>
 
   <view wx:if="{{serviceClosed}}" class="service-closed-banner">
@@ -19,15 +19,15 @@
   <view class="hero {{serviceClosed ? 'hero-closed' : ''}}" bindtap="goCreate">
     <view class="hero-copy">
       <view class="hero-kicker">CAMPUS EXPRESS</view>
-      <view class="hero-title">我要找代拿</view>
-      <view class="hero-sub">{{reviewMode ? '添加取件凭证，提交一笔代拿服务订单' : '上传截图，最快 1 小时送到宿舍门口'}}</view>
-      <view class="hero-action">{{serviceClosed ? '暂停服务' : (reviewMode ? '提交订单' : '现在下单')}}<text wx:if="{{!serviceClosed}}">→</text></view>
+      <view class="hero-title">{{reviewMode ? '我要登记' : '我要找代拿'}}</view>
+      <view class="hero-sub">{{reviewMode ? '添加取件凭证，登记一条快递信息' : '上传截图，最快 1 小时送到宿舍门口'}}</view>
+      <view class="hero-action">{{serviceClosed ? '暂停服务' : (reviewMode ? '提交登记' : '现在下单')}}<text wx:if="{{!serviceClosed}}">→</text></view>
     </view>
   </view>
 
   <view class="section-head row between">
-    <view class="section-title">当前订单</view>
-    <view class="all-link" bindtap="goOrders">全部订单</view>
+    <view class="section-title">{{reviewMode ? '当前登记' : '当前订单'}}</view>
+    <view class="all-link" bindtap="goOrders">{{reviewMode ? '全部登记' : '全部订单'}}</view>
   </view>
 
   <view wx:if="{{activeOrder}}" class="card active-card" bindtap="goOrder">
@@ -47,7 +47,7 @@
     <view class="divider"></view>
     <view class="row between">
       <view>
-        <view class="deadline-label">预计送达</view>
+        <view class="deadline-label">{{reviewMode ? '预计完成' : '预计送达'}}</view>
         <view class="deadline">{{activeOrder.deadline}}</view>
       </view>
       <view class="detail-btn">查看进度</view>
@@ -62,15 +62,15 @@
   </view>
   <view wx:else class="card empty-card">
     <view class="empty-icon">✓</view>
-    <view class="strong">暂时没有进行中的订单</view>
-    <view class="muted small">{{reviewMode ? '有需要时，点击上方入口提交代拿订单' : '有需要时，点击上方按钮发布代拿需求'}}</view>
+    <view class="strong">{{reviewMode ? '暂时没有进行中的登记' : '暂时没有进行中的订单'}}</view>
+    <view class="muted small">{{reviewMode ? '有需要时，点击上方入口登记快递信息' : '有需要时，点击上方按钮发布代拿需求'}}</view>
   </view>
 
   <view class="notice-card">
     <view class="notice-icon">i</view>
     <view>
-      <view class="strong">{{reviewMode ? '取件凭证仅用于本单履约' : '下单前请确认取件截图清晰'}}</view>
-      <view class="muted small">{{reviewMode ? '凭证不公开展示，提交后仅配送员可见' : '截图仅在骑手接单后解锁，保护取件信息安全'}}</view>
+      <view class="strong">{{reviewMode ? '取件凭证仅用于本次登记核对' : '下单前请确认取件截图清晰'}}</view>
+      <view class="muted small">{{reviewMode ? '凭证不公开展示，提交后仅工作人员可见' : '截图仅在骑手接单后解锁，保护取件信息安全'}}</view>
     </view>
   </view>
 </view>

@@ -6,7 +6,7 @@
   <view class="intro-block">
     <view class="intro-kicker">逐件填写</view>
     <view class="intro-title">一件快递，一张卡片</view>
-    <view class="intro-subtitle">{{hasOffCampus ? '校内、校外可以混合添加，最后一次结算。' : '取件驿站自由选择，最后一起结算。'}}</view>
+    <view class="intro-subtitle">{{reviewMode ? (hasOffCampus ? '校内、校外可以混合添加，最后一起确认。' : '取件驿站自由选择，最后一起确认。') : (hasOffCampus ? '校内、校外可以混合添加，最后一次结算。' : '取件驿站自由选择，最后一起结算。')}}</view>
   </view>
 
   <view class="section-head">
@@ -27,7 +27,7 @@
 
     <view wx:if="{{item.expanded}}" class="item-body">
       <view class="field-title"><view class="field-title-label"><text>取件截图</text><text class="field-required">必填</text></view><view class="field-guide-action" hover-class="tap-soft" bindtap="previewSampleImage">查看截图示例 <text>›</text></view></view>
-      <view class="privacy-hint">取件码照片仅用于本次配送核验，不对外展示</view>
+      <view class="privacy-hint">{{reviewMode ? '取件码照片仅用于本次取件核验，不对外展示' : '取件码照片仅用于本次配送核验，不对外展示'}}</view>
       <view wx:if="{{!item.image}}" class="single-upload" data-id="{{item.id}}" hover-class="tap-soft" bindtap="chooseImage">
         <view class="upload-plus">＋</view><view>上传这一件的截图</view><text>取件地点和取件码要清晰</text>
       </view>
@@ -61,7 +61,7 @@
   </view>
 
   <view class="section-head order-section-head">
-    <view><text class="section-index">2</text><text class="section-name">整单配送</text></view>
+    <view><text class="section-index">2</text><text class="section-name">{{reviewMode ? '取件安排' : '整单配送'}}</text></view>
   </view>
   <view class="order-card">
     <view wx:if="{{stations.length}}" class="field-title no-top"><text>在哪个驿站取件？</text></view>
@@ -69,24 +69,24 @@
       <view wx:for="{{stations}}" wx:key="value" class="segment station-segment {{pickupStation===item.value?'selected':''}}" data-value="{{item.value}}" hover-class="tap-soft" bindtap="selectStation"><view>{{item.label}}</view></view>
     </view>
     <view wx:if="{{stations.length}}" class="sub-divider"></view>
-    <view class="field-title no-top"><text>希望什么时候送到？</text></view>
+    <view class="field-title no-top"><text>{{reviewMode ? '计划什么时候取件？' : '希望什么时候送到？'}}</text></view>
     <view class="segment-grid two-column">
       <view class="segment {{urgency==='today'?'selected':''}}" data-value="today" hover-class="tap-soft" bindtap="selectUrgency"><view>今天</view><text wx:if="{{!reviewMode}}">不加价</text></view>
       <view class="segment {{urgency==='urgent'?'urgent-selected':''}}" data-value="urgent" hover-class="tap-soft" bindtap="selectUrgency"><view>很急</view><text wx:if="{{!reviewMode}}">整单 +¥{{urgentOptionFeeText}}</text></view>
     </view>
-    <view class="urgency-hint">节假日或骑手较少时，可能次日送达</view>
+    <view class="urgency-hint">{{reviewMode ? '节假日或驿站繁忙时，可能次日可取' : '节假日或骑手较少时，可能次日送达'}}</view>
     <view class="sub-divider"></view>
     <view class="address-line">
       <view class="address-icon">⌖</view>
-      <view class="address-copy"><view>{{user.building ? ('送到 ' + user.building + (user.room || '')) : '请先完善收货地址'}}</view><text>{{user.name || '当前用户'}} · {{user.phone || '手机号未填写'}}</text></view>
+      <view class="address-copy"><view>{{user.building ? (reviewMode ? (user.building + (user.room || '')) : ('送到 ' + user.building + (user.room || ''))) : (reviewMode ? '请先完善地址' : '请先完善收货地址')}}</view><text>{{user.name || '当前用户'}} · {{user.phone || '手机号未填写'}}</text></view>
       <view class="text-action" bindtap="editAddress">修改</view>
     </view>
     <view class="segment-grid two-column delivery-grid">
-      <view class="segment compact-segment {{deliveryMode==='downstairs'?'selected':''}}" data-value="downstairs" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>送到宿舍楼下</view><text wx:if="{{!reviewMode}}">不加价</text></view>
-      <view class="segment compact-segment {{deliveryMode==='door'?'selected':''}}" data-value="door" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>送到宿舍门口</view><text wx:if="{{!reviewMode}}"><block wx:if="{{isBuilding9}}">+￥{{doorOptionFeeText}}</block><block wx:else>{{doorOptionHint}} +¥{{doorOptionFeeText}}</block></text></view>
+      <view class="segment compact-segment {{deliveryMode==='downstairs'?'selected':''}}" data-value="downstairs" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>{{reviewMode ? '宿舍楼下' : '送到宿舍楼下'}}</view><text wx:if="{{!reviewMode}}">不加价</text></view>
+      <view class="segment compact-segment {{deliveryMode==='door'?'selected':''}}" data-value="door" hover-class="tap-soft" bindtap="selectDeliveryMode"><view>{{reviewMode ? '宿舍门口' : '送到宿舍门口'}}</view><text wx:if="{{!reviewMode}}"><block wx:if="{{isBuilding9}}">+￥{{doorOptionFeeText}}</block><block wx:else>{{doorOptionHint}} +¥{{doorOptionFeeText}}</block></text></view>
     </view>
     <view class="sub-divider"></view>
-    <view class="field-title no-top"><text>订单备注（选填）</text><text class="note-limit">最多100字</text></view>
+    <view class="field-title no-top"><text>{{reviewMode ? '补充说明（选填）' : '订单备注（选填）'}}</text><text class="note-limit">最多100字</text></view>
     <textarea class="order-note" maxlength="100" placeholder="例如：到门口后请敲门" placeholder-class="order-note-placeholder" show-confirm-bar="{{false}}" bindinput="inputNote" />
   </view>
 
@@ -112,7 +112,7 @@
 
 <view wx:if="{{!reviewChecking}}" class="submit-bar">
   <view wx:if="{{!reviewMode}}" class="submit-copy"><text>应付</text><view>¥{{totalText}}</view></view>
-  <view class="submit-button {{incompleteCount||submitting?'submit-incomplete':''}}" hover-class="button-pressed" bindtap="submit">{{submitting ? '正在提交…' : (incompleteCount ? '还有' + incompleteCount + '件未完成' : '提交订单')}}</view>
+  <view class="submit-button {{incompleteCount||submitting?'submit-incomplete':''}}" hover-class="button-pressed" bindtap="submit">{{submitting ? '正在提交…' : (incompleteCount ? '还有' + incompleteCount + '件未完成' : (reviewMode ? '提交登记' : '提交订单'))}}</view>
 </view>
 
 <view wx:if="{{!reviewChecking && !reviewMode}}" class="coupon-mask {{showCouponSheet?'show':''}}" catchtap="closeCouponSheet" catchtouchmove="noop"></view>

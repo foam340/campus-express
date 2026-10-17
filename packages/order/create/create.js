@@ -157,6 +157,7 @@ createPage({
       pickupStation: stations.length ? stations[0].value : '',
       reviewMode: settings.reviewMode !== false
     })
+    this.applyReviewTitle()
     this.nextItemId = 2
     this.couponMode = 'auto'
     this.manualCouponId = ''
@@ -167,6 +168,7 @@ createPage({
       const latest = store.setSettings(remoteSettings, user.campus)
       const pricing = normalizePricing(remoteSettings.itemPricing)
       this.setData({ reviewMode: latest.reviewMode !== false })
+      this.applyReviewTitle()
       this.refresh(this.data.cards, { pricing })
     }).catch(() => {})
   },
@@ -176,6 +178,12 @@ createPage({
       this.refreshCoupons(false)
       this.resumePaymentCheck()
     }
+  },
+  applyReviewTitle() {
+    wx.setNavigationBarTitle({ title: this.data.reviewMode ? '校园快递登记' : '发布代拿订单' })
+  },
+  onReviewModeChanged() {
+    this.applyReviewTitle()
   },
   refreshCoupons(force) {
     if (this.couponRefreshTask) return this.couponRefreshTask
@@ -425,10 +433,11 @@ createPage({
     }
     const stationLabel = (this.data.stations.find(item => item.value === this.data.pickupStation) || {}).label || ''
     const stationLine = stationLabel ? `\n取件：${stationLabel}` : ''
-    const deliveryLine = this.data.deliveryMode === 'door' ? '送到指定位置门口' : '送到宿舍楼下'
+    const urgencyText = this.data.urgency === 'urgent' ? '很急' : (this.data.reviewMode ? '今天取件' : '今天送达')
+    const deliveryLine = this.data.deliveryMode === 'door' ? (this.data.reviewMode ? '宿舍门口' : '送到指定位置门口') : (this.data.reviewMode ? '宿舍楼下' : '送到宿舍楼下')
     wx.showModal({
-      title: '确认提交订单',
-      content: `${this.data.cards.length}件快递 · ${this.data.urgency === 'urgent' ? '很急' : '今天送达'}${stationLine}\n${deliveryLine}${this.data.reviewMode ? '' : `\n预计应付 ¥${this.data.totalText}`}`,
+      title: this.data.reviewMode ? '确认提交登记' : '确认提交订单',
+      content: `${this.data.cards.length}件快递 · ${urgencyText}${stationLine}\n${deliveryLine}${this.data.reviewMode ? '' : `\n预计应付 ¥${this.data.totalText}`}`,
       confirmText: '确认提交',
       success: result => {
         if (!result.confirm) return

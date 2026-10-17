@@ -165,7 +165,7 @@ createPage({
     return Promise.resolve(order)
   },
   cancelWaiting() {
-    wx.showModal({ title: '取消订单', content: '确定要取消该订单吗？取消后优惠券将退回', confirmColor: '#e8505b', success: result => {
+    wx.showModal({ title: this.data.reviewMode ? '取消登记' : '取消订单', content: this.data.reviewMode ? '确定要取消该登记吗？' : '确定要取消该订单吗？取消后优惠券将退回', confirmColor: '#e8505b', success: result => {
       if (!result.confirm) return
       orderApi.cancelOrder(this.id).then(result => {
         if (!result || !result.order) throw new Error('CANCEL_FAILED')

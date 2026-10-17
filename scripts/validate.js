@@ -244,9 +244,9 @@ for (const [relative, guard] of reviewModeRegistrationGuards) {
   if (!code.includes(guard)) errors.push(`Review mode auto-registration guard missing: ${relative}`)
 }
 const reviewModeOrderSemanticsGuards = [
-  ['pages/user/home/home.wxml', "reviewMode ? '添加取件凭证，提交一笔代拿服务订单'"],
+  ['pages/user/home/home.wxml', "reviewMode ? '添加取件凭证，登记一条快递信息'"],
   ['pages/user/home/home.js', 'reviewMode: nextSettings.reviewMode !== false'],
-  ['packages/order/create/create.wxml', '取件码照片仅用于本次配送核验，不对外展示']
+  ['packages/order/create/create.wxml', "reviewMode ? '取件码照片仅用于本次取件核验，不对外展示'"]
 ]
 for (const [relative, guard] of reviewModeOrderSemanticsGuards) {
   const code = fs.readFileSync(path.join(root, relative), 'utf8')
