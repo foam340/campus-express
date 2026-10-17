@@ -6,7 +6,7 @@
   <view class="order-main">
     <view class="parcel-mini"><view class="parcel-ribbon"></view></view>
     <view class="order-copy"><view class="strong">{{order.pieces}}件快递</view><view class="muted small">{{order.urgencyText}}送达 · {{order.building}}{{order.room}}</view></view>
-    <view class="price"><view class="price-value">¥{{order.paidAmount}}</view><text wx:if="{{order.discountAmount>0}}" class="discount-value">已优惠¥{{order.discountAmount}}</text></view>
+    <view wx:if="{{!reviewMode}}" class="price"><view class="price-value">¥{{order.paidAmount}}</view><text wx:if="{{order.discountAmount>0}}" class="discount-value">已优惠¥{{order.discountAmount}}</text></view>
   </view>
   <view class="order-foot row between"><text class="muted small order-id">{{order.id}}</text><text class="open">查看详情 〉</text></view>
 </view>

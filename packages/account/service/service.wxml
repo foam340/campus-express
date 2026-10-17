@@ -15,5 +15,5 @@
     <view class="qr-hint">点击图片可放大，长按识别二维码</view>
     <view class="copy-row"><view><text class="copy-label">微信号</text><text class="copy-value">{{item.wechat}}</text></view><view class="copy-btn" data-index="{{index}}" bindtap="copyAdditionalWechat">复制</view></view>
   </view>
-  <view class="notice"><view class="notice-title">联系时请说明</view><view class="notice-text">{{hint}}</view><view wx:if="{{scene==='claim'}}" class="claim-limit">理赔上限：每个订单累计 ¥200</view></view>
+  <view class="notice"><view class="notice-title">联系时请说明</view><view class="notice-text">{{reviewMode && scene==='claim' ? '请发送订单编号、问题说明、商品价值证明和相关照片。' : hint}}</view><view wx:if="{{scene==='claim' && !reviewMode}}" class="claim-limit">理赔上限：每个订单累计 ¥200</view></view>
 </view>

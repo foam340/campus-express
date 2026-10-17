@@ -19,6 +19,11 @@ createPage({
     this.setData({ orderId: normalizeText(query.orderId, 32), scene, adminWechat: service.wechat, qr: service.qr, additionalContacts, sceneTitle: texts[0], hint: texts[1] })
   },
   copyWechat() { wx.setClipboardData({ data: this.data.adminWechat, success: () => wx.showToast({ title: '微信号已复制' }) }) },
+  onReviewModeChanged(reviewMode) {
+    const campus = (store.getUser() || {}).campus || 'nanhai'
+    const service = CAMPUS_SERVICE[campus] || CAMPUS_SERVICE.nanhai
+    this.setData({ additionalContacts: reviewMode ? [] : (service.additionalContacts || []) })
+  },
   copyOrder() { if (!this.data.orderId) return; wx.setClipboardData({ data: this.data.orderId, success: () => wx.showToast({ title: '订单号已复制' }) }) },
   previewQr() {
     wx.previewImage({ urls: [this.data.qr] })

@@ -10,7 +10,7 @@
     "env:test": "node scripts/set-env.js test",
     "env:prod": "node scripts/set-env.js production",
     "validate": "node scripts/build-npm.js && node scripts/validate.js",
-    "test": "node scripts/test.js && node scripts/test-admin-mock.js",
+    "test": "node scripts/test.js && node scripts/test-admin-mock.js && node scripts/test-review-mode.js",
     "check": "npm run validate && node scripts/validate-admin.js && node scripts/validate-server.js && npm run test",
     "check:server": "node scripts/validate-server.js",
     "build:admin:dev": "node scripts/build-admin.js development",

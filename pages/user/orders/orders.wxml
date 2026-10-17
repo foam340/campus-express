@@ -19,7 +19,7 @@
   <view wx:else class="list-stage" style="height:{{listHeight}}px;">
     <recycle-view id="userOrderRecycle" class="order-list {{listTotal ? '' : 'list-hidden'}}" batch="{{batchSetRecycleData}}" width="{{listWidth}}" height="{{listHeight}}" lower-threshold="120" bindscrolltolower="loadMore">
       <recycle-item wx:for="{{recycleOrders}}" wx:key="id" class="recycle-row order-row" style="width:{{listWidth}}px;height:{{listItemHeight}}px;padding-bottom:{{listItemGap}}px;box-sizing:border-box;">
-        <order-list-item order="{{item}}" variant="user" bind:open="openOrder" />
+        <order-list-item order="{{item}}" variant="user" review-mode="{{reviewMode}}" bind:open="openOrder" />
       </recycle-item>
       <view slot="after" wx:if="{{hasMore}}" class="load-more">继续上滑加载</view>
     </recycle-view>

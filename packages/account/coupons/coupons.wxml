@@ -1,6 +1,6 @@
 <page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
 <network-banner />
-<view class="page coupon-page">
+<view wx:if="{{!reviewMode}}" class="page coupon-page">
   <view class="coupon-hero">
     <view>
       <view class="hero-label">可用优惠券</view>
@@ -46,3 +46,4 @@
     <view wx:if="{{!reviewMode}}">· 平台优惠不影响骑手的本单收入</view>
   </view>
 </view>
+<view wx:else class="page coupon-page"><view class="card"><view class="section-title">功能暂未开放</view><view class="muted small">请稍后再试</view></view></view>

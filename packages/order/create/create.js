@@ -113,7 +113,7 @@ createPage({
     hasOffCampus: true,
     stations: [],
     pickupStation: '',
-    reviewMode: false,
+    reviewMode: true,
     urgency: 'today',
     deliveryMode: 'downstairs',
     subtotalText: '0.00',
@@ -387,7 +387,7 @@ createPage({
     const deliveryMode = event.currentTarget.dataset.value === 'door' ? 'door' : 'downstairs'
     this.refresh(this.data.cards, { deliveryMode })
   },
-  openCouponSheet() { this.setData({ showCouponSheet: true }) },
+  openCouponSheet() { if (!this.data.reviewMode) this.setData({ showCouponSheet: true }) },
   closeCouponSheet() { this.setData({ showCouponSheet: false }) },
   selectCoupon(event) {
     const couponId = String(event.currentTarget.dataset.id || '')
@@ -473,9 +473,14 @@ createPage({
     })
   },
   requestPaymentSign(orderId) {
+    if (this.data.reviewMode) return Promise.resolve()
     wx.showLoading({ title: '获取支付信息…' })
     return orderApi.getPaymentSign(orderId).then(params => {
+      const app = typeof getApp === 'function' ? getApp() : null
+      return Promise.resolve(app && app.settingsRefreshTask).catch(() => {}).then(() => params)
+    }).then(params => {
       wx.hideLoading()
+      if (this.data.reviewMode) { this.setData({ submitting: false }); return }
       const qrImage = params && (params.qrImageUrl || params.qrImage)
       if (!qrImage) throw new Error('支付服务暂不可用')
       this.setData({ payQrImage: qrImage, showPayQr: true, submitting: false })
@@ -483,6 +488,7 @@ createPage({
     }).catch(() => {
       wx.hideLoading()
       this.setData({ submitting: false })
+      if (this.data.reviewMode) return null
       wx.showModal({
         title: '订单已创建',
         content: '暂时未能加载支付二维码，请前往订单详情继续支付。',
@@ -498,7 +504,7 @@ createPage({
     if (this.pendingPayOrderId) this.openOrderDetail(this.pendingPayOrderId)
   },
   previewPayQr() {
-    if (this.data.payQrImage) wx.previewImage({ urls: [this.data.payQrImage] })
+    if (!this.data.reviewMode && this.data.payQrImage) wx.previewImage({ urls: [this.data.payQrImage] })
   },
   noop() {},
   startPaymentPolling() {

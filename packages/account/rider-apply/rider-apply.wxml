@@ -33,8 +33,8 @@
     <view class="rules-head"><view><view class="rules-title">骑手服务规则</view><view class="rules-version">版本：{{rulesVersion}}</view></view><view class="rules-close" bindtap="closeRules">×</view></view>
     <scroll-view class="rules-scroll" scroll-y enhanced show-scrollbar="{{false}}" lower-threshold="40" bindscrolltolower="markRulesRead">
       <view class="rules-content">
-        <view class="rules-lead">申请骑手前，请完整阅读以下规则。规则涉及接单时限、隐私保护、收入结算、超时处理及损失责任。</view>
-        <view wx:for="{{ruleSections}}" wx:key="title" wx:for-item="section" class="rule-section">
+        <view class="rules-lead">{{reviewMode ? '申请骑手前，请阅读接单时限、隐私保护、超时处理及损失责任等服务规则。' : '申请骑手前，请完整阅读以下规则。规则涉及接单时限、隐私保护、收入结算、超时处理及损失责任。'}}</view>
+        <view wx:for="{{reviewMode ? reviewRuleSections : ruleSections}}" wx:key="title" wx:for-item="section" class="rule-section">
           <view class="rule-title">{{section.title}}</view>
           <view wx:for="{{section.items}}" wx:key="*this" wx:for-item="rule" class="rule-item"><text>•</text><view>{{rule}}</view></view>
         </view>

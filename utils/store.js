@@ -10,6 +10,9 @@ let initialized = false
 let cachedUser
 let cachedOrders
 let cachedSettings
+// 审核展示是全局状态；不允许某个校区的旧缓存解除审核展示。
+let remoteReviewMode
+let reviewModeRefreshing = false
 let cachedRegistrationComplete
 const MIGRATED_SETTING_KEYS = [
   'pricingVersion',
@@ -173,12 +176,33 @@ function saveOrders(orders) {
 
 function getOrder(id) { return typeof id === 'string' ? getOrders().find(item => item.id === id) || null : null }
 
+function currentReviewMode() { return reviewModeRefreshing || remoteReviewMode !== false }
+
+function publishReviewMode() {
+  const reviewMode = currentReviewMode()
+  if (cachedSettings && cachedSettings.data.reviewMode !== reviewMode) {
+    cachedSettings.data = Object.assign({}, cachedSettings.data, { reviewMode })
+  }
+  state.setState(Object.assign({ reviewMode, reviewModeChecking: reviewModeRefreshing }, cachedSettings ? { settings: cachedSettings.data } : {}))
+}
+
+function beginReviewModeRefresh() {
+  reviewModeRefreshing = true
+  publishReviewMode()
+}
+
+function finishReviewModeRefresh(value) {
+  remoteReviewMode = typeof value === 'boolean' ? value : undefined
+  reviewModeRefreshing = false
+  publishReviewMode()
+}
+
 function getSettings(campus) {
   ensureDemoData()
   const keyCampus = String(campus || currentCampus()).trim() || 'nanhai'
   if (typeof cachedSettings === 'undefined' || cachedSettings.campus !== keyCampus) {
     const stored = wx.getStorageSync(settingsStorageKey(keyCampus))
-    cachedSettings = { campus: keyCampus, data: Object.assign({}, DEFAULT_SETTINGS, stored && typeof stored === 'object' ? stored : {}) }
+    cachedSettings = { campus: keyCampus, data: Object.assign({}, DEFAULT_SETTINGS, stored && typeof stored === 'object' ? stored : {}, { reviewMode: currentReviewMode() }) }
     state.setState({ settings: cachedSettings.data })
     preload.primeSettings(cachedSettings.data)
   }
@@ -189,16 +213,21 @@ function setSettings(settings, campus) {
   ensureDemoData()
   const keyCampus = String(campus || currentCampus()).trim() || 'nanhai'
   const current = getSettings(keyCampus)
+  if (settings && typeof settings.reviewMode === 'boolean') {
+    // 只有全局设置核验可以退出已确认的审核模式，避免晚返回的校区响应恢复金额。
+    if (settings.reviewMode || remoteReviewMode !== true) remoteReviewMode = settings.reviewMode
+  }
   const normalized = Object.assign(
     {},
     DEFAULT_SETTINGS,
     current && typeof current === 'object' ? current : {},
-    settings && typeof settings === 'object' ? settings : {}
+    settings && typeof settings === 'object' ? settings : {},
+    { reviewMode: currentReviewMode() }
   )
   if (sameValue(current, normalized)) return current
   wx.setStorageSync(settingsStorageKey(keyCampus), normalized)
   cachedSettings = { campus: keyCampus, data: normalized }
-  state.setState({ settings: normalized })
+  state.setState({ settings: normalized, reviewMode: normalized.reviewMode })
   preload.primeSettings(normalized)
   return normalized
 }
@@ -215,4 +244,4 @@ function clearAccountData() {
   state.setState({ user: null })
 }
 
-module.exports = { ensureDemoData, getUser, setUser, isRegistrationComplete, completeRegistration, getOrders, saveOrders, getOrder, getSettings, setSettings, clearAccountData }
+module.exports = { ensureDemoData, getUser, setUser, isRegistrationComplete, completeRegistration, getOrders, saveOrders, getOrder, getSettings, setSettings, beginReviewModeRefresh, finishReviewModeRefresh, clearAccountData }

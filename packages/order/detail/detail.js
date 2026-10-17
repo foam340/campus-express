@@ -194,7 +194,7 @@ createPage({
       const reason = choices[result.tapIndex]
       wx.showModal({
         title: '转单给其他骑手',
-        content: `本单将放回接单大厅，其他骑手可重新接单。转单后你将失去本单收入${income > 0 ? `（¥${income}）` : ''}，且不能立刻接回本单。`,
+        content: this.data.reviewMode ? '本单将放回接单大厅，其他骑手可重新接单。转单后不能立刻接回本单。' : `本单将放回接单大厅，其他骑手可重新接单。转单后你将失去本单收入${income > 0 ? `（¥${income}）` : ''}，且不能立刻接回本单。`,
         confirmText: '确认转单',
         confirmColor: '#e8505b',
         success: modal => {
@@ -286,8 +286,12 @@ createPage({
       return
     }
     wx.showLoading({ title: '获取支付信息…' })
-    orderApi.getPaymentSign(order.id).then(params => {
+    return orderApi.getPaymentSign(order.id).then(params => {
+      const app = typeof getApp === 'function' ? getApp() : null
+      return Promise.resolve(app && app.settingsRefreshTask).catch(() => {}).then(() => params)
+    }).then(params => {
       wx.hideLoading()
+      if (this.data.reviewMode) return
       const qrImage = params && (params.qrImageUrl || params.qrImage)
       if (!qrImage) {
         wx.showToast({ title: '支付服务暂不可用', icon: 'none' })
@@ -306,7 +310,7 @@ createPage({
     this.refresh()
   },
   previewPayQr() {
-    wx.previewImage({ urls: [this.data.payQrImage] })
+    if (!this.data.reviewMode) wx.previewImage({ urls: [this.data.payQrImage] })
   },
   startPaymentPolling() {
     let polls = 0

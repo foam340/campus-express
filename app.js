@@ -70,9 +70,15 @@ App({
     const now = Date.now()
     if (!force && now - Number(this.settingsRefreshedAt || 0) < 60 * 1000) return Promise.resolve(store.getSettings())
     if (this.settingsRefreshTask) return this.settingsRefreshTask
-    this.settingsRefreshTask = orderApi.getMiniSettings().then(settings => {
+    store.beginReviewModeRefresh()
+    const campus = (store.getUser() || {}).campus || 'nanhai'
+    this.settingsRefreshTask = orderApi.getMiniSettings(campus).then(settings => {
+      store.finishReviewModeRefresh(settings.reviewMode)
       this.settingsRefreshedAt = Date.now()
-      return store.setSettings(settings)
+      return store.setSettings(settings, campus)
+    }).catch(error => {
+      store.finishReviewModeRefresh()
+      throw error
     }).finally(() => { this.settingsRefreshTask = null })
     return this.settingsRefreshTask
   },

@@ -6,10 +6,16 @@ const orderApi = require('../../../utils/order-api')
 const { RIDER_RULES_VERSION, RIDER_RULE_SECTIONS } = require('../../../config/rider-rules')
 const modeStore = require('../../../utils/mode')
 
+// 审核展示不呈现财务条款；正常模式继续使用完整的原版规则。
+const REVIEW_RULE_SECTIONS = RIDER_RULE_SECTIONS.filter(section => !/费用|结算|收入/.test(section.title)).map(section => ({
+  title: section.title,
+  items: section.items.filter(rule => !/[¥￥]|\d+(?:\.\d+)?\s*元/.test(rule))
+}))
+
 createPage({
   data: {
     user: {}, agreed: false, wechatAdded: false, ruleRead: false, rulesVisible: false, rulesReachedBottom: false,
-    rulesVersion: RIDER_RULES_VERSION, ruleSections: RIDER_RULE_SECTIONS, adminWechat: '', qr: '/packages/account/assets/admin-wechat.jpg',
+    rulesVersion: RIDER_RULES_VERSION, ruleSections: RIDER_RULE_SECTIONS, reviewRuleSections: REVIEW_RULE_SECTIONS, adminWechat: '', qr: '/packages/account/assets/admin-wechat.jpg',
     gender: '', genderLabels: ['男', '女']
   },
   onLoad() {

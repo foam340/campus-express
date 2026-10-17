@@ -6,7 +6,7 @@
   <view wx:else class="list-stage" style="height:{{listHeight}}px;">
     <recycle-view id="riderTaskRecycle" class="task-list {{listTotal ? '' : 'list-hidden'}}" batch="{{batchSetRecycleData}}" width="{{listWidth}}" height="{{listHeight}}" lower-threshold="120" bindscrolltolower="loadMore">
       <recycle-item wx:for="{{recycleTasks}}" wx:key="id" class="recycle-row task-row" style="width:{{listWidth}}px;height:{{listItemHeight}}px;padding-bottom:{{listItemGap}}px;box-sizing:border-box;">
-        <order-list-item order="{{item}}" variant="task" bind:open="openTask" />
+        <order-list-item order="{{item}}" variant="task" review-mode="{{reviewMode}}" bind:open="openTask" />
       </recycle-item>
       <view slot="after" wx:if="{{hasMore}}" class="load-more">继续上滑加载</view>
     </recycle-view>

@@ -11,14 +11,21 @@ createPage({
     if (!reviewMode) this.refresh()
   },
   refresh() {
-    orderApi.getRiderWallet().then(result => {
+    if (this.data.reviewMode) return Promise.resolve()
+    if (this.walletRefreshTask) return this.walletRefreshTask
+    this.walletRefreshTask = orderApi.getRiderWallet().then(result => {
       const records = (result.records || []).map(item => Object.assign({}, item, {
         date: formatDateTime(item.dateMs), amountText: `${Number(item.amount || 0) >= 0 ? '+' : ''}¥${Number(item.amount || 0).toFixed(2)}`
       }))
       this.setData({ balance: Object.assign({ available: 0, pending: 0, withdrawLeft: 5 }, result.balance || {}), records })
-    }).catch(error => wx.showToast({ title: String(error && error.message || 'WALLET_LOAD_FAILED').slice(0, 20), icon: 'none' }))
+    }).catch(error => wx.showToast({ title: String(error && error.message || 'WALLET_LOAD_FAILED').slice(0, 20), icon: 'none' })).finally(() => { this.walletRefreshTask = null })
+    return this.walletRefreshTask
+  },
+  onReviewModeChanged(reviewMode) {
+    if (!reviewMode) this.refresh()
   },
   withdraw() {
+    if (this.data.reviewMode) return
     const balance = this.data.balance || {}
     const amount = Number(balance.available) || 0
     if (amount <= 0) { wx.showToast({ title: '\u6682\u65e0\u53ef\u63d0\u73b0\u4f59\u989d', icon: 'none' }); return }
@@ -29,6 +36,7 @@ createPage({
       confirmText: '\u786e\u8ba4\u63d0\u73b0',
       success: result => {
         if (!result.confirm) return
+        if (this.data.reviewMode) return
         orderApi.requestWithdrawal(amount).then(() => { wx.showToast({ title: '\u63d0\u73b0\u7533\u8bf7\u5df2\u63d0\u4ea4', icon: 'success' }); this.refresh() })
           .catch(error => wx.showToast({ title: String(error && error.message || 'WITHDRAW_FAILED').slice(0, 20), icon: 'none' }))
       }

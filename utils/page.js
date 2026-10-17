@@ -1,5 +1,7 @@
 const { reportError } = require('./errors')
 const theme = require('./theme')
+const store = require('./store')
+const state = require('./state')
 
 function sameDataValue(left, right) {
   if (left === right) return true
@@ -19,7 +21,30 @@ function createPage(definition) {
   source.data = Object.assign({
     pageMetaStyle: theme.getPageMetaStyle(),
     pageBackgroundColor: theme.getPageBackgroundColor()
-  }, source.data || {})
+  }, source.data || {}, { reviewMode: true })
+  source.$syncReviewMode = function $syncReviewMode() {
+    const reviewMode = store.getSettings().reviewMode !== false
+    const changed = this.data.reviewMode !== reviewMode
+    const patch = { reviewMode }
+    // 核验期间仅隐藏，确认审核开启后才清空，避免正常模式返回时丢失支付弹窗。
+    if (reviewMode && !state.getState().reviewModeChecking) {
+      for (const key of ['showPayQr', 'showCouponSheet', 'showCouponGift']) {
+        if (this.data[key]) patch[key] = false
+      }
+    }
+    this.$setDataChanged(patch)
+    if (changed && typeof source.onReviewModeChanged === 'function') source.onReviewModeChanged.call(this, reviewMode)
+  }
+  source.$refreshReviewSettings = function $refreshReviewSettings() {
+    try {
+      const app = typeof getApp === 'function' ? getApp() : null
+      if (app && typeof app.refreshSettings === 'function') {
+        Promise.resolve(app.refreshSettings(true)).catch(() => {}).then(() => {
+          if (!this.__pageUnloaded) this.$syncReviewMode()
+        })
+      }
+    } catch (error) { reportError(error, 'page:reviewSettings', { silent: true }) }
+  }
   source.$applyTheme = function $applyTheme() {
     const pageMetaStyle = theme.getPageMetaStyle()
     const pageBackgroundColor = theme.getPageBackgroundColor()
@@ -53,6 +78,10 @@ function createPage(definition) {
     this.__managedTimers = new Set()
     this.__hideDisposers = new Set()
     this.__unloadDisposers = new Set()
+    this.__pageUnloaded = false
+    this.$addUnloadDisposer(state.subscribe(() => this.$syncReviewMode(), current => `${current.reviewMode !== false}:${!!current.reviewModeChecking}`))
+    this.$refreshReviewSettings()
+    this.$syncReviewMode()
     theme.applyChrome()
     this.$applyTheme()
     if (typeof originalLoad === 'function') return originalLoad.call(this, query || {})
@@ -88,9 +117,11 @@ function createPage(definition) {
     if (includeUnload && this.__unloadDisposers) this.__unloadDisposers.clear()
   }
   source.onShow = function onShow() {
+    this.$refreshReviewSettings()
     theme.applyChrome()
     this.$applyTheme()
     const result = typeof originalShow === 'function' ? originalShow.call(this) : undefined
+    this.$syncReviewMode()
     this.$syncTabBar()
     return result
   }
@@ -99,6 +130,7 @@ function createPage(definition) {
     if (typeof originalHide === 'function') return originalHide.call(this)
   }
   source.onUnload = function onUnload() {
+    this.__pageUnloaded = true
     this.$cleanup(true)
     if (typeof originalUnload === 'function') return originalUnload.call(this)
   }

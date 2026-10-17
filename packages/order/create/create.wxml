@@ -115,8 +115,8 @@
   <view class="submit-button {{incompleteCount||submitting?'submit-incomplete':''}}" hover-class="button-pressed" bindtap="submit">{{submitting ? '正在提交…' : (incompleteCount ? '还有' + incompleteCount + '件未完成' : '提交订单')}}</view>
 </view>
 
-<view wx:if="{{!reviewChecking}}" class="coupon-mask {{showCouponSheet?'show':''}}" catchtap="closeCouponSheet" catchtouchmove="noop"></view>
-<view wx:if="{{!reviewChecking}}" class="coupon-sheet {{showCouponSheet?'show':''}}" catchtap="noop">
+<view wx:if="{{!reviewChecking && !reviewMode}}" class="coupon-mask {{showCouponSheet?'show':''}}" catchtap="closeCouponSheet" catchtouchmove="noop"></view>
+<view wx:if="{{!reviewChecking && !reviewMode}}" class="coupon-sheet {{showCouponSheet?'show':''}}" catchtap="noop">
   <view class="coupon-sheet-head"><view><view>选择优惠券</view><text>系统已优先选择本单优惠最多的券</text></view><view class="coupon-close" bindtap="closeCouponSheet">×</view></view>
   <scroll-view class="coupon-sheet-list" scroll-y="true">
     <view wx:if="{{couponOptions.length}}">
@@ -131,8 +131,8 @@
   </scroll-view>
 </view>
 
-<view wx:if="{{!reviewChecking}}" class="pay-qr-mask {{showPayQr?'show':''}}" catchtap="closePayQr" catchtouchmove="noop"></view>
-<view wx:if="{{!reviewChecking}}" class="pay-qr-modal {{showPayQr?'show':''}}">
+<view wx:if="{{!reviewChecking && !reviewMode}}" class="pay-qr-mask {{showPayQr?'show':''}}" catchtap="closePayQr" catchtouchmove="noop"></view>
+<view wx:if="{{!reviewChecking && !reviewMode}}" class="pay-qr-modal {{showPayQr?'show':''}}">
   <view class="qr-card">
     <view class="qr-title">微信扫码支付</view>
     <view class="qr-price">¥{{orderPayableText}}</view>

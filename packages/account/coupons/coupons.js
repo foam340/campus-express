@@ -42,6 +42,7 @@ createPage({
   },
   inputCode(event) { this.redeemCodeValue = String(event.detail.value || '').trim().toUpperCase().slice(0, 40) },
   redeem() {
+    if (this.data.reviewMode) return
     if (this.data.redeeming) return
     const code = this.redeemCodeValue
     if (!code) { wx.showToast({ title: '请输入兑换码', icon: 'none' }); return }
@@ -50,6 +51,7 @@ createPage({
       this.redeemCodeValue = ''
       this.setData({ redeemInput: '', activeTab: 'available' })
       this.refresh()
+      if (this.data.reviewMode) return
       wx.showModal({ title: '兑换成功', content: `${coupon && coupon.name || '优惠券'} 已放入券包，结算时可直接使用。`, showCancel: false, confirmText: '知道了' })
     }).catch(error => wx.showToast({ title: String(error && error.message || 'REDEEM_FAILED').slice(0, 20), icon: 'none' })).finally(() => this.setData({ redeeming: false }))
   }

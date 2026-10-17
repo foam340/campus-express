@@ -64,9 +64,11 @@ createPage({
     return this.homeRefreshTask
   },
   checkCouponGifts(coupons) {
-    const lastSeen = getLastCouponSeenAt()
+    if (this.data.reviewMode) return Promise.resolve()
     const source = Array.isArray(coupons) ? Promise.resolve(coupons) : orderApi.listCoupons()
     return source.then(items => {
+      if (this.data.reviewMode) return
+      const lastSeen = getLastCouponSeenAt()
       const fresh = items.filter(item => {
         return item.status === 'available' && item.campaignId && item.createdAtMs > lastSeen
       })
@@ -79,6 +81,9 @@ createPage({
         this.setData({ showCouponGift: true, couponGifts })
       }
     }).catch(() => {})
+  },
+  onReviewModeChanged(reviewMode) {
+    if (!reviewMode && store.isRegistrationComplete()) this.checkCouponGifts()
   },
   dismissCouponGift() {
     this.setData({ showCouponGift: false, couponGifts: [] })

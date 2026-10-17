@@ -75,7 +75,7 @@
   </view>
 </view>
 
-<view wx:if="{{showCouponGift}}" class="gift-mask" catchtouchmove="noop">
+<view wx:if="{{showCouponGift && !reviewMode}}" class="gift-mask" catchtouchmove="noop">
   <view class="gift-modal">
     <view class="gift-head">
       <view class="gift-icon"><view class="gift-check">🎁</view></view>
