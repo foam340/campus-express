@@ -4,7 +4,7 @@ const fs = require('fs/promises')
 const { pool, transaction } = require('../db')
 const { authenticateAdmin, requireRoles } = require('../auth')
 const { writeAudit } = require('../audit')
-const { lockCampusUser, applyCampusChange } = require('../campus-change')
+const { lockCampusUser } = require('../campus-change')
 const { requireIdempotency, sendIdempotent } = require('../idempotency')
 const { asyncRoute, HttpError, ok } = require('../http')
 const validate = require('../validation')
@@ -872,73 +872,6 @@ router.post('/rider-applications/:id/review', requireRoles('operator'), requireI
       )
     }
     await writeAudit(connection, request, approved ? 'rider_application_approved' : 'rider_application_rejected', 'rider_application', id, { reason, realName: application.real_name || '', gender: application.gender || '' })
-    return { id: String(id), status, statusText: statusLabels[status] }
-  })
-  return sendIdempotent(request, response, result)
-}))
-
-// 历史待审核校区申请仍供 admin/客服处理，使用与即时转区相同的订单约束。
-// 骑手同步改 riders.campus（骑手只能服务单一校区，跟随账号校区）；订单 campus 是创建时快照，历史订单不受影响。
-router.get('/campus-change-requests', requireRoles('admin', 'customer_service'), asyncRoute(async (request, response) => {
-  const [items] = await pool.query(
-    `SELECT r.id, r.user_id, r.from_campus, r.to_campus, r.reason, r.status, r.review_reason,
-            u.nickname AS user_name, u.phone, reviewer.display_name AS reviewer_name,
-            ${mysqlTimestamp('r.submitted_at')} AS submitted_at_ms,
-            ${mysqlTimestamp('r.reviewed_at')} AS reviewed_at_ms
-       FROM campus_change_requests r
-       LEFT JOIN users u ON u.id = r.user_id
-       LEFT JOIN admin_users reviewer ON reviewer.id = r.reviewed_by
-      ORDER BY FIELD(r.status, 'pending', 'approved', 'rejected'), r.submitted_at DESC
-      LIMIT 500`
-  )
-  return ok(response, {
-    items: items.map(item => ({
-      id: String(item.id),
-      userId: String(item.user_id),
-      userName: item.user_name || '',
-      phone: item.phone || '',
-      fromCampus: item.from_campus,
-      toCampus: item.to_campus,
-      reason: item.reason,
-      status: item.status,
-      statusText: statusLabels[item.status] || item.status,
-      reviewReason: item.review_reason || '',
-      reviewerName: item.reviewer_name || '',
-      submittedAtMs: Number(item.submitted_at_ms) || 0,
-      reviewedAtMs: Number(item.reviewed_at_ms) || 0
-    })),
-    total: items.length
-  })
-}))
-
-router.post('/campus-change-requests/:id/review', requireRoles('admin', 'customer_service'), requireIdempotency, asyncRoute(async (request, response) => {
-  const id = validate.integer(request.params.id, '申请编号', { min: 1, max: Number.MAX_SAFE_INTEGER })
-  const approved = validate.boolean(request.body && request.body.approved, '审核结果')
-  const reason = validate.string(request.body && request.body.reason, '审核说明', { min: 2, max: 300 })
-  const result = await transaction(async connection => {
-    const [initial] = await connection.execute('SELECT user_id FROM campus_change_requests WHERE id = ?', [id])
-    if (!initial[0]) throw new HttpError(404, '校区变更申请不存在', 'CAMPUS_CHANGE_NOT_FOUND')
-    const currentUser = await lockCampusUser(connection, initial[0].user_id)
-    const [rows] = await connection.execute('SELECT * FROM campus_change_requests WHERE id = ? FOR UPDATE', [id])
-    const item = rows[0]
-    if (!item) throw new HttpError(404, '校区变更申请不存在', 'CAMPUS_CHANGE_NOT_FOUND')
-    if (item.status !== 'pending') throw new HttpError(409, '该申请已经处理', 'CAMPUS_CHANGE_REVIEWED')
-    const status = approved ? 'approved' : 'rejected'
-    if (approved) {
-      await applyCampusChange(connection, currentUser, item.to_campus, item.from_campus)
-    }
-    await connection.execute(
-      `UPDATE campus_change_requests
-          SET status = ?, review_reason = ?, reviewed_by = ?, reviewed_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP()
-        WHERE id = ?`,
-      [status, reason, request.admin.id, id]
-    )
-    await writeAudit(connection, request, approved ? 'campus_change_approved' : 'campus_change_rejected', 'campus_change_request', id, {
-      userId: String(item.user_id),
-      fromCampus: item.from_campus,
-      toCampus: item.to_campus,
-      reason
-    })
     return { id: String(id), status, statusText: statusLabels[status] }
   })
   return sendIdempotent(request, response, result)

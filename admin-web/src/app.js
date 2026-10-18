@@ -6,7 +6,7 @@ import { campusLabel, effectiveCampus, isBoss, selectCampus, CAMPUSES } from './
 
 const viewMeta = {
   overview:['OVERVIEW','运营概览'], income:['INCOME','净收入明细'], orders:['ORDERS','订单管理'], riders:['RIDERS','骑手管理'],
-  afterSales:['AFTER SALES','售后理赔'], feedbacks:['FEEDBACK','意见反馈'], coupons:['COUPONS','优惠券运营'], finance:['FINANCE','提现审核'], campusChange:['CAMPUS CHANGE','改校区审核'], settings:['SETTINGS','平台设置']
+  afterSales:['AFTER SALES','售后理赔'], feedbacks:['FEEDBACK','意见反馈'], coupons:['COUPONS','优惠券运营'], finance:['FINANCE','提现审核'], settings:['SETTINGS','平台设置']
 }
 const menuAccess = {
   overview:['operator','customer_service','finance','auditor'],
@@ -17,7 +17,6 @@ const menuAccess = {
   feedbacks:['operator','customer_service','auditor'],
   coupons:['operator','auditor'],
   finance:['finance','auditor'],
-  campusChange:['admin','customer_service'],
   settings:['admin','auditor']
 }
 function currentRoles() {
@@ -606,16 +605,7 @@ async function renderSettings() {
   document.querySelector('#reviewModeToggle')?.addEventListener('click',toggleReviewMode)
 }
 
-async function renderCampusChange() {
-  const data = await adminApi.campusChangeRequests()
-  const items = data.items || []
-  elements.pageContent.innerHTML = `${pageHeading('改校区审核','审核用户提交的校区变更申请；通过后该用户将在新的校区下单。','<button class="secondary-button" data-action="refresh">刷新</button>')}
-  <article class="panel"><div class="table-wrap"><table class="data-table"><thead><tr><th>申请人</th><th>手机号</th><th>原校区</th><th>目标校区</th><th>申请原因</th><th>提交时间</th><th>状态</th><th>操作</th></tr></thead><tbody>
-  ${items.map(item=>`<tr><td><span class="cell-main">${escapeHtml(item.userName||'—')}</span></td><td>${escapeHtml(item.phone||'—')}</td><td>${escapeHtml(campusLabel(item.fromCampus))}</td><td>${escapeHtml(campusLabel(item.toCampus))}</td><td title="${escapeHtml(item.reason)}">${escapeHtml(truncate(item.reason,40))||'—'}</td><td>${dateTime(item.submittedAtMs)}</td><td>${statusPill(item.status,item.statusText)}${item.status!=='pending'?`<span class="cell-sub">${escapeHtml(truncate(item.reviewReason,40))}${item.reviewerName?` · ${escapeHtml(item.reviewerName)}`:''}</span>`:''}</td><td>${item.status==='pending'?`<div class="table-actions"><button class="secondary-button" data-action="approve-campus-change" data-id="${escapeHtml(item.id)}">通过</button><button class="danger-button" data-action="reject-campus-change" data-id="${escapeHtml(item.id)}">驳回</button></div>`:'—'}</td></tr>`).join('')||emptyRow(8)}
-  </tbody></table></div></article>`
-}
-
-const renderers={overview:renderOverview,income:renderIncome,orders:renderOrders,riders:renderRiders,afterSales:renderAfterSales,feedbacks:renderFeedbacks,coupons:renderCoupons,finance:renderFinance,campusChange:renderCampusChange,settings:renderSettings}
+const renderers={overview:renderOverview,income:renderIncome,orders:renderOrders,riders:renderRiders,afterSales:renderAfterSales,feedbacks:renderFeedbacks,coupons:renderCoupons,finance:renderFinance,settings:renderSettings}
 
 async function renderViewWith(renderer) {
   renderLoading()
@@ -781,15 +771,6 @@ elements.pageContent.addEventListener('click',async event=>{
     }
     if(action==='ledger-prev'){ledgerPage=Math.max(1,ledgerPage-1);renderViewWith(renderIncome);return}
     if(action==='ledger-next'){ledgerPage+=1;renderViewWith(renderIncome);return}
-    if(action==='approve-campus-change'){
-      if(!window.confirm(`确认通过该校区变更申请？该用户将改为在目标校区下单。`))return
-      await adminApi.reviewCampusChange(target.dataset.id,true,'审核通过');toast('校区变更已通过');switchView('campusChange');return
-    }
-    if(action==='reject-campus-change'){
-      const reason=window.prompt('请输入驳回原因','暂不符合校区变更条件');if(reason===null)return
-      if(reason.trim().length<2){toast('审核说明至少2个字','error');return}
-      await adminApi.reviewCampusChange(target.dataset.id,false,reason.trim());toast('校区变更已驳回');switchView('campusChange');return
-    }
   }catch(error){errorMessage(error)}
 })
 

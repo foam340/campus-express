@@ -95,12 +95,6 @@ export const adminApi = {
   reviewWithdrawal(id, approved, reason) {
     return request({ url: `/admin/withdrawals/${encodeURIComponent(id)}/review`, method: 'POST', idempotent: true, data: { approved, reason } })
   },
-  campusChangeRequests() {
-    return request({ url: '/admin/campus-change-requests' })
-  },
-  reviewCampusChange(id, approved, reason) {
-    return request({ url: `/admin/campus-change-requests/${encodeURIComponent(id)}/review`, method: 'POST', idempotent: true, data: { approved, reason } })
-  },
   settings(campus) {
     return request({ url: `/admin/settings${queryString({ campus })}` })
   },
