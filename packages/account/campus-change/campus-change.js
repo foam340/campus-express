@@ -32,10 +32,14 @@ createPage({
   noop() {},
   submit() {
     if (this.data.submitting) return
-    const reason = String(this.data.reason || '').trim()
-    if (reason.length < 2) { wx.showToast({ title: '请填写变更原因', icon: 'none' }); return }
+    const payload = { toCampus: this.data.targetCampus }
+    if (this.data.reviewMode) {
+      const reason = String(this.data.reason || '').trim()
+      if (reason.length < 2) { wx.showToast({ title: '请填写变更原因', icon: 'none' }); return }
+      payload.reason = reason
+    }
     this.setData({ submitting: true })
-    return orderApi.submitCampusChange({ toCampus: this.data.targetCampus, reason }).then(result => {
+    return orderApi.submitCampusChange(payload).then(result => {
       this.setData({ submitting: false })
       if (!this.data.reviewMode && result && result.status === 'approved') {
         // 使用返回的服务端资料，避免仍拿旧校区/旧地址下单。兼容暂未返回 user 的服务端。
