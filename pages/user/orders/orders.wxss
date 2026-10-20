@@ -1,13 +1,20 @@
-.orders-page { height:100vh; padding-top:20rpx; overflow:hidden; }
+/* 订单列表 · 暖橙快递站（贴纸票券感）：
+   filter 胶囊选中走橙底墨线，卡片样式在 components/order-list-item 内统一处理 */
+
+.orders-page { height:100vh; padding-top:20rpx; overflow:hidden; background:var(--color-bg); }
+
 .login-gate { display:flex; flex-direction:column; align-items:center; justify-content:center; height:80vh; padding:40rpx; text-align:center; }
 .login-gate-icon { font-size:72rpx; margin-bottom:24rpx; }
 .login-gate-title { color:var(--color-text); font-size:32rpx; font-weight:700; margin-bottom:12rpx; }
 .login-gate-desc { color:var(--color-muted); font-size:24rpx; margin-bottom:36rpx; line-height:1.6; }
-.login-gate-btn { width:360rpx; height:84rpx; line-height:84rpx; color: var(--color-on-accent); background:var(--color-primary); border-radius:24rpx; font-size:28rpx; font-weight:700; }
+.login-gate-btn { width:360rpx; height:84rpx; line-height:84rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-ink); box-shadow:var(--shadow-sticker); border-radius:24rpx; font-size:28rpx; font-weight:700; }
+
+/* 筛选胶囊：未选白底墨线，选中橙底墨线 */
 .filters { width:100%; margin-bottom:20rpx; white-space:nowrap; }
 .filter-row { display:flex; gap:14rpx; }
-.filter { display:inline-flex; flex:none; padding:15rpx 25rpx; border-radius:22rpx; color:var(--color-text-2); background:var(--color-surface); font-size:24rpx; }
-.filter.active { color: var(--color-on-accent); background:var(--color-primary); font-weight:700; }
+.filter { display:inline-flex; flex:none; padding:15rpx 25rpx; border:2rpx solid var(--color-divider); border-radius:22rpx; color:var(--color-text-2); background:var(--color-surface); font-size:24rpx; font-weight:700; }
+.filter.active { color:#ffffff; background:var(--color-primary); border-color:var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); }
+
 .order-list { width:100%; height:calc(100vh - 220rpx - env(safe-area-inset-bottom)); }
 .list-stage { position:relative; width:100%; }
 .list-hidden { visibility:hidden; pointer-events:none; }

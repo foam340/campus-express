@@ -21,7 +21,8 @@ button::after { border: 0; }
 .page {
   min-height: 100vh;
   width: 100%;
-  padding: 24rpx 24rpx calc(128rpx + env(safe-area-inset-bottom));
+  /* 底部留出悬浮胶囊的空间：胶囊离底 40rpx + 高 124rpx + 12rpx 余量 */
+  padding: 24rpx 24rpx calc(176rpx + env(safe-area-inset-bottom));
 }
 
 /* 高频 tab 切换只做极短淡入，不移动整页内容，减少“页面还在赶路”的迟滞感。 */
@@ -103,7 +104,14 @@ button::after { border: 0; }
 .sk-title { height:40rpx; width:44%; margin-bottom:26rpx; }
 .sk-line { height:28rpx; margin-bottom:16rpx; }
 .sk-line.short { width:62%; }
+/* 胶囊、按钮这类「块」形状的占位（列表页之外的骨架用） */
+.sk-pill { height:44rpx; border-radius:22rpx; }
+.sk-block { height:72rpx; border-radius:20rpx; }
 @keyframes sk-shimmer { 100% { transform:translateX(100%); } }
+/* 深色底上扫光太亮，压低透明度（浅色保持 .55，深色降到 .16） */
+@media (prefers-color-scheme: dark) {
+  .sk::after { background:linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .home-page, .orders-page, .profile-page, .tasks-page, .hall-page { animation: none; }

@@ -141,3 +141,18 @@
     </view>
   </view>
 </view>
+
+<!-- 骨架屏：无本地缓存、正在拉详情时占位（形状对齐「状态头 + 进度卡 + 信息卡」） -->
+<view wx:elif="{{loading}}" class="page detail-page" aria-hidden="true">
+  <view class="sk sk-hero"></view>
+  <view class="card progress-card">
+    <view class="sk sk-line sk-w-240"></view>
+    <view class="sk sk-block sk-gap-lg"></view>
+  </view>
+  <view class="card info-card">
+    <view class="sk sk-line sk-w-240"></view>
+    <view class="sk sk-line"></view>
+    <view class="sk sk-line"></view>
+    <view class="sk sk-line short"></view>
+  </view>
+</view>

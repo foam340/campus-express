@@ -30,7 +30,8 @@ function withoutPrivateImages(order) {
 }
 
 createPage({
-  data: { order: null, role: 'user', step: 0, deliveryImages: [], pendingDeliveryImages: [], contactInitial: '', canRequestCancel: false, showExceptionHint: false, canTransfer: false, sensitiveVisible: true, observationText: '', showPayQr: false, payQrImage: '', reviewMode: true, submitting: false, imageLoading: false, pendingScreenshotCount: 0, pendingDeliveryCount: 0 },
+  /* loading：无本地缓存、正在拉详情时显示骨架屏（加载失败就不再显示，留给 toast 提示） */
+  data: { order: null, loading: false, role: 'user', step: 0, deliveryImages: [], pendingDeliveryImages: [], contactInitial: '', canRequestCancel: false, showExceptionHint: false, canTransfer: false, sensitiveVisible: true, observationText: '', showPayQr: false, payQrImage: '', reviewMode: true, submitting: false, imageLoading: false, pendingScreenshotCount: 0, pendingDeliveryCount: 0 },
   onLoad(query) {
     this.id = String(query.id || '')
     this.role = query.role === 'rider' ? 'rider' : 'user'
@@ -44,16 +45,19 @@ createPage({
     const cached = store.getOrder(this.id)
     const role = this.explicitRole ? 'rider' : 'user'
     if (cached) this.renderOrder(withoutPrivateImages(cached), role)
+    else this.setData({ loading: true })
     const sequence = ++this.loadSequence
     orderApi.getOrder(this.id).then(result => {
       if (!result || !result.order || sequence !== this.loadSequence) return
       mergeCachedOrder(result.order)
       // 订单文字和状态立即渲染，私密图片在后台按需下载，避免慢图片阻塞整页。
       this.renderOrder(withoutPrivateImages(result.order), role)
+      this.setData({ loading: false })
       if (!getPrivacyState(result.order, role).sensitiveVisible) return
       this.beginImageLoad(result.order)
       return this.hydrateImages(result.order, role, sequence)
     }).catch(error => {
+      this.setData({ loading: false })
       this.endImageLoad()
       if (!cached) wx.showToast({ title: String(error && error.message || 'ORDER_LOAD_FAILED').slice(0, 20), icon: 'none' })
     })

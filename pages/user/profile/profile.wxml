@@ -1,17 +1,20 @@
 <page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
 <network-banner />
 <view class="page profile-page">
-  <view class="profile-head">
-    <view class="avatar">{{avatar}}</view>
-    <view class="profile-copy"><view class="name">{{user.name}}</view><view class="muted small">{{user.phone}}</view></view>
-    <view class="edit" bindtap="editProfile">编辑</view>
-  </view>
-
-  <view class="card address-panel">
+  <!-- 个人资料与默认地址合并为一张卡（新设计点）：上半个人信息 + 虚线分隔 + 下半地址 -->
+  <view class="card me-card">
+    <view class="profile-head">
+      <view class="avatar">{{avatar}}</view>
+      <view class="profile-copy"><view class="name">{{user.name}}</view><view class="muted small">{{user.phone}}</view></view>
+      <view class="edit" bindtap="editProfile">编辑</view>
+    </view>
+    <view class="me-div"></view>
+    <view class="address-panel">
     <view class="mini-label">默认收货地址</view>
     <view class="address-big" wx:if="{{user.building}}">{{user.building}}{{user.room}}</view>
     <view class="address-big" wx:else>未填写收货地址</view>
-    <view class="muted small">下单时自动填入，可临时修改</view>
+      <view class="muted small">下单时自动填入，可临时修改</view>
+    </view>
   </view>
 
   <view wx:if="{{mode==='rider'}}" class="mode-banner rider-banner">
