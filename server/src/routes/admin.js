@@ -624,9 +624,9 @@ router.get('/orders', requireRoles('operator', 'customer_service', 'finance', 'a
   values.push(campus)
   if (status) { where.push('o.status = ?'); values.push(status) }
   if (keyword) {
-    where.push(`(o.id LIKE ? OR o.contact_name LIKE ? OR o.phone LIKE ? OR r.name LIKE ? OR CONCAT(o.building, o.room) LIKE ?)`)
+    where.push(`(o.id LIKE ? OR o.contact_name LIKE ? OR o.phone LIKE ? OR r.name LIKE ? OR r.name_note LIKE ? OR r.phone LIKE ? OR CONCAT(o.building, o.room) LIKE ?)`)
     const like = `%${keyword.replace(/[\\%_]/g, '\\$&')}%`
-    values.push(like, like, like, like, like)
+    values.push(like, like, like, like, like, like, like)
   }
   const condition = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const offset = (page - 1) * pageSize

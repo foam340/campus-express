@@ -64,12 +64,16 @@ function seedState() {
 // 与后端订单映射一致：接单后、取消/收入冻结/结算之前可以选择不划给骑手。
 function normalizeMockOrder(order, riders, defaults = {}) {
   const source = { ...defaults, ...order }
-  const rider = riders.find(item => item.name === source.riderName)
+  const rider = riders.find(item => source.riderId != null && String(item.id) === String(source.riderId)) || riders.find(item => item.name === source.riderName)
   const riderId = source.riderId ?? (source.riderName ? (rider?.id || `mock-rider-${source.riderName}`) : 0)
   const incomeFrozenAtMs = Number(source.incomeFrozenAtMs) || 0
   const settledAtMs = Number(source.settledAtMs) || 0
   return {
     ...source, riderId,
+    riderName: rider?.nameNote || source.riderName || '',
+    riderNickname: rider?.name || source.riderNickname || source.riderName || '',
+    riderNameNote: rider?.nameNote || '',
+    riderPhone: rider?.phone || source.riderPhone || '',
     riderIncome:Number(source.riderIncome ?? source.originalPrice) || 0,
     withholdRiderIncome:Boolean(source.withholdRiderIncome),
     incomeFrozenAtMs, settledAtMs,
@@ -295,7 +299,7 @@ export async function handleMockRequest(options) {
     const keyword = String(url.searchParams.get('keyword') || '').toLowerCase()
     const status = String(url.searchParams.get('status') || '')
     const filtered = state.orders.filter(item => {
-      const matchKeyword = !keyword || [item.id,item.contactName,item.phone,item.riderName,item.building,item.room].some(value=>String(value||'').toLowerCase().includes(keyword))
+      const matchKeyword = !keyword || [item.id,item.contactName,item.phone,item.riderName,item.riderNickname,item.riderNameNote,item.riderPhone,item.building,item.room].some(value=>String(value||'').toLowerCase().includes(keyword))
       return matchKeyword && (!status || item.status === status)
     }).map(item => ({ ...item, attachmentCount:mockAttachments(item.id).length }))
     return pageResult(filtered, url.searchParams)
