@@ -46,7 +46,8 @@ _reassign_order.js
 .DS_Store
 Thumbs.db
 
-# Private operating notes are maintained outside this repository
+# Private operating notes stay local; only this reviewed redacted handoff is public
 docs/HANDOFF*
+!docs/HANDOFF-2026-08-26.md
 docs/*CAPACITY*
 docs/*SERVER-INFO*
