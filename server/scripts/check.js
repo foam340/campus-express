@@ -105,7 +105,7 @@ if (!miniRoutes.includes('await awardCompletedOrderExperience(connection, orderI
 for (const itemizedGuard of [
   "pricingModel: 'itemized_v1'",
   'MAX_ITEMIZED_ORDER_ITEMS',
-  'requestedVersion !== ITEMIZED_PRICING_CURRENT_VERSION',
+  '![2, ITEMIZED_PRICING_CURRENT_VERSION].includes(requestedVersion)',
   'PRICING_VERSION_MISMATCH',
   'PRICE_QUOTE_CHANGED',
   'input.quotedTotal',

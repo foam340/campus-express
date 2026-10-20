@@ -195,7 +195,7 @@ const createOrderMarkup = fs.readFileSync(path.join(root, 'packages/order/create
 if (/redirectTo[^\n]+\),\s*(?:500|700)\)/.test(createOrderCode)) {
   errors.push('Order success navigation must not retain artificial 500-700ms delays')
 }
-if (!createOrderCode.includes('ITEM_PRICES') || !createOrderCode.includes('orderDiscount(subtotal, pricing)')) {
+if (!createOrderCode.includes('ITEM_PRICES') || !createOrderCode.includes('orderDiscount(bundleBase, pricing)')) {
   errors.push('Normal order page must retain card-based item pricing')
 }
 if (!createOrderCode.includes('viewSizeGuide()') || !sourceText.includes('/packages/order/assets/size-guide.jpg')) {
@@ -210,8 +210,8 @@ if (!createOrderCode.includes("const URGENCY_FEES = { today: 0, urgent: 4 }") ||
 if (!createOrderCode.includes('function doorFeeFor(user, pricing)') || !createOrderCode.includes('if (isBuilding9(user)) return pricing.doorFee') || !createOrderCode.includes('dormFloor(user && user.room) >= 4 ? pricing.upperFloorDoorFee : pricing.doorFee')) {
   errors.push('Normal order page must retain the building-9 and floor-based door fee rules')
 }
-if (!createOrderCode.includes('const afterBundleDiscount = Math.max(0, subtotal - discount.amount)') || !createOrderCode.includes('const originalTotal = afterBundleDiscount + urgencyFee + deliveryFee + buildingFee')) {
-  errors.push('Normal order total must apply the bundle discount before service fees and coupon selection')
+if (!createOrderCode.includes('const bundleBase = Number((subtotal + urgencyFee + deliveryFee + buildingFee).toFixed(2))') || !createOrderCode.includes('bundleBase - Math.min(discount.amount, bundleBase)')) {
+  errors.push('Normal order bundle discounts must include all service fees before coupon selection')
 }
 if (!createOrderCode.includes("items: this.data.cards.map(card => ({ image: card.image, scope: card.scope, size: card.size }))") || !createOrderCode.includes('orderApi.createOrder({')) {
   errors.push('Card-based frontend must submit one image, scope and size per parcel through the order API')
@@ -219,7 +219,7 @@ if (!createOrderCode.includes("items: this.data.cards.map(card => ({ image: card
 if (!createOrderCode.includes('inputNote(event)') || !createOrderCode.includes("note: this.note || ''") || !createOrderMarkup.includes('maxlength="100"') || !createOrderMarkup.includes('bindinput="inputNote"')) {
   errors.push('Normal itemized order page must preserve the optional 100-character order note')
 }
-if (!createOrderCode.includes('TARGET_PRICING_VERSION = 2') || !createOrderCode.includes('couponId: this.data.selectedCouponId')) {
+if (!createOrderCode.includes('TARGET_PRICING_VERSION = 3') || !createOrderCode.includes('couponId: this.data.selectedCouponId')) {
   errors.push('Itemized pricing requests must preserve the selected coupon and pricing contract version')
 }
 const normalSubmitStart = createOrderCode.indexOf('  submit() {')

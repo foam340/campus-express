@@ -1,6 +1,6 @@
 const ITEM_SCOPES = Object.freeze(['campus', 'campus_7', 'off_campus'])
 const ITEM_SIZES = Object.freeze(['small', 'medium', 'large'])
-const ITEMIZED_PRICING_CURRENT_VERSION = 2
+const ITEMIZED_PRICING_CURRENT_VERSION = 3
 
 function moneyToCents(value) {
   const numeric = Number(value)
@@ -61,8 +61,6 @@ function calculateItemizedPrice(items, urgency, noUpstairs, settings, address = 
     }
   })
   const itemSubtotalCents = pricedItems.reduce((sum, item) => sum + moneyToCents(item.unitPrice), 0)
-  const selectedTier = bundleTiers(settings).find(item => itemSubtotalCents >= item.threshold)
-  const bundleDiscountCents = Math.min(selectedTier ? selectedTier.discount : 0, itemSubtotalCents)
   const urgencyFeeCents = urgency === 'urgent' ? settingCents(settings, 'item_urgent_fee') : 0
   const building9 = building9Fee !== false && normalizedBuilding(address.building) === '9'
   const buildingFeeCents = building9 ? optionalSettingCents(settings, 'item_building_9_fee') : 0
@@ -73,7 +71,12 @@ function calculateItemizedPrice(items, urgency, noUpstairs, settings, address = 
       ? optionalSettingCents(settings, 'item_upper_floor_door_fee', 'item_door_fee')
       : baseDoorFeeCents
   }
-  const totalCents = Math.max(0, itemSubtotalCents - bundleDiscountCents + urgencyFeeCents + doorFeeCents + buildingFeeCents)
+  const beforeDiscountCents = itemSubtotalCents + urgencyFeeCents + doorFeeCents + buildingFeeCents
+  // V3 整单费用参与满减；V2 保留旧报价口径，兼容用户尚未更新的小程序。
+  const bundleBaseCents = pricingVersion >= 3 ? beforeDiscountCents : itemSubtotalCents
+  const selectedTier = bundleTiers(settings).find(item => bundleBaseCents >= item.threshold)
+  const bundleDiscountCents = Math.min(selectedTier ? selectedTier.discount : 0, bundleBaseCents)
+  const totalCents = Math.max(0, beforeDiscountCents - bundleDiscountCents)
   return {
     pricingVersion,
     items: pricedItems,
