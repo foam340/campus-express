@@ -1,6 +1,10 @@
 <page-meta page-style="{{pageMetaStyle}}" background-color="{{pageBackgroundColor}}" root-background-color="{{pageBackgroundColor}}" />
 <network-banner />
 <view class="page campus-change-page">
+  <view wx:if="{{!reviewMode}}" class="card">
+    <view class="campus-tip">有进行中的订单时暂不能切换校区；切换成功后需重新填写新校区的收货地址。</view>
+  </view>
+
   <view class="card">
     <view class="section-title">当前校区</view>
     <view class="current-campus">{{currentCampusLabel}}</view>
@@ -13,10 +17,9 @@
       </view>
     </view>
     <view wx:if="{{reviewMode}}" class="campus-tip">变更需管理员审核，通过后生效；有未完成订单时审核不予通过。</view>
-    <view wx:else class="campus-tip">没有未完成的下单和配送任务时，提交申请即可转校区，无需人工审核。转区后须重新填写收货地址。</view>
   </view>
 
-  <view class="card">
+  <view wx:if="{{reviewMode}}" class="card">
     <view class="section-title">变更原因</view>
     <textarea class="reason-input" maxlength="300" placeholder="请说明您变更校区的原因，方便我们进行登记🌹" bindinput="inputReason" />
   </view>

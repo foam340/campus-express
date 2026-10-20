@@ -20,7 +20,7 @@ const loginLimiter = rateLimit({
 
 router.post('/login', loginLimiter, asyncRoute(async (request, response) => {
   const username = string(request.body && request.body.username, '账号', { min: 3, max: 64 })
-  const password = string(request.body && request.body.password, '密码', { min: 8, max: 128 })
+  const password = string(request.body && request.body.password, '密码', { min: 7, max: 128 })
   const [rows] = await pool.execute(
     `SELECT id, username, password_hash, display_name, roles_json, status, campus
        FROM admin_users

@@ -1456,7 +1456,7 @@ const campusChangeStatusText = Object.freeze({ pending: '等待审核', approved
 
 router.post('/campus-change-requests', authenticateMini, requireMiniIdempotency, asyncRoute(async (request, response) => {
   const toCampus = validate.oneOf(request.body && request.body.toCampus, '目标校区', CAMPUSES)
-  const reason = validate.string(request.body && request.body.reason, '申请原因', { min: 2, max: 300 })
+  const reason = validate.string(request.body && request.body.reason, '申请原因', { max: 300 })
   const result = await transaction(async connection => {
     const changed = await autoChangeCampus(connection, request.miniUser.id, toCampus, reason, request.miniUser.campus)
     await writeAudit(connection, request, 'campus_change_auto_approved', 'campus_change_request', changed.id, {

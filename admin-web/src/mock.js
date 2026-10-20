@@ -64,12 +64,16 @@ function seedState() {
 // 与后端订单映射一致：接单后、取消/收入冻结/结算之前可以选择不划给骑手。
 function normalizeMockOrder(order, riders, defaults = {}) {
   const source = { ...defaults, ...order }
-  const rider = riders.find(item => item.name === source.riderName)
+  const rider = riders.find(item => source.riderId != null && String(item.id) === String(source.riderId)) || riders.find(item => item.name === source.riderName)
   const riderId = source.riderId ?? (source.riderName ? (rider?.id || `mock-rider-${source.riderName}`) : 0)
   const incomeFrozenAtMs = Number(source.incomeFrozenAtMs) || 0
   const settledAtMs = Number(source.settledAtMs) || 0
   return {
     ...source, riderId,
+    riderName: rider?.nameNote || source.riderName || '',
+    riderNickname: rider?.name || source.riderNickname || source.riderName || '',
+    riderNameNote: rider?.nameNote || '',
+    riderPhone: rider?.phone || source.riderPhone || '',
     riderIncome:Number(source.riderIncome ?? source.originalPrice) || 0,
     withholdRiderIncome:Boolean(source.withholdRiderIncome),
     incomeFrozenAtMs, settledAtMs,
@@ -84,6 +88,7 @@ function readState() {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
     if (parsed && typeof parsed === 'object') state = { ...defaults, ...parsed }
   } catch (error) {}
+  state.settings = { ...defaults.settings, ...state.settings, autoConfirmHours:12 }
   const defaultOrders = new Map(defaults.orders.map(item => [item.id, item]))
   // 兼容旧 Mock 缓存：补齐新增字段，保留已经修改过的订单状态、扣留标记和其他演示数据。
   state.orders = state.orders.map(order => normalizeMockOrder(order, state.riders, defaultOrders.get(order.id)))
@@ -295,7 +300,7 @@ export async function handleMockRequest(options) {
     const keyword = String(url.searchParams.get('keyword') || '').toLowerCase()
     const status = String(url.searchParams.get('status') || '')
     const filtered = state.orders.filter(item => {
-      const matchKeyword = !keyword || [item.id,item.contactName,item.phone,item.riderName,item.building,item.room].some(value=>String(value||'').toLowerCase().includes(keyword))
+      const matchKeyword = !keyword || [item.id,item.contactName,item.phone,item.riderName,item.riderNickname,item.riderNameNote,item.riderPhone,item.building,item.room].some(value=>String(value||'').toLowerCase().includes(keyword))
       return matchKeyword && (!status || item.status === status)
     }).map(item => ({ ...item, attachmentCount:mockAttachments(item.id).length }))
     return pageResult(filtered, url.searchParams)
@@ -402,7 +407,7 @@ export async function handleMockRequest(options) {
     return { reviewMode:state.settings.reviewMode }
   }
   if (path === '/admin/settings/operational' && method === 'PUT') {
-    const allowed=['autoConfirmHours','observationHours','claimLimit']
+    const allowed=['observationHours','claimLimit']
     allowed.forEach(key=>{if(Object.prototype.hasOwnProperty.call(data,key))state.settings[key]=data[key]})
     audit(state,'更新运营参数',`自动完成 ${state.settings.autoConfirmHours}h · 观察 ${state.settings.observationHours}h · 理赔上限 ¥${state.settings.claimLimit}`)
     writeState(state);return state.settings
@@ -417,7 +422,7 @@ export async function handleMockRequest(options) {
     const priceFields=['campusPrice','offCampusPrice','campusUrgentPrice','offCampusUrgentPrice','extraPiecePrice','largePrice','itemSmallCampusPrice','itemSmallOffCampusPrice','itemMediumCampusPrice','itemMediumOffCampusPrice','itemLargeCampusPrice','itemLargeOffCampusPrice','itemPricingVersion','itemUrgentFee','itemDoorFee','itemBuilding9Fee','itemUpperFloorDoorFee','bundleTier0Threshold','bundleTier0Discount','bundleTier1Threshold','bundleTier1Discount','bundleTier2Threshold','bundleTier2Discount','commissionRate']
     const priceChanged=priceFields.some(key=>Object.prototype.hasOwnProperty.call(data,key)&&Number(data[key])!==Number(state.settings[key]))
     if(priceChanged)throw new Error('正式价格随小程序版本发布，不能在管理台单独修改')
-    const allowed=['autoConfirmHours','observationHours','claimLimit','serviceStatus','serviceNotice']
+    const allowed=['observationHours','claimLimit','serviceStatus','serviceNotice']
     allowed.forEach(key=>{if(Object.prototype.hasOwnProperty.call(data,key))state.settings[key]=data[key]})
     audit(state,'更新平台设置','已保存正式业务参数');writeState(state);return state.settings
   }

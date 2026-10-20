@@ -42,11 +42,17 @@ const CAMPUS_SERVICE = {
       { label: '客服 2', wechat: '13502782984', qr: '/packages/account/assets/admin-wechat-nanhai-2.jpg' }
     ]
   },
-  shipai: { wechat: '17695112993', qr: '/packages/account/assets/admin-wechat-shipai.png' },
+  shipai: {
+    wechat: '15889237520', qr: '/packages/account/assets/admin-wechat-shipai.png',
+    additionalContacts: [
+      { label: '客服 2', wechat: '19927171589', qr: '/packages/account/assets/admin-wechat-shipai-2.jpg' }
+    ]
+  },
   gqg: {
     wechat: '13829692581', qr: '/packages/account/assets/admin-wechat-gqg.jpg',
     additionalContacts: [
-      { label: '客服 2', wechat: '15089147976', qr: '/packages/account/assets/admin-wechat-gqg-2.jpg' }
+      { label: '客服 2', wechat: '15089147976', qr: '/packages/account/assets/admin-wechat-gqg-2.jpg' },
+      { label: '客服 3', wechat: '13240383539', qr: '/packages/account/assets/admin-wechat-gqg-3.jpg' }
     ]
   }
 }

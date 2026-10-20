@@ -19,6 +19,7 @@ const { buildWithdrawalEmail } = require('../rider-notify')
 const { isKnownCampus, DEFAULT_CAMPUS, normalizeCampusLenient, stationLabel, CAMPUS_CONFIG } = require('../campus-config')
 
 const router = express.Router()
+const AUTO_CONFIRM_HOURS = 12
 const orderStatuses = ['unpaid', 'waiting', 'accepted', 'picked', 'delivering', 'delivered', 'completed', 'cancelled', 'disputed']
 const statusLabels = {
   unpaid: '待支付', waiting: '待接单', accepted: '已接单', picked: '已取件', delivering: '配送中',
@@ -183,7 +184,7 @@ async function readSettings(executor = pool, campus = 'nanhai') {
     bundleTier1Discount: Number(item.bundle_tier1_discount),
     bundleTier2Threshold: Number(item.bundle_tier2_threshold),
     bundleTier2Discount: Number(item.bundle_tier2_discount),
-    autoConfirmHours: Number(item.auto_confirm_hours),
+    autoConfirmHours: AUTO_CONFIRM_HOURS,
     observationHours: Number(item.observation_hours),
     claimLimit: Number(item.claim_limit),
     commissionRate: Number(item.commission_rate),
@@ -624,9 +625,9 @@ router.get('/orders', requireRoles('operator', 'customer_service', 'finance', 'a
   values.push(campus)
   if (status) { where.push('o.status = ?'); values.push(status) }
   if (keyword) {
-    where.push(`(o.id LIKE ? OR o.contact_name LIKE ? OR o.phone LIKE ? OR r.name LIKE ? OR CONCAT(o.building, o.room) LIKE ?)`)
+    where.push(`(o.id LIKE ? OR o.contact_name LIKE ? OR o.phone LIKE ? OR r.name LIKE ? OR r.name_note LIKE ? OR r.phone LIKE ? OR CONCAT(o.building, o.room) LIKE ?)`)
     const like = `%${keyword.replace(/[\\%_]/g, '\\$&')}%`
-    values.push(like, like, like, like, like)
+    values.push(like, like, like, like, like, like, like)
   }
   const condition = where.length ? `WHERE ${where.join(' AND ')}` : ''
   const offset = (page - 1) * pageSize
@@ -1432,7 +1433,7 @@ router.put('/settings', requireRoles('admin'), requireIdempotency, asyncRoute(as
     bundleTier1Discount: current.bundleTier1Discount,
     bundleTier2Threshold: current.bundleTier2Threshold,
     bundleTier2Discount: current.bundleTier2Discount,
-    autoConfirmHours: validate.integer(body.autoConfirmHours, '自动完成小时', { min: 1, max: 72 }),
+    autoConfirmHours: AUTO_CONFIRM_HOURS,
     observationHours: validate.integer(body.observationHours, '售后观察小时', { min: 1, max: 168 }),
     claimLimit: validate.numeric(body.claimLimit, '单笔理赔上限', { min: 0, max: 200 }),
     commissionRate: current.commissionRate,
@@ -1490,7 +1491,7 @@ router.put('/settings', requireRoles('admin'), requireIdempotency, asyncRoute(as
 router.put('/settings/operational', requireRoles('admin'), requireIdempotency, asyncRoute(async (request, response) => {
   const body = request.body || {}
   const settings = {
-    autoConfirmHours: validate.integer(body.autoConfirmHours, '自动完成小时', { min: 1, max: 72 }),
+    autoConfirmHours: AUTO_CONFIRM_HOURS,
     observationHours: validate.integer(body.observationHours, '售后观察小时', { min: 1, max: 168 }),
     claimLimit: validate.numeric(body.claimLimit, '单笔理赔上限', { min: 0, max: 200 })
   }

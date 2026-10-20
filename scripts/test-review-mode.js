@@ -65,9 +65,13 @@ async function testGlobalSettings() {
   for (const campus of campuses) assert.equal(store.getSettings(campus).reviewMode, false, 'Normal mode restores all campuses')
   assert.equal(store.getSettings('shipai').campusPrice, 3, 'Global display mode must preserve campus pricing')
   store.beginReviewModeRefresh()
-  for (const campus of campuses) assert.equal(store.getSettings(campus).reviewMode, true)
+  for (const campus of campuses) assert.equal(store.getSettings(campus).reviewMode, false, 'Warm refresh must preserve confirmed normal mode')
   store.finishReviewModeRefresh()
-  assert.equal(store.getSettings().reviewMode, true, 'Request failure must keep financial content hidden')
+  assert.equal(store.getSettings().reviewMode, false, 'A failed refresh must not change the last confirmed mode')
+  const cold = harness().store
+  cold.beginReviewModeRefresh()
+  cold.finishReviewModeRefresh()
+  for (const campus of campuses) assert.equal(cold.getSettings(campus).reviewMode, true, 'Cold failure must keep financial content hidden')
 }
 
 async function testPageLifecycle() {
@@ -91,8 +95,8 @@ async function testPageLifecycle() {
   assert.equal(instance.data.reviewMode, false)
   instance.setData({ showPayQr: true, showCouponSheet: true, showCouponGift: true })
   store.beginReviewModeRefresh()
-  assert.equal(instance.data.reviewMode, true)
-  for (const key of ['showPayQr', 'showCouponSheet', 'showCouponGift']) assert.equal(instance.data[key], true, 'Verification hides but preserves normal UI state')
+  assert.equal(instance.data.reviewMode, false, 'Warm refresh must not show review content')
+  for (const key of ['showPayQr', 'showCouponSheet', 'showCouponGift']) assert.equal(instance.data[key], true, 'Normal UI state survives verification')
   store.finishReviewModeRefresh(false)
   assert.equal(instance.data.reviewMode, false)
   assert.equal(instance.data.showPayQr, true, 'Normal payment state survives foreground verification')
@@ -145,6 +149,90 @@ async function testAppRefresh() {
   await assert.rejects(pending, /offline/)
   assert.equal(store.getSettings().reviewMode, true)
   assert.equal(app.settingsRefreshTask, null)
+}
+
+async function testNormalNavigationDoesNotFlash() {
+  for (const campus of ['nanhai', 'shipai', 'gqg']) {
+    const { store, state } = harness()
+    store.setUser({ campus })
+    store.finishReviewModeRefresh(false)
+    let app, definition, nextSettings = deferred()
+    load('app.js', {
+      './utils/store': store, './utils/state': state, './utils/storage': {}, './utils/network': {},
+      './utils/preload': {}, './utils/mini-auth': {}, './utils/theme': {},
+      './utils/order-api': { getMiniSettings: () => nextSettings.promise },
+      './utils/errors': { reportError(error) { throw error } }
+    }, { App: value => { app = value } })
+    const createPage = load('utils/page.js', {
+      './store': store, './state': state,
+      './errors': { reportError(error) { throw error } },
+      './theme': { getPageMetaStyle: () => '', getPageBackgroundColor: () => '#fff', applyChrome() {} }
+    }, { Page: value => { definition = value }, getApp: () => app })
+    createPage({ data: { reviewMode: true, showPayQr: true } })
+    const frames = [definition.data.reviewMode]
+    const instance = { ...definition, data: { ...definition.data }, setData(patch) {
+      Object.assign(this.data, patch)
+      if (Object.prototype.hasOwnProperty.call(patch, 'reviewMode')) frames.push(patch.reviewMode)
+    } }
+    instance.onLoad({}); instance.onShow()
+    for (const target of ['nanhai', 'shipai', 'gqg']) assert.equal(store.getSettings(target).reviewMode, false)
+    nextSettings.resolve({ reviewMode: false })
+    await app.settingsRefreshTask
+    assert(frames.every(value => value === false), campus + ': normal navigation must never render review mode')
+    nextSettings = deferred()
+    instance.onHide(); instance.onShow()
+    const failedRefresh = app.settingsRefreshTask
+    nextSettings.reject(new Error('offline'))
+    await assert.rejects(failedRefresh, /offline/)
+    assert(frames.every(value => value === false), 'Network failure must not produce an audit-page flash')
+    assert.equal(instance.data.showPayQr, true, 'Payment state must survive normal navigation and refresh failure')
+    nextSettings = deferred()
+    instance.onShow()
+    const switchToReview = app.settingsRefreshTask
+    nextSettings.resolve({ reviewMode: true })
+    await switchToReview
+    assert.equal(instance.data.reviewMode, true, 'A real server mode change still takes effect')
+    assert.equal(instance.data.showPayQr, false)
+    store.setSettings({ reviewMode: false }, 'shipai')
+    assert.equal(instance.data.reviewMode, true, 'Late campus responses must not undo confirmed review mode')
+    nextSettings = deferred()
+    instance.onShow()
+    const reviewFailure = app.settingsRefreshTask
+    nextSettings.reject(new Error('offline'))
+    await assert.rejects(reviewFailure, /offline/)
+    assert.equal(instance.data.reviewMode, true, 'Confirmed review mode remains active on network failure')
+    nextSettings = deferred()
+    instance.onShow()
+    const switchToNormal = app.settingsRefreshTask
+    nextSettings.resolve({ reviewMode: false })
+    await switchToNormal
+    assert.equal(instance.data.reviewMode, false, 'A real server switch back to normal mode must still take effect')
+    instance.onUnload()
+  }
+}
+
+async function testCachedHomeCannotChangeMode() {
+  for (const campus of ['nanhai', 'shipai', 'gqg']) for (const confirmed of [false, true]) {
+    const { store } = harness()
+    store.completeRegistration({ name: '测试', phone: '13800000000', campus, building: '1栋', room: '101' })
+    store.finishReviewModeRefresh(confirmed)
+    const instance = page('pages/user/home/home.js', {
+      '../../../utils/store': store,
+      '../../../utils/order-api': {
+        getHomeOverview: () => Promise.resolve({ orders: [], coupons: [], settings: { reviewMode: !confirmed, serviceStatus: 'open' } }),
+        listCoupons: () => Promise.resolve([])
+      }
+    }, { getStorageSync: () => 0 })
+    instance.$setDataChanged = instance.setData
+    await instance.refreshHome()
+    assert.equal(store.getSettings().reviewMode, confirmed, 'Cached home must not override the independently confirmed mode')
+    assert.equal(instance.data.reviewMode, confirmed)
+    for (const target of ['nanhai', 'shipai', 'gqg']) {
+      store.setSettings({ reviewMode: !confirmed, campusPrice: 9 }, target)
+      assert.equal(store.getSettings(target).reviewMode, confirmed, 'Late page settings must not change mode in either direction')
+      assert.equal(store.getSettings(target).campusPrice, 9, 'Business settings must still update')
+    }
+  }
 }
 
 async function testLatePaymentResponse() {
@@ -233,9 +321,11 @@ async function main() {
   await testGlobalSettings()
   await testPageLifecycle()
   await testAppRefresh()
+  await testNormalNavigationDoesNotFlash()
+  await testCachedHomeCannotChangeMode()
   await testLatePaymentResponse()
   await testFinancialActions()
   await testPaymentDuringVerification()
-  console.log('Review mode checks passed: three-campus cache isolation, first frame, refresh failure, page lifecycle, late payments and financial action guards.')
+  console.log('Review mode checks passed: three-campus cache isolation, stable normal navigation, cold/warm failures, real mode changes, page lifecycle, late payments and financial guards.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

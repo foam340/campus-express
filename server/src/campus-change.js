@@ -1,6 +1,16 @@
 const { HttpError } = require('./http')
 const { normalizeCampus, normalizeCampusLenient } = require('./campus-config')
 
+// 售后已全部结案的 disputed 单不再阻止转校区。保留订单与账务，不能为放行而改成 completed 触发收入结算。
+// 必须有结案记录且没有任何未结案记录；无售后记录的异常状态仍须人工核实。
+const unfinishedOrderCondition = `o.status NOT IN ('completed', 'cancelled') AND NOT (
+  o.status = 'disputed'
+  AND EXISTS (
+    SELECT 1 FROM after_sales a WHERE a.order_id = o.id
+    GROUP BY a.order_id HAVING SUM(a.status <> 'resolved') = 0
+  )
+)`
+
 // 与下单、接单、骑手申请审核共用 users → riders → orders 的锁顺序。
 // 必须在事务内重新读取，不能用鉴权时的旧校区判断或创建订单。
 async function lockCampusUser(connection, userId, expectedCampus) {
@@ -24,12 +34,12 @@ async function applyCampusChange(connection, user, targetCampus, expectedFromCam
   // 包含暂停资格的骑手；资格状态不改变其未完配送任务的约束。
   const [riders] = await connection.execute('SELECT id FROM riders WHERE user_id = ? FOR UPDATE', [user.id])
   const [orders] = await connection.execute(
-    "SELECT id FROM orders WHERE user_id = ? AND status NOT IN ('completed', 'cancelled') LIMIT 1 FOR UPDATE", [user.id]
+    `SELECT o.id FROM orders o WHERE o.user_id = ? AND ${unfinishedOrderCondition} LIMIT 1 FOR UPDATE`, [user.id]
   )
   if (orders.length) throw new HttpError(409, '还有未完成的下单，请先处理完再转校区', 'CAMPUS_CHANGE_HAS_OPEN_ORDERS')
   for (const rider of riders) {
     const [tasks] = await connection.execute(
-      "SELECT id FROM orders WHERE rider_id = ? AND status NOT IN ('completed', 'cancelled') LIMIT 1 FOR UPDATE", [rider.id]
+      `SELECT o.id FROM orders o WHERE o.rider_id = ? AND ${unfinishedOrderCondition} LIMIT 1 FOR UPDATE`, [rider.id]
     )
     if (tasks.length) throw new HttpError(409, '还有未完成的配送任务，请先处理完再转校区', 'CAMPUS_CHANGE_HAS_RIDER_TASKS')
   }

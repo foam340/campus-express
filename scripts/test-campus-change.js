@@ -10,7 +10,7 @@ function fixture(campus, rider = false) {
     users: [{ id: 1, campus, status: 'active', building: '1', room: '101', address: '旧地址' }],
     riders: rider ? [{ id: 2, user_id: 1, campus, status: 'approved', available_balance: 8 }] : [],
     orders: [], applications: [{ id: 3, user_id: 1, campus, status: 'pending' }],
-    requests: [{ id: 4, user_id: 1, from_campus: campus, to_campus: 'shipai', status: 'pending' }]
+    requests: [{ id: 4, user_id: 1, from_campus: campus, to_campus: 'shipai', status: 'pending' }], afterSales: []
   }
   const statements = []
   const connection = { async execute(sql, values) {
@@ -18,10 +18,13 @@ function fixture(campus, rider = false) {
     statements.push(text)
     if (text.startsWith('SELECT * FROM users')) return [db.users.filter(row => row.id === values[0])]
     if (text.startsWith('SELECT id FROM riders')) return [db.riders.filter(row => row.user_id === values[0])]
-    if (text.startsWith('SELECT id FROM orders')) {
-      const column = text.includes('WHERE user_id') ? 'user_id' : 'rider_id'
-      const excluded = [...text.matchAll(/'([^']+)'/g)].map(match => match[1])
-      return [db.orders.filter(row => row[column] === values[0] && !excluded.includes(row.status)).slice(0, 1)]
+    if (text.startsWith('SELECT o.id FROM orders')) {
+      const column = text.includes('WHERE o.user_id') ? 'user_id' : 'rider_id'
+      return [db.orders.filter(row => {
+        if (row[column] !== values[0] || ['completed', 'cancelled'].includes(row.status)) return false
+        const claims = db.afterSales.filter(item => item.order_id === row.id)
+        return !(row.status === 'disputed' && claims.some(item => item.status === 'resolved') && claims.every(item => item.status === 'resolved'))
+      }).slice(0, 1)]
     }
     if (text.startsWith('UPDATE users')) {
       Object.assign(db.users.find(row => row.id === values[1]), { campus: values[0], building: '', room: '', address: '' })
@@ -115,6 +118,68 @@ async function testClient() {
   }
 }
 
+async function testResolvedClaims() {
+  for (const from of CAMPUSES) for (const to of CAMPUSES.filter(campus => campus !== from)) {
+    for (const asRider of [false, true]) for (const statuses of [[], ['open'], ['processing'], ['resolved'], ['resolved','resolved'], ['resolved','open'], ['resolved','processing']]) {
+      const {db,connection,statements} = fixture(from, true)
+      const order = {id:'CLAIM-ORDER',user_id:asRider?99:1,rider_id:asRider?2:99,status:'disputed',rider_income:8,settled_at:null,withhold_rider_income:0}
+      db.orders.push(order)
+      db.afterSales = statuses.map((status,index)=>({id:index+1,order_id:order.id,status}))
+      const history = JSON.stringify({orders:db.orders,claims:db.afterSales})
+      const closed = statuses.length > 0 && statuses.every(status=>status === 'resolved')
+      if (closed) {
+        await autoChangeCampus(connection,1,to,'测试已结案售后',from)
+        assert.equal(db.users[0].campus,to)
+        assert.equal(db.riders[0].campus,to)
+        assert.equal(db.riders[0].available_balance,8)
+      } else await assert.rejects(autoChangeCampus(connection,1,to,'未结案售后',from),error=>error.code === (asRider?'CAMPUS_CHANGE_HAS_RIDER_TASKS':'CAMPUS_CHANGE_HAS_OPEN_ORDERS'))
+      assert.equal(JSON.stringify({orders:db.orders,claims:db.afterSales}),history,'Transfer must never change disputed orders, compensation or settlement')
+      assert(!statements.some(sql=>/^(INSERT|UPDATE) (orders|after_sales)/.test(sql)))
+    }
+    const {db,connection} = fixture(from)
+    db.orders.push({id:'CLOSED',user_id:1,status:'disputed'},{id:'ACTIVE',user_id:1,status:'waiting'})
+    db.afterSales.push({order_id:'CLOSED',status:'resolved'})
+    await assert.rejects(autoChangeCampus(connection,1,to,'仍有其他未完订单',from),error=>error.code === 'CAMPUS_CHANGE_HAS_OPEN_ORDERS')
+  }
+}
+
+async function testProfilePicker() {
+  const source = fs.readFileSync(path.join(__dirname,'../packages/account/edit-profile/edit-profile.js'),'utf8')
+  const constants = require('../config/constants')
+  for (const campus of CAMPUSES) for (const reviewMode of [false,true]) for (const hasBuilding of [false,true]) {
+    const buildings = constants.getDormBuildings(campus)
+    const user = {name:'测试用户',phone:'13800000000',campus,building:hasBuilding?buildings.at(-1):'',room:'101'}
+    const saved=[],toasts=[]
+    let definition
+    vm.runInNewContext(source,{
+      require(name) {
+        if(name.endsWith('/page')) return value=>definition=value
+        if(name.endsWith('/store')) return {getUser:()=>user,setUser(){}}
+        if(name.endsWith('/mini-auth')) return {updateProfile:async value=>{saved.push(value);return value}}
+        if(name.endsWith('/constants')) return constants
+        if(name.endsWith('/validators')) return require('../utils/validators')
+        throw new Error(name)
+      },wx:{showToast(value){toasts.push(value.title)}}
+    })
+    const page={...definition,data:{...definition.data,reviewMode},$setTimeout(){},setData(patch){for(const [key,value] of Object.entries(patch)){if(key==='user.building')this.data.user={...this.data.user,building:value};else this.data[key]=value}}}
+    page.onLoad()
+    assert.equal(page.data.buildingSelected,hasBuilding)
+    assert.equal(page.data.normalBuildingIndex,hasBuilding?buildings.length:0)
+    assert.equal(page.data.normalBuildingLabels[0],'请选择宿舍楼')
+    if(!hasBuilding){page.save();assert.equal(saved.length,0);assert.equal(toasts.at(-1),'请选择宿舍楼')}
+    for(const index of [0,buildings.length-1]){
+      page.chooseBuilding({detail:{value:reviewMode?index:index+1}})
+      assert.equal(page.form.building,buildings[index])
+      assert.equal(page.data.buildingLabels[page.data.buildingIndex],constants.getDormBuildingLabels(campus)[index])
+    }
+    page.save()
+    await new Promise(resolve=>setImmediate(resolve))
+    assert.equal(saved.length,1)
+    assert.equal(saved[0].building,buildings.at(-1))
+    if(!reviewMode){page.chooseBuilding({detail:{value:0}});assert.equal(page.form.building,'');assert.equal(page.data.buildingSelected,false)}
+  }
+}
+
 async function testStaleRoutes() {
   const routes = new Map()
   const noop = (request, response, next) => next()
@@ -161,7 +226,9 @@ async function testStaleRoutes() {
 async function main() {
   await testEligibility()
   await testClient()
+  await testResolvedClaims()
+  await testProfilePicker()
   await testStaleRoutes()
-  console.log('Campus change checks passed: six campus directions, user/rider unfinished statuses, suspended riders, synced profiles, history preservation and client compatibility.')
+  console.log('Campus change checks passed: six directions, user/rider unfinished and resolved claims, preserved accounting, profile picker, synced profiles and old clients.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

@@ -6,11 +6,11 @@
     <view class="field"><text>称呼</text><input value="{{user.name}}" maxlength="12" placeholder="请输入称呼" bindinput="inputName"/></view>
     <view class="field"><text>手机号</text><input value="{{user.phone}}" type="number" maxlength="11" placeholder="请输入手机号" bindinput="inputPhone"/></view>
     <block wx:if="{{roomRule !== 'free'}}">
-      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{buildingLabels[buildingIndex] || user.building}}</text><text>点击选择</text></view></view></picker>
+      <picker range="{{reviewMode ? buildingLabels : normalBuildingLabels}}" value="{{reviewMode ? buildingIndex : normalBuildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{reviewMode ? (buildingLabels[buildingIndex] || user.building) : (buildingSelected ? buildingLabels[buildingIndex] : '请选择宿舍楼')}}</text><text>点击选择</text></view></view></picker>
       <view class="field room-field"><text>门牌号</text><view class="room-input"><input value="{{user.room}}" maxlength="10" placeholder="例如：421" bindinput="inputRoom"/><view>门牌号首位表示楼层，如421表示4楼21号</view></view></view>
     </block>
     <block wx:else>
-      <picker range="{{buildingLabels}}" value="{{buildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{buildingLabels[buildingIndex] || user.building}}</text><text>点击选择</text></view></view></picker>
+      <picker range="{{reviewMode ? buildingLabels : normalBuildingLabels}}" value="{{reviewMode ? buildingIndex : normalBuildingIndex}}" bindchange="chooseBuilding"><view class="field"><text>宿舍楼</text><view class="building-select"><text>{{reviewMode ? (buildingLabels[buildingIndex] || user.building) : (buildingSelected ? buildingLabels[buildingIndex] : '请选择宿舍楼')}}</text><text>点击选择</text></view></view></picker>
       <view class="field room-field"><text>房号</text><view class="room-input"><input value="{{user.room}}" maxlength="20" placeholder="请填写房号" bindinput="inputRoom"/></view></view>
     </block>
   </view>

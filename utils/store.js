@@ -176,7 +176,9 @@ function saveOrders(orders) {
 
 function getOrder(id) { return typeof id === 'string' ? getOrders().find(item => item.id === id) || null : null }
 
-function currentReviewMode() { return reviewModeRefreshing || remoteReviewMode !== false }
+// 正在刷新不代表审核已开启；同一会话保持已确认的模式，避免正常页面来回闪动。
+// 冷启动尚无远程结果时仍使用审核兜底，不信任持久化的 false。
+function currentReviewMode() { return remoteReviewMode !== false }
 
 function publishReviewMode() {
   const reviewMode = currentReviewMode()
@@ -192,7 +194,7 @@ function beginReviewModeRefresh() {
 }
 
 function finishReviewModeRefresh(value) {
-  remoteReviewMode = typeof value === 'boolean' ? value : undefined
+  if (typeof value === 'boolean') remoteReviewMode = value
   reviewModeRefreshing = false
   publishReviewMode()
 }
@@ -213,10 +215,8 @@ function setSettings(settings, campus) {
   ensureDemoData()
   const keyCampus = String(campus || currentCampus()).trim() || 'nanhai'
   const current = getSettings(keyCampus)
-  if (settings && typeof settings.reviewMode === 'boolean') {
-    // 只有全局设置核验可以退出已确认的审核模式，避免晚返回的校区响应恢复金额。
-    if (settings.reviewMode || remoteReviewMode !== true) remoteReviewMode = settings.reviewMode
-  }
+  // 首页会在弱网时返回旧缓存，下单页设置也可能晚到；这些附带结果不能改变全局模式。
+  // 只有 app.refreshSettings 调用 finishReviewModeRefresh 后才能确认展示模式。
   const normalized = Object.assign(
     {},
     DEFAULT_SETTINGS,

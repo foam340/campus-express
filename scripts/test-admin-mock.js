@@ -54,7 +54,36 @@ async function run() {
     persisted.orders[0].status = 'cancelled'
     storage.set('campus_admin_mock_v5', JSON.stringify(persisted))
     assert.equal((await list()).items[0].riderPayoutPending, false)
-    console.log('Admin Mock checks passed: payout eligibility, withheld/frozen/settled demos, guards, persistence, audit and legacy cache migration.')
+
+    // 姓名备注与昵称不同，订单手机号也与骑手手机号不同，避免误由原字段匹配。
+    storage.set('campus_admin_mock_v5', JSON.stringify({
+      riders:[{ id:'R-search', name:'骑手昵称', nameNote:'搜索备注甲', phone:'13900001234' }],
+      orders:[
+        { id:'SEARCH-TARGET', riderId:'R-search', riderName:'骑手昵称', phone:'13800005678', status:'delivering' },
+        { id:'SEARCH-OTHER', riderName:'其他骑手', phone:'13800009999', status:'delivering' },
+        { id:'SEARCH-WAITING', riderName:'', phone:'13800008888', status:'waiting' }
+      ]
+    }))
+    for (const keyword of ['搜索备注甲', '备注甲', '13900001234', '001234', '骑手昵称', '13800005678']) {
+      const result = await request('/admin/orders?keyword=' + encodeURIComponent(keyword))
+      assert.equal(result.total, 1)
+      assert.equal(result.items[0].id, 'SEARCH-TARGET')
+      assert.equal(result.items[0].riderName, '搜索备注甲')
+      assert.equal(result.items[0].riderPhone, '13900001234')
+    }
+    assert.equal((await request('/admin/orders?keyword=' + encodeURIComponent('搜索备注甲') + '&status=completed')).total, 0)
+    assert.equal((await request('/admin/orders?keyword=' + encodeURIComponent('不存在的备注'))).total, 0)
+    for (const endpoint of ['/admin/settings/operational','/admin/settings']) {
+      const settings = await handleMockRequest({url:endpoint,method:'PUT',headers:{Authorization:'Bearer mock-admin-token'},data:{autoConfirmHours:72,observationHours:36,claimLimit:150}})
+      assert.equal(settings.autoConfirmHours,12)
+      assert.equal(settings.observationHours,36)
+      assert.equal(settings.claimLimit,150)
+    }
+    const legacyState=JSON.parse(storage.get('campus_admin_mock_v5'))
+    legacyState.settings.autoConfirmHours=72
+    storage.set('campus_admin_mock_v5',JSON.stringify(legacyState))
+    assert.equal((await request('/admin/settings')).autoConfirmHours,12)
+    console.log('Admin Mock checks passed: payout demos, persistence, rider searches and fixed 12-hour completion settings.')
   } finally {
     for (const [key, descriptor] of savedGlobals) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor)

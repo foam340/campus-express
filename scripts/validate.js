@@ -266,7 +266,7 @@ for (const asset of assets) {
   const size = fs.statSync(asset).size
   const relativeAsset = path.relative(root, asset).replace(/\\/g, '/')
   // 本地/包内 WebP 在微信小程序 <image> 里不可靠（安卓+iOS 真机均空白），客服二维码与示例图必须保留为 PNG/JPG
-  const isRasterRequiredAsset = /^packages\/(?:account\/assets\/admin-wechat(?:-shipai|-(?:gqg|nanhai)(?:-\d+)?)?|order\/assets\/(?:sample-pickup|size-guide))\.(?:png|jpe?g)$/i.test(relativeAsset)
+  const isRasterRequiredAsset = /^packages\/(?:account\/assets\/admin-wechat(?:-shipai(?:-\d+)?|-(?:gqg|nanhai)(?:-\d+)?)?|order\/assets\/(?:sample-pickup|size-guide))\.(?:png|jpe?g)$/i.test(relativeAsset)
   if (size > 200 * 1024) errors.push(`Asset exceeds 200KB: ${relativeAsset} (${size} bytes)`)
   if (/\.(png|jpe?g)$/i.test(asset) && size > 50 * 1024 && !isRasterRequiredAsset) errors.push(`Large image must use WebP: ${relativeAsset}`)
   const reference = `/${relativeAsset}`
