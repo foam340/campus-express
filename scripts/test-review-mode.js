@@ -211,6 +211,30 @@ async function testNormalNavigationDoesNotFlash() {
   }
 }
 
+async function testCachedHomeCannotChangeMode() {
+  for (const campus of ['nanhai', 'shipai', 'gqg']) for (const confirmed of [false, true]) {
+    const { store } = harness()
+    store.completeRegistration({ name: '测试', phone: '13800000000', campus, building: '1栋', room: '101' })
+    store.finishReviewModeRefresh(confirmed)
+    const instance = page('pages/user/home/home.js', {
+      '../../../utils/store': store,
+      '../../../utils/order-api': {
+        getHomeOverview: () => Promise.resolve({ orders: [], coupons: [], settings: { reviewMode: !confirmed, serviceStatus: 'open' } }),
+        listCoupons: () => Promise.resolve([])
+      }
+    }, { getStorageSync: () => 0 })
+    instance.$setDataChanged = instance.setData
+    await instance.refreshHome()
+    assert.equal(store.getSettings().reviewMode, confirmed, 'Cached home must not override the independently confirmed mode')
+    assert.equal(instance.data.reviewMode, confirmed)
+    for (const target of ['nanhai', 'shipai', 'gqg']) {
+      store.setSettings({ reviewMode: !confirmed, campusPrice: 9 }, target)
+      assert.equal(store.getSettings(target).reviewMode, confirmed, 'Late page settings must not change mode in either direction')
+      assert.equal(store.getSettings(target).campusPrice, 9, 'Business settings must still update')
+    }
+  }
+}
+
 async function testLatePaymentResponse() {
   for (const file of ['packages/order/create/create.js', 'packages/order/detail/detail.js']) {
     let calls = 0, previews = 0
@@ -298,6 +322,7 @@ async function main() {
   await testPageLifecycle()
   await testAppRefresh()
   await testNormalNavigationDoesNotFlash()
+  await testCachedHomeCannotChangeMode()
   await testLatePaymentResponse()
   await testFinancialActions()
   await testPaymentDuringVerification()
