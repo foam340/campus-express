@@ -73,7 +73,17 @@ async function run() {
     }
     assert.equal((await request('/admin/orders?keyword=' + encodeURIComponent('搜索备注甲') + '&status=completed')).total, 0)
     assert.equal((await request('/admin/orders?keyword=' + encodeURIComponent('不存在的备注'))).total, 0)
-    console.log('Admin Mock checks passed: payout demos, guards, persistence, legacy migration, rider note/phone searches and status filtering.')
+    for (const endpoint of ['/admin/settings/operational','/admin/settings']) {
+      const settings = await handleMockRequest({url:endpoint,method:'PUT',headers:{Authorization:'Bearer mock-admin-token'},data:{autoConfirmHours:72,observationHours:36,claimLimit:150}})
+      assert.equal(settings.autoConfirmHours,12)
+      assert.equal(settings.observationHours,36)
+      assert.equal(settings.claimLimit,150)
+    }
+    const legacyState=JSON.parse(storage.get('campus_admin_mock_v5'))
+    legacyState.settings.autoConfirmHours=72
+    storage.set('campus_admin_mock_v5',JSON.stringify(legacyState))
+    assert.equal((await request('/admin/settings')).autoConfirmHours,12)
+    console.log('Admin Mock checks passed: payout demos, persistence, rider searches and fixed 12-hour completion settings.')
   } finally {
     for (const [key, descriptor] of savedGlobals) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor)

@@ -88,6 +88,7 @@ function readState() {
     const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
     if (parsed && typeof parsed === 'object') state = { ...defaults, ...parsed }
   } catch (error) {}
+  state.settings = { ...defaults.settings, ...state.settings, autoConfirmHours:12 }
   const defaultOrders = new Map(defaults.orders.map(item => [item.id, item]))
   // 兼容旧 Mock 缓存：补齐新增字段，保留已经修改过的订单状态、扣留标记和其他演示数据。
   state.orders = state.orders.map(order => normalizeMockOrder(order, state.riders, defaultOrders.get(order.id)))
@@ -406,7 +407,7 @@ export async function handleMockRequest(options) {
     return { reviewMode:state.settings.reviewMode }
   }
   if (path === '/admin/settings/operational' && method === 'PUT') {
-    const allowed=['autoConfirmHours','observationHours','claimLimit']
+    const allowed=['observationHours','claimLimit']
     allowed.forEach(key=>{if(Object.prototype.hasOwnProperty.call(data,key))state.settings[key]=data[key]})
     audit(state,'更新运营参数',`自动完成 ${state.settings.autoConfirmHours}h · 观察 ${state.settings.observationHours}h · 理赔上限 ¥${state.settings.claimLimit}`)
     writeState(state);return state.settings
@@ -421,7 +422,7 @@ export async function handleMockRequest(options) {
     const priceFields=['campusPrice','offCampusPrice','campusUrgentPrice','offCampusUrgentPrice','extraPiecePrice','largePrice','itemSmallCampusPrice','itemSmallOffCampusPrice','itemMediumCampusPrice','itemMediumOffCampusPrice','itemLargeCampusPrice','itemLargeOffCampusPrice','itemPricingVersion','itemUrgentFee','itemDoorFee','itemBuilding9Fee','itemUpperFloorDoorFee','bundleTier0Threshold','bundleTier0Discount','bundleTier1Threshold','bundleTier1Discount','bundleTier2Threshold','bundleTier2Discount','commissionRate']
     const priceChanged=priceFields.some(key=>Object.prototype.hasOwnProperty.call(data,key)&&Number(data[key])!==Number(state.settings[key]))
     if(priceChanged)throw new Error('正式价格随小程序版本发布，不能在管理台单独修改')
-    const allowed=['autoConfirmHours','observationHours','claimLimit','serviceStatus','serviceNotice']
+    const allowed=['observationHours','claimLimit','serviceStatus','serviceNotice']
     allowed.forEach(key=>{if(Object.prototype.hasOwnProperty.call(data,key))state.settings[key]=data[key]})
     audit(state,'更新平台设置','已保存正式业务参数');writeState(state);return state.settings
   }

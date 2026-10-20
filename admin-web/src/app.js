@@ -581,8 +581,8 @@ async function renderSettings() {
   ]
   const legacyHtml=legacyPrices.map(([label,value])=>`<div class="price-extra"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')
   const operational=canEdit
-    ? `<form id="settingsOperationalForm" class="form-grid"><label>自动完成小时<input name="autoConfirmHours" type="number" min="1" max="72" value="${Number(item.autoConfirmHours)}"></label><label>售后观察小时<input name="observationHours" type="number" min="1" max="168" value="${Number(item.observationHours)}"></label><label>单笔理赔上限（元）<input name="claimLimit" type="number" min="0" max="200" value="${Number(item.claimLimit)}"></label><div></div><button class="primary-button" type="submit">保存运营参数</button></form>`
-    : `<div class="price-grid"><div class="price-extra"><span>自动完成小时</span><strong>${Number(item.autoConfirmHours)}</strong></div><div class="price-extra"><span>售后观察小时</span><strong>${Number(item.observationHours)}</strong></div><div class="price-extra"><span>单笔理赔上限</span><strong>¥${money(item.claimLimit)}</strong></div></div>`
+    ? `<form id="settingsOperationalForm" class="form-grid"><div class="full-field settings-note">送达后 12 小时自动完成（固定）。</div><label>售后观察小时<input name="observationHours" type="number" min="1" max="168" value="${Number(item.observationHours)}"></label><label>单笔理赔上限（元）<input name="claimLimit" type="number" min="0" max="200" value="${Number(item.claimLimit)}"></label><button class="primary-button" type="submit">保存运营参数</button></form>`
+    : `<div class="price-grid"><div class="price-extra"><span>自动完成小时（固定）</span><strong>12</strong></div><div class="price-extra"><span>售后观察小时</span><strong>${Number(item.observationHours)}</strong></div><div class="price-extra"><span>单笔理赔上限</span><strong>¥${money(item.claimLimit)}</strong></div></div>`
   const service=canEdit
     ? `<form id="settingsServiceStatusForm" class="form-grid"><label class="full-field">服务状态<select name="serviceStatus"><option value="open" ${item.serviceStatus!=='closed'?'selected':''}>正常营业</option><option value="closed" ${item.serviceStatus==='closed'?'selected':''}>停止服务</option></select></label><label class="full-field">停服提示文案<input name="serviceNotice" maxlength="200" value="${escapeHtml(item.serviceNotice||'')}"></label><div class="full-field settings-note">切换为「停止服务」后，小程序端显示停服提示，并停止接收新订单与新抢单；进行中的订单照常走完。</div><button class="primary-button" type="submit">保存服务状态</button></form>`
     : `<div class="price-grid"><div class="price-extra"><span>服务状态</span><strong>${item.serviceStatus==='closed'?'停止服务':'正常营业'}</strong></div><div class="price-extra"><span>停服提示文案</span><strong>${escapeHtml(item.serviceNotice||'—')}</strong></div></div>`
@@ -593,7 +593,7 @@ async function renderSettings() {
       <div class="price-grid">${priceExtrasHtml}</div>
       ${isShipai ? '' : `<details class="legacy-settings"><summary>旧版小程序兼容价格（仅旧客户端下单使用，只读）</summary><div class="price-grid">${legacyHtml}</div></details>`}
     </div></article>
-    <article class="panel spaced-panel"><div class="panel-header"><h4>运营参数</h4><span>${canEdit?'自动完成、观察期、理赔上限':'只读'}</span></div><div class="panel-body">${operational}</div></article>
+    <article class="panel spaced-panel"><div class="panel-header"><h4>运营参数</h4><span>${canEdit?'观察期、理赔上限':'只读'}</span></div><div class="panel-body">${operational}</div></article>
     <article class="panel spaced-panel"><div class="panel-header"><h4>服务状态</h4><span>${canEdit?'停服开关与提示文案':'只读'}</span></div><div class="panel-body">${service}</div></article>
     <article class="panel spaced-panel"><div class="panel-header"><h4>审核模式</h4><span>整站开关，点击立即生效</span></div><div class="panel-body">
       <div>当前状态：${item.reviewMode?'<span class="status-pill orange">审核中</span>':'<span class="status-pill green">正常模式</span>'}</div>
@@ -638,8 +638,7 @@ async function submitCouponCode(event) {
 
 async function submitOperational(event) {
   event.preventDefault();const form=new FormData(event.currentTarget)
-  const data={autoConfirmHours:Number(form.get('autoConfirmHours')),observationHours:Number(form.get('observationHours')),claimLimit:Number(form.get('claimLimit'))}
-  if(!Number.isFinite(data.autoConfirmHours)||data.autoConfirmHours<1||data.autoConfirmHours>72){toast('自动完成小时必须在 1—72 之间','error');return}
+  const data={observationHours:Number(form.get('observationHours')),claimLimit:Number(form.get('claimLimit'))}
   if(!Number.isFinite(data.observationHours)||data.observationHours<1||data.observationHours>168){toast('售后观察小时必须在 1—168 之间','error');return}
   if(!Number.isFinite(data.claimLimit)||data.claimLimit<0||data.claimLimit>200){toast('单笔理赔上限必须在 0—200 元之间','error');return}
   try{await adminApi.updateOperational(data);toast('运营参数已保存');switchView('settings')}catch(error){errorMessage(error)}
