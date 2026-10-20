@@ -688,11 +688,12 @@ async function itemizedPricing(executor, items, urgency, noUpstairs, address, re
   const current = rows[0]
   if (!current) throw new HttpError(503, '平台设置尚未初始化', 'SETTINGS_NOT_INITIALIZED')
   const serverVersion = Math.max(1, Math.floor(Number(current.item_pricing_version) || 1))
-  if (requestedVersion !== ITEMIZED_PRICING_CURRENT_VERSION || requestedVersion !== serverVersion) {
+  // 基础费率沿用数据库 V2 配置；按客户端协议选择满减口径，无需改价或重算旧单。
+  if (![2, ITEMIZED_PRICING_CURRENT_VERSION].includes(requestedVersion) || ![2, ITEMIZED_PRICING_CURRENT_VERSION].includes(serverVersion)) {
     throw new HttpError(409, '价格规则已更新，请重新进入小程序后再下单', 'PRICING_VERSION_MISMATCH')
   }
   const campusCfg = getCampusConfig(campus)
-  return calculateItemizedPrice(items, urgency, noUpstairs, current, address, Boolean(campusCfg && campusCfg.building9Fee))
+  return calculateItemizedPrice(items, urgency, noUpstairs, Object.assign({}, current, { item_pricing_version: requestedVersion }), address, Boolean(campusCfg && campusCfg.building9Fee))
 }
 
 async function readServiceStatus(executor = pool) {
@@ -721,7 +722,8 @@ async function readMiniSettings(executor = pool, campus = 'nanhai') {
     serviceNotice: item.service_notice || '',
     observationHours: observationHours(item.observation_hours),
     itemPricing: {
-      version: Math.max(1, Math.floor(Number(item.item_pricing_version) || 1)),
+      version: [2, ITEMIZED_PRICING_CURRENT_VERSION].includes(Number(item.item_pricing_version))
+        ? ITEMIZED_PRICING_CURRENT_VERSION : Math.max(1, Math.floor(Number(item.item_pricing_version) || 1)),
       small: { campus: Number(item.item_small_campus_price), off_campus: Number(item.item_small_off_campus_price) },
       medium: { campus: Number(item.item_medium_campus_price), off_campus: Number(item.item_medium_off_campus_price) },
       large: { campus: Number(item.item_large_campus_price), off_campus: Number(item.item_large_off_campus_price) },
@@ -764,7 +766,7 @@ function readOrderInput(body, campus) {
     const pricingVersion = hasPricingVersion
       ? validate.integer(body.pricingVersion, '计价版本', { min: 1, max: 1000 })
       : 1
-    const quotedTotal = pricingVersion === ITEMIZED_PRICING_CURRENT_VERSION
+    const quotedTotal = [2, ITEMIZED_PRICING_CURRENT_VERSION].includes(pricingVersion)
       ? validate.numeric(body.quotedTotal, '前端报价', { min: 0, max: 10000 })
       : null
     return {
@@ -886,7 +888,7 @@ router.post('/orders', authenticateMini, requireMiniIdempotency, asyncRoute(asyn
       discount = Math.min(pricing.total, Number(coupon.amount))
     }
     const payableAmount = Number((pricing.total - discount).toFixed(2))
-    if (input.pricingModel === 'itemized_v1' && input.pricingVersion === ITEMIZED_PRICING_CURRENT_VERSION) {
+    if (input.pricingModel === 'itemized_v1' && [2, ITEMIZED_PRICING_CURRENT_VERSION].includes(input.pricingVersion)) {
       const quotedCents = Math.round(Number(input.quotedTotal) * 100)
       const payableCents = Math.round(payableAmount * 100)
       if (Math.abs(quotedCents - payableCents) > 1) {

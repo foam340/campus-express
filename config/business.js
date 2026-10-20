@@ -2,7 +2,7 @@ const { APP_VERSION } = require('./constants')
 
 const DEFAULT_SETTINGS = {
   version: APP_VERSION,
-  pricingVersion: 20260922,
+  pricingVersion: 20261020,
   openTime: '08:00',
   closeTime: '23:00',
   cutoffHour: 20,

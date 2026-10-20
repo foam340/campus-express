@@ -20,7 +20,7 @@ const ORDER_DISCOUNTS = [
 const URGENCY_FEES = { today: 0, urgent: 4 }
 const DELIVERY_FEES = { downstairs: 0, door: 1, upperFloorDoor: 1.5 }
 const BUILDING_9_FEE = 0.5
-const TARGET_PRICING_VERSION = 2
+const TARGET_PRICING_VERSION = 3
 const MAX_ITEMS = 8
 
 function money(value) {
@@ -35,7 +35,8 @@ function safePrice(value, fallback) {
 function normalizePricing(value) {
   const source = value && typeof value === 'object' ? value : {}
   const pricingVersion = Math.max(0, Math.floor(Number(source.version) || 0))
-  const activeSource = pricingVersion >= TARGET_PRICING_VERSION ? source : {}
+  // V3 沿用 V2 的校区费率字段，仅调整满减基数，不能因缓存仍为 V2 而退回南海价。
+  const activeSource = pricingVersion >= 2 ? source : {}
   const tiers = Array.isArray(activeSource.bundleTiers) ? activeSource.bundleTiers.map(item => ({
     threshold: safePrice(item && item.threshold, -1),
     amount: safePrice(item && item.amount, -1)
@@ -262,15 +263,15 @@ createPage({
         complete: Boolean(card.image && config)
       })
     })
-    const discount = orderDiscount(subtotal, pricing)
     const urgencyFee = urgency === 'urgent' ? pricing.urgentFee : 0
     const building9 = isBuilding9(user)
     const selectedDoorFee = doorFeeFor(user, pricing)
     const deliveryFee = deliveryMode === 'door' ? selectedDoorFee : 0
     const buildingFee = building9 ? pricing.building9Fee : 0
-    // 计价顺序固定：先应用多件满减，再加入整单服务费，最后叠加优惠券抵扣。
-    const afterBundleDiscount = Math.max(0, subtotal - discount.amount)
-    const originalTotal = afterBundleDiscount + urgencyFee + deliveryFee + buildingFee
+    // V3：快递费和全部服务费共同凑满减，取最高一档，最后叠加优惠券。
+    const bundleBase = Number((subtotal + urgencyFee + deliveryFee + buildingFee).toFixed(2))
+    const discount = orderDiscount(bundleBase, pricing)
+    const originalTotal = Math.max(0, Number((bundleBase - Math.min(discount.amount, bundleBase)).toFixed(2)))
     const now = Date.now()
     const eligibleCoupons = coupons.filter(item => usableCoupon(item, originalTotal, now))
     let selectedCoupon = null
@@ -292,10 +293,10 @@ createPage({
     }).sort((left, right) => Number(right.eligible) - Number(left.eligible) || couponExpiry(left) - couponExpiry(right))
     const incompleteCount = decorated.filter(card => !card.complete).length
     let nextDiscountText = '已享受最高档多件优惠'
-    const pendingTiers = pricing.bundleTiers.slice().reverse().filter(item => subtotal < item.threshold)
+    const pendingTiers = pricing.bundleTiers.slice().reverse().filter(item => bundleBase < item.threshold)
     if (pendingTiers.length) {
       const nextTier = pendingTiers[0]
-      nextDiscountText = `再选 ¥${money(nextTier.threshold - subtotal)}，可享满${money(nextTier.threshold)}减${money(nextTier.amount)}`
+      nextDiscountText = `再选 ¥${money(nextTier.threshold - bundleBase)}，可享满${money(nextTier.threshold)}减${money(nextTier.amount)}`
     }
     this.setData(Object.assign({}, nextState, {
       cards: decorated,
@@ -306,7 +307,7 @@ createPage({
       urgency,
       deliveryMode,
       subtotalText: money(subtotal),
-      discountText: money(discount.amount),
+      discountText: money(Math.min(discount.amount, bundleBase)),
       urgencyFeeText: money(urgencyFee),
       deliveryFeeText: money(deliveryFee),
       buildingFeeText: money(buildingFee),
