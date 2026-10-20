@@ -67,13 +67,21 @@
     <view wx:if="{{order.screenshots.length}}" class="shot-grid"><safe-image wx:for="{{order.screenshots}}" wx:key="*this" class="shot-image" src="{{item}}" data-src="{{item}}" mode="aspectFill" bind:tap="previewScreenshot" /></view>
     <view wx:elif="{{imageLoading && pendingScreenshotCount > 0}}" class="image-loading"><text>图片加载中…</text></view>
     <view wx:elif="{{reviewMode}}" class="mock-shot"><view class="mock-code">工作人员受理后查看取件凭证</view><view class="muted small">取件码仅用于本次取件，不公开展示</view></view>
+    <view wx:if="{{!reviewMode && failedScreenshotCount > 0}}" class="image-error">
+      <text>{{failedScreenshotCount}}张取件截图加载失败，请检查网络后重试</text>
+      <button class="image-retry" loading="{{retryingImages}}" disabled="{{imageLoading || retryingImages}}" bindtap="retryImages">{{retryingImages ? '正在重新加载' : '重新加载'}}</button>
+    </view>
     <view wx:if="{{role==='rider'}}" class="unlocked">已接单，敏感信息已解锁 · 完成{{order.observationHours}}小时后隐藏</view>
   </view>
 
-  <view wx:if="{{order.deliveryImages.length || (imageLoading && pendingDeliveryCount > 0)}}" class="card screenshot-card">
+  <view wx:if="{{order.deliveryImages.length || (imageLoading && pendingDeliveryCount > 0) || (!reviewMode && sensitiveVisible && failedDeliveryCount > 0)}}" class="card screenshot-card">
     <view class="section-title">送达截图</view>
     <view wx:if="{{order.deliveryImages.length}}" class="shot-grid"><safe-image wx:for="{{order.deliveryImages}}" wx:key="*this" class="shot-image" src="{{item}}" data-src="{{item}}" mode="aspectFill" bind:tap="previewDeliveryImage" /></view>
-    <view wx:else class="image-loading"><text>图片加载中…</text></view>
+    <view wx:elif="{{imageLoading && pendingDeliveryCount > 0}}" class="image-loading"><text>图片加载中…</text></view>
+    <view wx:if="{{!reviewMode && sensitiveVisible && failedDeliveryCount > 0}}" class="image-error">
+      <text>{{failedDeliveryCount}}张送达截图加载失败，请检查网络后重试</text>
+      <button class="image-retry" loading="{{retryingImages}}" disabled="{{imageLoading || retryingImages}}" bindtap="retryImages">{{retryingImages ? '正在重新加载' : '重新加载'}}</button>
+    </view>
   </view>
 
   <view wx:if="{{sensitiveVisible && (role==='rider' || order.accepted)}}" class="card contact-card">

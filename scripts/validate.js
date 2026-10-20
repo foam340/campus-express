@@ -153,7 +153,11 @@ if (!userHomeCode.includes('HOME_FRESH_MS') || !userHomeCode.includes('this.home
   errors.push('User home must avoid immediate duplicate refreshes after tab revisits')
 }
 const orderDetailCode = fs.readFileSync(path.join(root, 'packages/order/detail/detail.js'), 'utf8')
-if (!orderDetailCode.includes('withoutPrivateImages') || !orderDetailCode.includes("getPrivacyState(result.order, role).sensitiveVisible")) {
+const detailImageLoader = orderDetailCode.slice(orderDetailCode.indexOf('  loadOrderImages('), orderDetailCode.indexOf('  hydrateImages('))
+const detailMetadataIndex = detailImageLoader.indexOf('this.renderOrder(current, role)')
+const detailPrivacyIndex = detailImageLoader.indexOf('if (!getPrivacyState(order, role).sensitiveVisible)')
+const detailDownloadIndex = detailImageLoader.indexOf('this.hydrateImages(')
+if (!detailImageLoader.includes('withoutPrivateImages(order)') || detailMetadataIndex < 0 || detailPrivacyIndex <= detailMetadataIndex || detailDownloadIndex <= detailPrivacyIndex) {
   errors.push('Order detail must render metadata before downloading privacy-gated images')
 }
 const contentSecurityCode = fs.readFileSync(path.join(root, 'utils/content-security.js'), 'utf8')

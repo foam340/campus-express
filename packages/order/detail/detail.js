@@ -31,7 +31,7 @@ function withoutPrivateImages(order) {
 
 createPage({
   /* loading：无本地缓存、正在拉详情时显示骨架屏（加载失败就不再显示，留给 toast 提示） */
-  data: { order: null, loading: false, role: 'user', step: 0, deliveryImages: [], pendingDeliveryImages: [], contactInitial: '', canRequestCancel: false, showExceptionHint: false, canTransfer: false, sensitiveVisible: true, observationText: '', showPayQr: false, payQrImage: '', reviewMode: true, submitting: false, imageLoading: false, pendingScreenshotCount: 0, pendingDeliveryCount: 0 },
+  data: { order: null, loading: false, role: 'user', step: 0, deliveryImages: [], pendingDeliveryImages: [], contactInitial: '', canRequestCancel: false, showExceptionHint: false, canTransfer: false, sensitiveVisible: true, observationText: '', showPayQr: false, payQrImage: '', reviewMode: true, submitting: false, imageLoading: false, pendingScreenshotCount: 0, pendingDeliveryCount: 0, failedScreenshotCount: 0, failedDeliveryCount: 0, retryingImages: false },
   onLoad(query) {
     this.id = String(query.id || '')
     this.role = query.role === 'rider' ? 'rider' : 'user'
@@ -41,44 +41,85 @@ createPage({
     this.setData({ reviewMode: store.getSettings().reviewMode !== false })
   },
   onShow() { if (this.id) { this.refresh(); this.resumePaymentCheck() } },
-  refresh() {
+  onUnload() { this.loadSequence += 1; this.imageSourceOrder = null },
+  isCurrentLoad(sequence) { return !this.__pageUnloaded && sequence === this.loadSequence },
+  retryImages() {
+    if (this.data.reviewMode || !this.data.sensitiveVisible || !this.data.order || this.data.imageLoading || this.data.retryingImages) return
+    if (!this.data.failedScreenshotCount && !this.data.failedDeliveryCount) return
+    // 先重新核验订单权限，再重试图片；不能直接沿用转单前的私密地址。
+    return this.refresh(true)
+  },
+  refresh(retryImages = false) {
+    if (this.__pageUnloaded) return Promise.resolve()
+    const retry = retryImages === true
     const cached = store.getOrder(this.id)
     const role = this.explicitRole ? 'rider' : 'user'
-    if (cached) this.renderOrder(withoutPrivateImages(cached), role)
-    else this.setData({ loading: true })
     const sequence = ++this.loadSequence
-    orderApi.getOrder(this.id).then(result => {
-      if (!result || !result.order || sequence !== this.loadSequence) return
+    this.endImageLoad()
+    this.setData({ retryingImages: retry })
+    if (!retry) {
+      this.imageSourceOrder = null
+      this.setData({ failedScreenshotCount: 0, failedDeliveryCount: 0 })
+      if (cached) this.renderOrder(withoutPrivateImages(cached), role)
+      else this.setData({ loading: true })
+    }
+    return orderApi.getOrder(this.id).then(result => {
+      if (!this.isCurrentLoad(sequence)) return
+      if (!result || !result.order) throw new Error('ORDER_LOAD_FAILED')
       mergeCachedOrder(result.order)
       // 订单文字和状态立即渲染，私密图片在后台按需下载，避免慢图片阻塞整页。
-      this.renderOrder(withoutPrivateImages(result.order), role)
       this.setData({ loading: false })
-      if (!getPrivacyState(result.order, role).sensitiveVisible) return
-      this.beginImageLoad(result.order)
-      return this.hydrateImages(result.order, role, sequence)
+      return this.loadOrderImages(result.order, role, sequence, retry)
     }).catch(error => {
+      if (!this.isCurrentLoad(sequence)) return
       this.setData({ loading: false })
       this.endImageLoad()
-      if (!cached) wx.showToast({ title: String(error && error.message || 'ORDER_LOAD_FAILED').slice(0, 20), icon: 'none' })
+      if ([401, 403, 404].includes(Number(error && error.statusCode))) {
+        this.imageSourceOrder = null
+        clearPrivateFileCache()
+        this.setData({ order: null, deliveryImages: [], sensitiveVisible: false, failedScreenshotCount: 0, failedDeliveryCount: 0 })
+        store.saveOrders(store.getOrders().filter(item => item.id !== this.id))
+      }
+      if (retry || !cached) wx.showToast({ title: retry ? '重新加载失败，请稍后重试' : String(error && error.message || 'ORDER_LOAD_FAILED').slice(0, 20), icon: 'none' })
+    }).finally(() => {
+      if (this.isCurrentLoad(sequence)) this.setData({ retryingImages: false })
     })
   },
-  hydrateImages(order, role, sequence) {
+  loadOrderImages(order, role, sequence, keepImages = false) {
+    const current = withoutPrivateImages(order)
+    const previous = this.imageSourceOrder
+    // 重试时保留已成功的图片；服务端图片列表变化则丢弃对应的旧显示。
+    if (keepImages && previous && previous.id === order.id && this.data.order) {
+      for (const field of ['screenshots', 'deliveryImages']) {
+        if (JSON.stringify(previous[field] || []) === JSON.stringify(order[field] || [])) current[field] = this.data.order[field] || []
+      }
+    }
+    this.imageSourceOrder = order
+    this.renderOrder(current, role)
+    if (!getPrivacyState(order, role).sensitiveVisible) return Promise.resolve()
+    this.beginImageLoad(order)
+    return this.hydrateImages(order, role, sequence, current)
+  },
+  hydrateImages(order, role, sequence, current) {
     const source = order && typeof order === 'object' ? order : {}
     // 渐进渲染：取件截图、送达截图各自下完就各自显示，不再等另一组慢图一起卡住。
-    const current = withoutPrivateImages(source)
+    current = current || withoutPrivateImages(source)
     // 显示用缩略图（服务端 ?size=thumb），原图几 MB 下载太慢；点开大图看的也是这张缩略图。
     const thumbUrls = urls => (Array.isArray(urls) ? urls : []).filter(Boolean).map(u => `${u}${u.indexOf('?') >= 0 ? '&' : '?'}size=thumb`)
-    const apply = (field, values, pendingField) => {
-      if (sequence !== this.loadSequence) return
-      current[field] = values
-      this.renderOrder(current, role)
-      this.setData({ [pendingField]: 0 })
+    const loadGroup = (field, pendingField, failedField) => {
+      const urls = thumbUrls(source[field])
+      return downloadPrivateFiles(urls).catch(() => []).then(values => {
+        if (!this.isCurrentLoad(sequence)) return
+        current[field] = values
+        this.renderOrder(current, role)
+        this.setData({ [pendingField]: 0, [failedField]: this.data.sensitiveVisible ? Math.max(0, urls.length - values.length) : 0 })
+      })
     }
     return Promise.all([
-      downloadPrivateFiles(thumbUrls(source.screenshots)).then(values => apply('screenshots', values, 'pendingScreenshotCount')),
-      downloadPrivateFiles(thumbUrls(source.deliveryImages)).then(values => apply('deliveryImages', values, 'pendingDeliveryCount'))
+      loadGroup('screenshots', 'pendingScreenshotCount', 'failedScreenshotCount'),
+      loadGroup('deliveryImages', 'pendingDeliveryCount', 'failedDeliveryCount')
     ]).then(() => {
-      if (sequence === this.loadSequence) this.endImageLoad()
+      if (this.isCurrentLoad(sequence)) this.endImageLoad()
     })
   },
   // 私密图片开始后台下载前，用原始订单里的截图数量标记加载态，让截图区先占位显示「图片加载中…」，
@@ -99,7 +140,12 @@ createPage({
     const visibleOrder = sensitiveVisible ? order : Object.assign({}, order, {
       room: '', address: '', phone: '', contactName: '', note: '', screenshots: [], deliveryImages: []
     })
-    if (!sensitiveVisible) clearPrivateFileCache()
+    if (!sensitiveVisible) {
+      this.imageSourceOrder = null
+      clearPrivateFileCache()
+      this.endImageLoad()
+      this.setData({ failedScreenshotCount: 0, failedDeliveryCount: 0 })
+    }
     this.setData({
       order: visibleOrder, role,
       step: STEP_MAP[visibleOrder.status] || 0,
@@ -125,10 +171,14 @@ createPage({
     if (role !== 'rider' || !Number.isFinite(delay) || delay <= 0) return
     this.privacyTimer = this.$setTimeout(() => {
       this.privacyTimer = null
+      this.loadSequence += 1
+      this.imageSourceOrder = null
       clearPrivateFileCache()
       const current = this.data.order || {}
       this.setData({
         sensitiveVisible: false,
+        loading: false, imageLoading: false, retryingImages: false,
+        pendingScreenshotCount: 0, pendingDeliveryCount: 0, failedScreenshotCount: 0, failedDeliveryCount: 0,
         deliveryImages: [],
         order: Object.assign({}, current, { room: '', address: '', phone: '', contactName: '', note: '', screenshots: [], deliveryImages: [] })
       })
@@ -158,14 +208,13 @@ createPage({
     if (src && urls.length) wx.previewImage({ current: src, urls })
   },
   replaceOrder(order) {
+    if (this.__pageUnloaded) return Promise.resolve(order)
     mergeCachedOrder(order)
     const role = this.data.role
     const sequence = ++this.loadSequence
-    this.renderOrder(withoutPrivateImages(order), role)
-    if (getPrivacyState(order, role).sensitiveVisible) {
-      this.beginImageLoad(order)
-      this.hydrateImages(order, role, sequence)
-    }
+    this.setData({ retryingImages: false, failedScreenshotCount: 0, failedDeliveryCount: 0 })
+    this.endImageLoad()
+    this.loadOrderImages(order, role, sequence)
     return Promise.resolve(order)
   },
   cancelWaiting() {
