@@ -3,6 +3,16 @@
 <view wx:if="{{reviewChecking}}" class="page loading-page">正在加载…</view>
 
 <view wx:else class="page create-page">
+  <!-- 顶部滚动进度：一条细线连接三个点，经过的点点亮（纯视觉，不影响任何逻辑） -->
+  <view class="pub-progress">
+    <view class="ptrack">
+     <view class="pfill" style="width: {{scrollPct * 100 + '%'}};"></view>
+      <view class="pdot on" style="left:0%"></view>
+      <view class="pdot {{scrollPct >= 0.5 ? 'on' : ''}}" style="left:50%"></view>
+      <view class="pdot {{scrollPct >= 0.995 ? 'on' : ''}}" style="left:100%"></view>
+    </view>
+  </view>
+
   <view class="intro-block">
     <view class="intro-kicker">逐件填写</view>
     <view class="intro-title">一件快递，一张卡片</view>
@@ -26,19 +36,23 @@
     </view>
 
     <view wx:if="{{item.expanded}}" class="item-body">
-      <view class="field-title"><view class="field-title-label"><text>取件截图</text><text class="field-required">必填</text></view><view class="field-guide-action" hover-class="tap-soft" bindtap="previewSampleImage">查看截图示例 <text>›</text></view></view>
-      <view class="privacy-hint">{{reviewMode ? '取件码照片仅用于本次取件核验，不对外展示' : '取件码照片仅用于本次配送核验，不对外展示'}}</view>
-      <view wx:if="{{!item.image}}" class="single-upload" data-id="{{item.id}}" hover-class="tap-soft" bindtap="chooseImage">
-        <view class="upload-plus">＋</view><view>上传这一件的截图</view><text>取件地点和取件码要清晰</text>
-      </view>
-      <view wx:else class="image-line">
-        <image class="item-image" src="{{item.image}}" mode="aspectFill" data-id="{{item.id}}" bindtap="previewImage" />
-        <view class="image-copy"><view>截图已添加</view><text>点击图片可查看大图</text></view>
-        <view class="text-action danger-text" data-id="{{item.id}}" bindtap="clearImage">移除</view>
+      <!-- 上传单元：标题 + 隐私提示 + 上传行装进同一个虚线框（一个整体） -->
+      <view class="upload-unit">
+        <view class="field-title"><view class="field-title-label"> <text>取件截图</text><text class="field-required">必填</text></view><view class="field-guide-action" hover-class="tap-soft" bindtap="previewSampleImage">查看截图示例 <text>›</text></view></view>
+        <view class="privacy-hint">{{reviewMode ? '取件码照片仅用于本次取件核验，不对外展示' : '取件码照片仅用于本次配送核验，不对外展示'}}</view>
+        <view wx:if="{{!item.image}}" class="single-upload" data-id="{{item.id}}" hover-class="tap-soft" bindtap="chooseImage">
+          <view class="upload-plus">＋</view>
+          <view class="upload-copy"><view>上传这一件的截图</view><text>取件地点和取件码要清晰</text></view>
+        </view>
+        <view wx:else class="image-line">
+          <view class="image-thumb"><image class="item-image" src="{{item.image}}" mode="aspectFill" data-id="{{item.id}}" bindtap="previewImage" /><view class="image-ok">✓</view></view>
+          <view class="image-copy"><view>截图已添加</view><text>点击图片可查看大图</text></view>
+          <view class="text-action danger-text" data-id="{{item.id}}" bindtap="clearImage">移除</view>
+        </view>
       </view>
       <view wx:if="{{hasOffCampus}}" class="field-title spacing-title">在哪里取？</view>
       <view wx:if="{{hasOffCampus}}" class="segment-grid {{scopeStations.length > 2 ? 'three-column' : 'two-column'}}">
-        <view wx:for="{{scopeStations}}" wx:key="value" wx:for-item="station" class="segment scope-segment {{item.scope===station.value?'selected':''}}" data-id="{{item.id}}" data-value="{{station.value}}" hover-class="tap-soft" bindtap="selectScope"><view>{{station.title}}</view><text>{{station.label}}</text></view>
+        <view wx:for="{{scopeStations}}" wx:key="value" wx:for-item="station" class="segment scope-segment {{station.value==='off_campus'?'scope-off':''}} {{item.scope===station.value?'selected':''}}" data-id="{{item.id}}" data-value="{{station.value}}" hover-class="tap-soft" bindtap="selectScope"><view>{{station.title}}</view><text>{{station.label}}</text></view>
       </view>
 
       <view class="field-title spacing-title"><text>大概多大？</text><view class="field-guide-action" hover-class="tap-soft" bindtap="viewSizeGuide">查看尺寸图例 <text>›</text></view></view>
@@ -47,7 +61,8 @@
         <view class="segment size-segment {{item.size==='medium'?'selected':''}}" data-id="{{item.id}}" data-value="medium" hover-class="tap-soft" bindtap="selectSize"><view>中件</view><text>双手可拿</text></view>
         <view class="segment size-segment {{item.size==='large'?'selected':''}}" data-id="{{item.id}}" data-value="large" hover-class="tap-soft" bindtap="selectSize"><view>大件</view><text>箱装/较重</text></view>
       </view>
-      <view class="size-hint">超过20kg或体积超过0.3m³的超大件，请先联系客服</view>
+      <!-- 超大件提示：右侧「联系客服 ›」跳到客服页（与「我的」页一致，展示各校区管理员微信/二维码） -->
+      <view class="size-hint"><text>超过20kg或体积超过0.3m³的超大件？</text><button class="size-hint-action" hover-class="tap-soft" bindtap="goService">联系客服 ›</button></view>
 
       <view class="card-actions">
         <view class="delete-action" data-id="{{item.id}}" bindtap="removeCard">删除这件</view>
@@ -105,13 +120,12 @@
       <view class="coupon-picker-value {{selectedCouponId?'coupon-active':''}}"><text>{{couponRowText}}</text><text class="coupon-arrow">〉</text></view>
     </view>
     <view wx:if="{{selectedCouponId}}" class="summary-row discount-row"><text>优惠券抵扣</text><text>-¥{{couponDiscountText}}</text></view>
-    <view class="sub-divider"></view>
-    <view class="summary-total"><view><view>应付金额</view><text>原价 ¥{{originalTotalText}}，优惠券由平台承担</text></view><text>¥{{totalText}}</text></view>
+    <view class="summary-total"><view><view>应付金额</view><text>原价 ¥{{originalTotalText}}，优惠券由平台承担</text></view><text class="{{flipTick % 2 ? 'flip-a' : 'flip-b'}}">¥{{totalText}}</text></view>
   </view>
 </view>
 
 <view wx:if="{{!reviewChecking}}" class="submit-bar">
-  <view wx:if="{{!reviewMode}}" class="submit-copy"><text>应付</text><view>¥{{totalText}}</view></view>
+  <view wx:if="{{!reviewMode}}" class="submit-copy"><text>应付</text><view class="{{flipTick % 2 ? 'flip-a' : 'flip-b'}}">¥{{totalText}}</view></view>
   <view class="submit-button {{incompleteCount||submitting?'submit-incomplete':''}}" hover-class="button-pressed" bindtap="submit">{{submitting ? '正在提交…' : (incompleteCount ? '还有' + incompleteCount + '件未完成' : (reviewMode ? '提交登记' : '提交订单'))}}</view>
 </view>
 

@@ -140,6 +140,11 @@ createPage({
     nextDiscountText: '满5减0.5，满10减1，满20减3',
     canAdd: true,
     pricing: normalizePricing(null),
+    /* 发布页「细线 + 三点」滚动进度：scrollPct 0~1，pageScrollRange 为可滚动高度 */
+    scrollPct: 0,
+    pageScrollRange: 0,
+    /* 金额翻牌：每次应付金额变化交替 a/b 两套同名动画，使 CSS 动画重新播放 */
+    flipTick: 0,
     submitting: false,
     showPayQr: false,
     payQrImage: '',
@@ -178,6 +183,29 @@ createPage({
       this.refreshCoupons(false)
       this.resumePaymentCheck()
     }
+  },
+  onReady() {
+    this.measureScrollRange()
+  },
+  /* 页面滚动：只把滚动距离换算成 0~1 的 scrollPct 给顶部进度条用，不参与任何业务逻辑 */
+  onPageScroll(event) {
+    const range = Number(this.data.pageScrollRange) || 0
+    const raw = range > 0 ? Number(event.scrollTop) / range : 0
+    const pct = Math.round(Math.min(1, Math.max(0, raw)) * 100) / 100
+    if (pct !== this.data.scrollPct) this.setData({ scrollPct: pct })
+  },
+  /* 量一次可滚动高度：页面内容增删后会变化，所以 refresh 之后也会重新量 */
+  measureScrollRange() {
+    try {
+      const info = wx.getSystemInfoSync() || {}
+      const windowHeight = Number(info.windowHeight) || 0
+      if (!windowHeight) return
+      wx.createSelectorQuery().in(this).select('.create-page').boundingClientRect(rect => {
+        if (!rect) return
+        const range = Math.max(0, Math.round(rect.height - windowHeight))
+        if (Math.abs(range - (Number(this.data.pageScrollRange) || 0)) > 1) this.setData({ pageScrollRange: range })
+      }).exec()
+    } catch (err) {}
   },
   applyReviewTitle() {
     wx.setNavigationBarTitle({ title: this.data.reviewMode ? '校园快递登记' : '发布代拿订单' })
@@ -287,6 +315,10 @@ createPage({
       doorOptionHint: building9 ? '9栋有电梯' : (dormFloor(user.room) >= 4 ? '4楼及以上' : '1-3楼'),
       originalTotalText: money(originalTotal),
       couponDiscountText: money(couponDiscount),
+      /* 应付金额变化时 flipTick +1，配合 wxml 上 a/b 两套同名动画实现重新播放 */
+      flipTick: money(originalTotal - couponDiscount) !== this.data.totalText
+        ? (Number(this.data.flipTick) || 0) + 1
+        : (Number(this.data.flipTick) || 0),
       selectedCouponId: selectedCoupon ? String(selectedCoupon.id) : '',
       selectedCouponName: selectedCoupon ? selectedCoupon.name : '',
       couponRowText: selectedCoupon ? `已优惠 ¥${money(couponDiscount)}` : (eligibleCoupons.length ? `${eligibleCoupons.length}张可用` : ((Object.prototype.hasOwnProperty.call(nextState, 'couponsLoaded') ? nextState.couponsLoaded : this.data.couponsLoaded) ? '暂无可用' : '正在加载')),
@@ -297,6 +329,8 @@ createPage({
       nextDiscountText,
       canAdd: decorated.length < MAX_ITEMS
     }))
+    /* 卡片增删后页面高度变了，重新量一次可滚动高度 */
+    this.measureScrollRange()
   },
   chooseImage(event) {
     const id = Number(event.currentTarget.dataset.id)
@@ -315,6 +349,8 @@ createPage({
   },
   previewSampleImage() { wx.navigateTo({ url: ROUTES.samplePickup }) },
   viewSizeGuide() { wx.navigateTo({ url: ROUTES.sizeGuide }) },
+  /* 超大件提示里的「联系客服 ›」：与「我的」页同一条通道（客服页展示各校区管理员微信号 + 二维码） */
+  goService() { wx.navigateTo({ url: ROUTES.service }) },
   inputNote(event) { this.note = String(event.detail.value || '').slice(0, 100) },
   previewImage(event) {
     const card = this.data.cards.find(item => item.id === Number(event.currentTarget.dataset.id))

@@ -1,11 +1,17 @@
+/* 底部悬浮胶囊 · 暖橙快递站（贴纸票券感）
+   ① 胶囊：白底 + 墨线描边 + 硬阴影，保持毛玻璃
+   ② 选中滑块：软橙底 + 橙描边，弹性滑动（transform 由 index.js 的 indicatorIndex 驱动，本文件只动外观）
+   ③ 图标弹跳 + 按压回弹；reduced-motion 下只保留必要的位置反馈 */
+
 :host { display: block; }
 .tabbar-safe {
   position: fixed;
   z-index: 100;
-  left: 24rpx;
-  right: 24rpx;
-  bottom: calc(12rpx + env(safe-area-inset-bottom));
-  height: 104rpx;
+  left: 32rpx;
+  right: 32rpx;
+  bottom: calc(40rpx + env(safe-area-inset-bottom));
+  /* 胶囊尺寸对齐原型 .tabbar（62px 设计稿 = 124rpx）：左右 32rpx、离底 40rpx、高 124rpx */
+  height: 124rpx;
   /* tabBar 渲染在 page 之外，page{} 的变量到不了这里；动效 token 不随主题变，就地声明 */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -15,14 +21,14 @@
   display: flex;
   align-items: stretch;
   width: 100%;
-  height: 104rpx;
+  height: 124rpx;
   overflow: hidden;
-  border: 1rpx solid var(--color-divider);
-  border-radius: 52rpx;
+  border: var(--border-ink-width, 2rpx) solid var(--color-ink);
+  border-radius: 62rpx;
   background: var(--color-tabbar);
   -webkit-backdrop-filter: saturate(160%) blur(14px);
   backdrop-filter: saturate(160%) blur(14px);
-  box-shadow: 0 12rpx 34rpx var(--shadow-color);
+  box-shadow: 0 6rpx 0 rgba(36, 21, 5, 0.9);
   box-sizing: border-box;
 }
 .tab-item {
@@ -34,18 +40,19 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-muted);
-  font-size: 22rpx;
+  color: var(--color-text-2);
+  font-size: 20rpx;
+  font-weight: 600;
   transition: color 160ms var(--ease), transform 100ms var(--ease);
 }
-.tab-item:active { transform: scale(0.97); }
+.tab-item:active { transform: scale(0.92); }
 .tab-indicator {
   position: absolute;
   left: 0;
   top: 0;
   width: 33.3333%;
   height: 100%;
-  padding: 7rpx;
+  padding: 10rpx;
   pointer-events: none;
   transition: transform 130ms cubic-bezier(0.42, 0, 0.58, 1);
   will-change: transform;
@@ -53,39 +60,47 @@
   box-sizing: border-box;
 }
 .tab-indicator.instant { transition: none; }
+/* 选中滑块：软橙底 + 内侧橙环（对齐原型 .tabbar .tbg 的 inset ring） */
 .tab-indicator-pill {
   width: 100%;
   height: 100%;
-  border-radius: 45rpx;
+  border-radius: 999rpx;
   background: var(--color-tabbar-indicator);
+  box-shadow: inset 0 0 0 3rpx rgba(255, 107, 44, 0.35);
 }
 .tab-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42rpx;
-  height: 42rpx;
+  width: 52rpx;
+  height: 52rpx;
   margin-bottom: 2rpx;
 }
+/* 图标尺寸对齐原型（19px 设计稿 = 38rpx） */
 .tab-icon-image {
   display: block;
-  width: 29rpx;
-  height: 29rpx;
+  width: 38rpx;
+  height: 38rpx;
   transition: filter 160ms var(--ease), transform 160ms var(--ease), opacity 160ms var(--ease);
 }
-.tab-label { display: block; height: 28rpx; line-height: 28rpx; }
-.tab-item.active { color: var(--color-primary); font-weight: 700; }
+.tab-label { display: block; height: 26rpx; line-height: 26rpx; }
+.tab-item.active { color: var(--color-primary-deep); font-weight: 900; }
+/* 激活图标压成纯墨色，并定格在「上移 + 微歪」的姿态（对齐原型 .tb.on .ico） */
 .tab-item.active .tab-icon-image {
-  filter: brightness(0) saturate(100%) invert(39%) sepia(97%) saturate(3276%) hue-rotate(200deg) brightness(101%) contrast(106%);
-  animation: tab-icon-settle 180ms var(--ease) both;
+  filter: brightness(0) saturate(100%);
+  transform: translateY(-2rpx) rotate(-6deg);
+  animation: tab-icon-pop 420ms var(--ease-bounce) both;
 }
-@keyframes tab-icon-settle {
-  from { transform: scale(0.88); opacity: 0.65; }
-  to { transform: scale(1); opacity: 1; }
+@keyframes tab-icon-pop {
+  0% { transform: translateY(0) rotate(0) scale(1); opacity: 0.6; }
+  42% { transform: translateY(-6rpx) rotate(-12deg) scale(1.22); opacity: 1; }
+  70% { transform: translateY(-1rpx) rotate(-3deg) scale(1.02); }
+  100% { transform: translateY(-2rpx) rotate(-6deg) scale(1); opacity: 1; }
 }
 @media (prefers-reduced-motion: reduce) {
   /* Retain this short, local wayfinding motion; suppress only decoration. */
   .tab-item, .tab-icon-image { transition: none; }
+  .tab-indicator { transition: none; }
   .tab-item.active .tab-icon-image { animation: none; }
 }
 @media (prefers-reduced-transparency: reduce) {

@@ -23,6 +23,8 @@
       <view class="hero-sub">{{reviewMode ? '添加取件凭证，登记一条快递信息' : '上传截图，最快 1 小时送到宿舍门口'}}</view>
       <view class="hero-action">{{serviceClosed ? '暂停服务' : (reviewMode ? '提交登记' : '现在下单')}}<text wx:if="{{!serviceClosed}}">→</text></view>
     </view>
+    <!-- 右上角纸箱贴纸：新设计元素，纯装饰，随整卡一起响应 goCreate -->
+    <view class="hero-box">📦</view>
   </view>
 
   <view class="section-head row between">
@@ -54,25 +56,27 @@
     </view>
   </view>
 
+  <!-- 骨架屏：形状对齐真实订单卡（状态胶囊 / 两行路线 / 底部「预计送达 + 查看进度」），
+       只在「没有可显示内容」时出现，避免已有订单时整卡闪一下 -->
   <view wx:elif="{{homeLoading}}" class="card active-card" aria-hidden="true">
-    <view class="sk sk-title"></view>
-    <view class="sk sk-line"></view>
-    <view class="sk sk-line"></view>
+    <view class="row between">
+      <view class="sk sk-pill sk-w-tag"></view>
+      <view class="sk sk-line sk-w-no"></view>
+    </view>
+    <view class="sk sk-line sk-gap-lg"></view>
     <view class="sk sk-line short"></view>
-  </view>
-  <view wx:else class="card empty-card">
-    <view class="empty-icon">✓</view>
-    <view class="strong">{{reviewMode ? '暂时没有进行中的登记' : '暂时没有进行中的订单'}}</view>
-    <view class="muted small">{{reviewMode ? '有需要时，点击上方入口登记快递信息' : '有需要时，点击上方按钮发布代拿需求'}}</view>
-  </view>
-
-  <view class="notice-card">
-    <view class="notice-icon">i</view>
-    <view>
-      <view class="strong">{{reviewMode ? '取件凭证仅用于本次登记核对' : '下单前请确认取件截图清晰'}}</view>
-      <view class="muted small">{{reviewMode ? '凭证不公开展示，提交后仅工作人员可见' : '截图仅在骑手接单后解锁，保护取件信息安全'}}</view>
+    <view class="sk-foot">
+      <view class="sk sk-line short sk-grow"></view>
+      <view class="sk sk-block sk-w-btn"></view>
     </view>
   </view>
+  <view wx:else class="card empty-card">
+    <view class="empty-icon">📭</view>
+    <view class="strong">{{reviewMode ? '暂时没有进行中的登记' : '暂时没有进行中的订单'}}</view>
+
+  </view>
+
+
 </view>
 
 <view wx:if="{{showCouponGift && !reviewMode}}" class="gift-mask" catchtouchmove="noop">

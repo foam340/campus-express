@@ -1,33 +1,71 @@
-.profile-page { padding-top:36rpx; }.profile-head { display:flex; align-items:center; padding:10rpx 6rpx 34rpx; }.avatar { width:104rpx; height:104rpx; line-height:104rpx; text-align:center; border-radius:34rpx; color: var(--color-on-accent); background:linear-gradient(145deg,var(--color-primary),#6b9cfa); font-size:42rpx; font-weight:800; }.profile-copy { flex:1; margin-left:22rpx; }.name { margin-bottom:8rpx; font-size:38rpx; font-weight:800; }.edit { padding:13rpx 22rpx; color:var(--color-primary); background:var(--color-primary-soft); border-radius:18rpx; font-size:23rpx; }
-.address-panel { margin-bottom:22rpx; background:linear-gradient(135deg,var(--color-surface),var(--color-primary-soft)); }.mini-label,.mode-label { color:var(--color-muted); font-size:22rpx; }.address-big { margin:10rpx 0 8rpx; font-size:36rpx; font-weight:800; }
-.mode-banner { display:flex; align-items:center; justify-content:space-between; margin-bottom:22rpx; padding:28rpx; color: var(--color-on-accent); border-radius:28rpx; background:linear-gradient(135deg,#25364f,#3d5577); }.rider-banner { background:linear-gradient(135deg,#266a56,#21a878); }.mode-label { color:rgba(255,255,255,.7); }.mode-name { margin-top:7rpx; font-size:32rpx; font-weight:800; }.switch { padding:14rpx 20rpx; border-radius:18rpx; background:rgba(255,255,255,.16); font-size:23rpx; }
-.level-panel { margin-bottom:22rpx; padding:28rpx; border-radius:28rpx; background:linear-gradient(145deg,var(--color-primary-soft),var(--color-surface)); box-shadow:0 10rpx 32rpx var(--shadow-color); }
-.level-panel-head { display:flex; align-items:center; justify-content:space-between; gap:20rpx; }.level-kicker { color:var(--color-muted); font-size:20rpx; }.level-title { margin-top:5rpx; color:var(--color-primary); font-size:30rpx; font-weight:800; }.level-cap { flex:none; color:var(--color-text-2); font-size:20rpx; }.level-cap text { color:var(--color-primary); font-size:30rpx; font-weight:800; }
-.level-track { height:12rpx; margin-top:22rpx; overflow:hidden; border-radius:999rpx; background:var(--color-divider); }.level-progress { height:100%; border-radius:999rpx; background:linear-gradient(90deg,var(--color-primary),#65a3ff); transition:width .25s ease; }
-.level-meta { display:flex; justify-content:space-between; margin-top:11rpx; color:var(--color-text-2); font-size:19rpx; }.level-rule { margin-top:18rpx; padding-top:17rpx; color:var(--color-muted); border-top:1rpx solid var(--color-divider); font-size:20rpx; }
-.menu-card { padding:0 28rpx; border-radius:28rpx; background:var(--color-surface); box-shadow:0 10rpx 32rpx var(--shadow-color); }.menu-item { display:flex; align-items:center; min-height:108rpx; border-bottom:1rpx solid var(--color-divider); }.menu-item:last-child { border-bottom:0; }.menu-icon { display:flex; flex:none; align-items:center; justify-content:center; width:54rpx; height:54rpx; margin-right:20rpx; border-radius:17rpx; }.menu-icon image { display:block; width:31rpx; height:31rpx; }.blue { color:var(--color-primary); background:var(--color-primary-soft); }.orange { color:var(--color-warning); background:var(--color-warning-soft); }.green { color:var(--color-success); background:var(--color-success-soft); }.purple { color:var(--color-purple); background:var(--color-purple-soft); }.menu-item>text:nth-child(2) { flex:1; font-weight:600; }.status { color:var(--color-success); font-size:22rpx; }.arrow { margin-left:10rpx; color:var(--color-hint); }.version { margin-top:36rpx; text-align:center; color:var(--color-hint); font-size:21rpx; }
-.coupon-icon { color:#ef6f36; background:var(--color-warning-soft); }
+/* 我的 · 暖橙快递站（贴纸票券感）
+   ① 个人资料与默认地址合并为一张卡（me-card），中间用虚线分隔呼应票券语言
+   ② 卡片一律墨线描边 + 硬阴影；头像走暖橙渐变
+   ③ 模式条 / 等级面板 / 菜单 / 规则弹窗统一换暖色，浅深两套由全局令牌接管 */
+
+.profile-page { padding-top:36rpx; }
+
+/* ---------- 合并卡：个人信息 + 默认地址 ---------- */
+.me-card { padding:26rpx 24rpx; border:var(--border-ink-width) solid var(--color-ink); border-radius:32rpx; background:var(--color-surface); box-shadow:var(--shadow-sticker); }
+.profile-head { display:flex; align-items:center; padding:6rpx 4rpx 4rpx; }
+.avatar { display:flex; align-items:center; justify-content:center; width:104rpx; height:104rpx; border-radius:34rpx; color:#ffffff; background:linear-gradient(145deg,#FF8A4D,#FF6B2C); border:var(--border-ink-width) solid var(--color-ink); box-shadow:0 4rpx 0 rgba(36,21,5,.9); font-size:42rpx; font-weight:800; }
+.profile-copy { flex:1; min-width:0; margin-left:22rpx; }
+.name { margin-bottom:8rpx; color:var(--color-text); font-size:38rpx; font-weight:800; }
+.edit { flex:none; padding:13rpx 22rpx; color:var(--color-primary-deep); background:#ffffff; border:2rpx solid var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); border-radius:18rpx; font-size:23rpx; font-weight:700; }
+/* 票券打孔式的虚线分隔 */
+.me-div { height:0; margin:20rpx 0; border-top:2rpx dashed var(--color-divider); }
+.address-panel { padding:4rpx 4rpx 6rpx; }
+.mini-label,.mode-label { color:var(--color-muted); font-size:22rpx; }
+.address-big { margin:10rpx 0 8rpx; color:var(--color-text); font-size:36rpx; font-weight:800; }
+
+/* ---------- 模式条 ---------- */
+.mode-banner { display:flex; align-items:center; justify-content:space-between; gap:18rpx; margin:22rpx 0; padding:28rpx; color:#ffffff; border:var(--border-ink-width) solid var(--color-ink); border-radius:28rpx; background:linear-gradient(135deg,#3A2A1C,#241505); box-shadow:var(--shadow-sticker); }
+.rider-banner { background:linear-gradient(135deg,#1E6E52,#13563E); }
+.mode-label { color:rgba(255,255,255,.7); }
+.mode-name { margin-top:7rpx; font-size:32rpx; font-weight:800; }
+.switch { flex:none; padding:14rpx 20rpx; border-radius:18rpx; color:#ffffff; background:rgba(255,255,255,.16); border:2rpx solid rgba(255,255,255,.5); font-size:23rpx; font-weight:700; }
+
+/* ---------- 骑手等级 ---------- */
+.level-panel { margin-bottom:22rpx; padding:28rpx; border:var(--border-ink-width) solid var(--color-ink); border-radius:30rpx; background:var(--color-surface); box-shadow:var(--shadow-sticker); }
+.level-panel-head { display:flex; align-items:center; justify-content:space-between; gap:20rpx; }
+.level-kicker { color:var(--color-muted); font-size:20rpx; }
+.level-title { margin-top:5rpx; color:var(--color-primary-deep); font-size:30rpx; font-weight:800; }
+.level-cap { flex:none; color:var(--color-text-2); font-size:20rpx; }
+.level-cap text { color:var(--color-primary-deep); font-size:30rpx; font-weight:800; }
+.level-track { height:14rpx; margin-top:22rpx; overflow:hidden; border-radius:999rpx; background:var(--color-divider); }
+.level-progress { height:100%; border-radius:999rpx; background:linear-gradient(90deg,#FF8A4D,#FF6B2C); transition:width .25s ease; }
+.level-meta { display:flex; justify-content:space-between; margin-top:11rpx; color:var(--color-text-2); font-size:19rpx; }
+.level-rule { margin-top:18rpx; padding-top:17rpx; color:var(--color-muted); border-top:2rpx dashed var(--color-divider); font-size:20rpx; }
+
+/* ---------- 菜单 ---------- */
+.menu-card { padding:0 28rpx; border:var(--border-ink-width) solid var(--color-ink); border-radius:30rpx; background:var(--color-surface); box-shadow:var(--shadow-sticker); }
+.menu-item { display:flex; align-items:center; min-height:108rpx; border-bottom:2rpx dashed var(--color-divider); }
+.menu-item:last-child { border-bottom:0; }
+.menu-icon { display:flex; flex:none; align-items:center; justify-content:center; width:54rpx; height:54rpx; margin-right:20rpx; border-radius:17rpx; border:2rpx solid rgba(36,21,5,.18); }
+.menu-icon image { display:block; width:31rpx; height:31rpx; }
+.blue { color:var(--color-primary-deep); background:var(--color-primary-soft); }
+.orange { color:var(--color-warning); background:var(--color-warning-soft); }
+.green { color:var(--color-success); background:var(--color-success-soft); }
+.purple { color:var(--color-purple); background:var(--color-purple-soft); }
+.menu-item>text:nth-child(2) { flex:1; min-width:0; font-weight:600; }
+.status { flex:none; max-width:130rpx; overflow:hidden; color:var(--color-success); font-size:22rpx; white-space:nowrap; text-overflow:ellipsis; }
+.arrow { flex:none; margin-left:10rpx; color:var(--color-hint); }
+.version { margin-top:36rpx; text-align:center; color:var(--color-hint); font-size:21rpx; }
+.coupon-icon { color:var(--color-warning); background:var(--color-warning-soft); }
 .feedback-icon { color:var(--color-danger); background:var(--color-danger-soft); }
 .feedback-glyph { font-size:30rpx; line-height:1; }
 .menu-title { margin:30rpx 6rpx 14rpx; color:var(--color-muted); font-size:22rpx; font-weight:700; }
 
-.profile-copy { min-width:0; }
-.mode-banner { gap:18rpx; }
-.mode-banner>view:first-child { flex:1; min-width:0; }
-.switch { flex:none; text-align:center; }
-.menu-item>text:nth-child(2) { min-width:0; }
-.status { flex:none; max-width:130rpx; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-
-/* rules modal */
-.rules-mask { position:fixed; z-index:200; left:0; top:0; right:0; bottom:0; background:rgba(23,34,51,.56); display:flex; align-items:flex-end; }
-.rules-modal { width:100%; max-height:85vh; border-radius:36rpx 36rpx 0 0; background:var(--color-surface); display:flex; flex-direction:column; overflow:hidden; }
+/* ---------- 规则弹窗 ---------- */
+.rules-mask { position:fixed; z-index:200; left:0; top:0; right:0; bottom:0; background:rgba(36,21,5,.56); display:flex; align-items:flex-end; }
+.rules-modal { width:100%; max-height:85vh; border-radius:36rpx 36rpx 0 0; border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); display:flex; flex-direction:column; overflow:hidden; }
 .rules-head { display:flex; align-items:center; padding:28rpx 28rpx 0; }
 .rules-close { width:52rpx; height:52rpx; line-height:52rpx; text-align:center; color:var(--color-muted); font-size:30rpx; }
 .rules-title { flex:1; text-align:center; font-size:32rpx; font-weight:800; margin-right:52rpx; }
-.rules-tabs { display:flex; margin:20rpx 28rpx 0; padding:6rpx; border-radius:16rpx; background:var(--color-bg); }
+.rules-tabs { display:flex; margin:20rpx 28rpx 0; padding:6rpx; border-radius:16rpx; background:var(--color-surface-2); }
 .rules-tab { flex:1; height:64rpx; line-height:64rpx; text-align:center; border-radius:12rpx; color:var(--color-muted); font-size:25rpx; font-weight:600; }
-.rules-tab.on { color: var(--color-on-accent); background:var(--color-primary); }
-.rules-body { height: calc(85vh - 190rpx); padding:20rpx 32rpx 42rpx; }
+.rules-tab.on { color:var(--color-on-accent); background:var(--color-primary); }
+.rules-body { height:calc(85vh - 190rpx); padding:20rpx 32rpx 42rpx; }
 .update-info { margin-bottom:24rpx; padding:16rpx 20rpx; border-radius:14rpx; background:var(--color-surface-2); color:var(--color-muted); font-size:21rpx; text-align:center; }
 .rules-body .sec { margin-bottom:28rpx; }
 .rules-body .sec-title { margin-bottom:10rpx; color:var(--color-text); font-size:28rpx; font-weight:700; line-height:1.5; }
@@ -37,13 +75,17 @@
 .theme-card { margin-bottom:6rpx; }
 .theme-row { display:flex; align-items:center; justify-content:space-between; padding:26rpx 0; }
 .theme-label { font-size:27rpx; font-weight:600; }
-.theme-options { display:flex; padding:6rpx; border-radius:16rpx; background:var(--color-bg); }
+.theme-options { display:flex; padding:6rpx; border-radius:16rpx; background:var(--color-surface-2); }
 .theme-option { padding:10rpx 22rpx; border-radius:12rpx; color:var(--color-muted); font-size:22rpx; font-weight:600; }
 .theme-option.on { color:var(--color-on-accent); background:var(--color-primary); }
 
 /* 骑手收单通知邮箱（可选） */
-.rider-email { margin-top:18rpx; padding-top:17rpx; border-top:1rpx solid var(--color-divider); }
+.rider-email { margin-top:18rpx; padding-top:17rpx; border-top:2rpx dashed var(--color-divider); }
 .rider-email-head { display:flex; align-items:center; justify-content:space-between; }
 .rider-email-head text:first-child { color:var(--color-text-2); font-size:22rpx; font-weight:700; }
-.rider-email-save { color:var(--color-primary); font-size:22rpx; font-weight:700; }
-.rider-email-input { width:100%; height:72rpx; margin-top:12rpx; padding:0 20rpx; box-sizing:border-box; border-radius:14rpx; background:var(--color-surface-2); font-size:25rpx; color:var(--color-text); }
+.rider-email-save { color:var(--color-primary-deep); font-size:22rpx; font-weight:700; }
+.rider-email-input { width:100%; height:72rpx; margin-top:12rpx; padding:0 20rpx; box-sizing:border-box; border:2rpx solid var(--color-divider); border-radius:14rpx; background:var(--color-surface-2); font-size:25rpx; color:var(--color-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .level-progress { transition:none; }
+}

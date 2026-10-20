@@ -1,62 +1,79 @@
 // 主题：默认跟随系统，支持「跟随系统 / 浅色 / 深色」三选。
 // 变量值与 styles/variables.wxss 严格保持一致（改一处要同步另一处）。
 const PREF_KEY = 'campus_theme'
+// 窗口底色在下面几处也各写了一份，改色时要一起改：
+// getPageBackgroundColor() / applyChrome() -> wx.setBackgroundColor() / theme.json
+const CHROME_LIGHT_BG = '#FFF7EE'
+const CHROME_DARK_BG = '#17110C'
+const CHROME_DARK_NAV = '#241B14'
 let cachedPreference = ''
 let cachedSystemTheme = ''
 const appliedChromeThemes = new Map()
 
 const LIGHT_VARS = {
-  '--color-bg': '#f2f2f7',
-  '--color-surface': '#ffffff',
-  '--color-surface-2': '#f2f2f7',
-  '--color-divider': '#e5e5ea',
-  '--color-tabbar': 'rgba(255, 255, 255, 0.82)',
-  '--color-text': '#000000',
-  '--color-text-2': 'rgba(60, 60, 67, 0.6)',
-  '--color-muted': 'rgba(60, 60, 67, 0.4)',
-  '--color-hint': 'rgba(60, 60, 67, 0.3)',
-  '--color-primary': '#007aff',
-  '--color-primary-soft': 'rgba(0, 122, 255, 0.12)',
-  '--color-on-accent': '#ffffff',
-  '--color-success': '#34c759',
-  '--color-success-soft': 'rgba(52, 199, 89, 0.14)',
-  '--color-warning': '#ff9500',
-  '--color-warning-soft': 'rgba(255, 149, 0, 0.14)',
-  '--color-danger': '#ff3b30',
-  '--color-danger-soft': 'rgba(255, 59, 48, 0.12)',
-  '--color-purple': '#af52de',
-  '--color-purple-soft': 'rgba(175, 82, 222, 0.14)',
-  '--color-gray-soft': 'rgba(120, 120, 128, 0.16)',
-  '--color-tabbar-indicator': 'rgba(120, 120, 128, 0.28)',
-  '--color-warm': '#c93400',
-  '--shadow-color': 'rgba(0, 0, 0, 0.08)'
+  '--color-bg': '#FFF7EE',
+  '--color-surface': '#FFFFFF',
+  '--color-surface-2': '#FFF1E5',
+  '--color-divider': '#EBDCCB',
+  '--color-tabbar': 'rgba(255, 252, 246, 0.9)',
+  '--color-text': '#241505',
+  '--color-text-2': 'rgba(36, 21, 5, 0.62)',
+  '--color-muted': 'rgba(36, 21, 5, 0.45)',
+  '--color-hint': 'rgba(36, 21, 5, 0.34)',
+  '--color-primary': '#FF6B2C',
+  '--color-primary-soft': '#FFEDE0',
+  '--color-on-accent': '#FFFFFF',
+  '--color-success': '#1E9E6A',
+  '--color-success-soft': '#E5F5EC',
+  '--color-warning': '#E8890C',
+  '--color-warning-soft': '#FFF1E5',
+  '--color-danger': '#D64545',
+  '--color-danger-soft': '#FDECEC',
+  '--color-purple': '#7C6BD6',
+  '--color-purple-soft': '#EFEBFB',
+  '--color-gray-soft': '#F0E6DA',
+  '--color-tabbar-indicator': '#FFEDE0',
+  '--color-warm': '#D94E10',
+  '--shadow-color': 'rgba(120, 66, 20, 0.18)',
+  '--color-ink': '#241505',
+  '--border-ink-width': '2rpx',
+  '--shadow-sticker': '0 6rpx 0 rgba(36, 21, 5, 0.9)',
+  '--color-primary-deep': '#D94E10',
+  '--color-info': '#0E8A8A',
+  '--color-info-soft': '#E4F5F5'
 }
 
 const DARK_VARS = {
-  '--color-bg': '#000000',
-  '--color-surface': '#1c1c1e',
-  '--color-surface-2': '#2c2c2e',
-  '--color-divider': '#38383a',
-  '--color-tabbar': 'rgba(28, 28, 30, 0.82)',
-  '--color-text': '#ffffff',
-  '--color-text-2': 'rgba(235, 235, 245, 0.6)',
-  '--color-muted': 'rgba(235, 235, 245, 0.4)',
-  '--color-hint': 'rgba(235, 235, 245, 0.3)',
-  '--color-primary': '#0a84ff',
-  '--color-primary-soft': 'rgba(10, 132, 255, 0.22)',
-  '--color-on-accent': '#ffffff',
-  '--color-success': '#30d158',
-  '--color-success-soft': 'rgba(48, 209, 88, 0.22)',
-  '--color-warning': '#ff9f0a',
-  '--color-warning-soft': 'rgba(255, 159, 10, 0.22)',
-  '--color-danger': '#ff453a',
-  '--color-danger-soft': 'rgba(255, 69, 58, 0.22)',
-  '--color-purple': '#bf5af2',
-  '--color-purple-soft': 'rgba(191, 90, 242, 0.22)',
-  '--color-gray-soft': 'rgba(120, 120, 128, 0.36)',
-  '--color-tabbar-indicator': 'rgba(120, 120, 128, 0.48)',
-  '--color-warm': '#ff9f0a',
-  '--shadow-color': 'rgba(0, 0, 0, 0.55)'
+  '--color-bg': '#17110C',
+  '--color-surface': '#241B14',
+  '--color-surface-2': '#2E2318',
+  '--color-divider': '#3B2E22',
+  '--color-tabbar': 'rgba(41, 31, 22, 0.92)',
+  '--color-text': '#FFF6EC',
+  '--color-text-2': 'rgba(255, 246, 236, 0.66)',
+  '--color-muted': 'rgba(255, 246, 236, 0.48)',
+  '--color-hint': 'rgba(255, 246, 236, 0.36)',
+  '--color-primary': '#FF8B52',
+  '--color-primary-soft': 'rgba(255, 139, 82, 0.22)',
+  '--color-on-accent': '#FFFFFF',
+  '--color-success': '#4CC38A',
+  '--color-success-soft': 'rgba(76, 195, 138, 0.22)',
+  '--color-warning': '#FFB340',
+  '--color-warning-soft': 'rgba(255, 179, 64, 0.18)',
+  '--color-danger': '#FF6B6B',
+  '--color-danger-soft': 'rgba(255, 107, 107, 0.2)',
+  '--color-purple': '#B794F6',
+  '--color-purple-soft': 'rgba(183, 148, 246, 0.22)',
+  '--color-gray-soft': 'rgba(240, 230, 218, 0.14)',
+  '--color-tabbar-indicator': 'rgba(255, 139, 82, 0.24)',
+  '--color-warm': '#FF9F5A',
+  '--shadow-color': 'rgba(0, 0, 0, 0.5)',
+  '--color-ink': '#F3E3D0',
+  '--border-ink-width': '2rpx',
+  '--shadow-sticker': '0 6rpx 0 rgba(0, 0, 0, 0.45)',
+  '--color-primary-deep': '#FFA46B',
+  '--color-info': '#4FBDBD',
+  '--color-info-soft': 'rgba(79, 189, 189, 0.2)'
 }
 
 const LIGHT_META_STYLE = Object.keys(LIGHT_VARS).map(key => key + ':' + LIGHT_VARS[key]).join(';')
@@ -119,7 +136,7 @@ function getTabBarStyle() {
 // 窗口背景色（下拉露出 / 切页瞬间露出的底色）。theme.json 的 @backgroundColor 只跟系统，
 // 手动主题覆盖系统时切页会露一帧系统色，故每页用 page-meta 的 background-color 覆盖。
 function getPageBackgroundColor() {
-  return resolve() === 'dark' ? '#000000' : '#f2f2f7'
+  return resolve() === 'dark' ? CHROME_DARK_BG : CHROME_LIGHT_BG
 }
 
 function getCurrentPageKey() {
@@ -143,7 +160,7 @@ function applyChrome() {
     if (appliedChromeThemes.get(pageKey) !== resolvedTheme) {
       wx.setNavigationBarColor({
         frontColor: dark ? '#ffffff' : '#000000',
-        backgroundColor: dark ? '#1c1c1e' : '#ffffff',
+        backgroundColor: dark ? CHROME_DARK_NAV : CHROME_LIGHT_BG,
         animation: { duration: 0, timingFunc: 'linear' }
       })
       appliedChromeThemes.set(pageKey, resolvedTheme)
@@ -151,9 +168,9 @@ function applyChrome() {
     // 窗口背景是页面级的：切 tab 到新页面必须重设，否则回落 theme.json 的 @backgroundColor
     // （只跟系统、不跟手动主题），手动浅色 + 系统深色时切页会露一帧黑。幂等，重复设无副作用。
     wx.setBackgroundColor({
-      backgroundColor: dark ? '#000000' : '#f2f2f7',
-      backgroundColorTop: dark ? '#000000' : '#f2f2f7',
-      backgroundColorBottom: dark ? '#000000' : '#f2f2f7'
+      backgroundColor: dark ? CHROME_DARK_BG : CHROME_LIGHT_BG,
+      backgroundColorTop: dark ? CHROME_DARK_BG : CHROME_LIGHT_BG,
+      backgroundColorBottom: dark ? CHROME_DARK_BG : CHROME_LIGHT_BG
     })
     return true
   } catch (error) {

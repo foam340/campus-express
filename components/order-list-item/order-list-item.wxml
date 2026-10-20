@@ -1,6 +1,6 @@
 <view wx:if="{{variant === 'user'}}" class="card user-card" bindtap="handleOpen">
   <view class="row between">
-    <view class="tag {{order.status==='waiting'?'orange':order.status==='completed'?'green':'blue'}}">{{order.statusText}}</view>
+    <view class="tag status-{{statusType}}">{{order.statusText}}</view>
     <view class="muted small">{{order.createdAt}}</view>
   </view>
   <view class="order-main">
