@@ -317,6 +317,27 @@ async function testPaymentDuringVerification() {
   }
 }
 
+async function testUiModeActions() {
+  const {store} = harness()
+  const navigations = []
+  const instance = page('packages/order/create/create.js', {
+    '../../../utils/store':store, '../../../utils/order-api':{}
+  }, {navigateTo(value){navigations.push(value.url)}})
+  instance.setData({reviewMode:true})
+  instance.goService()
+  assert.equal(navigations.length,0,'The new normal-mode service action must not change review-mode navigation')
+  instance.setData({reviewMode:false})
+  instance.goService()
+  assert.equal(navigations.length,1)
+  assert.equal(navigations[0],require('../config/constants').ROUTES.service)
+  for(const preference of ['light','dark']) {
+    const theme = load('utils/theme.js',{}, {wx:{getStorageSync:()=>preference}})
+    const style = theme.getTabBarStyle()
+    assert(style.includes('--tab-active-icon-filter:brightness(0) saturate(100%)'))
+    assert.equal(style.includes('invert(100%)'),preference==='dark','Selected tab icons must stay visible in manual dark mode')
+  }
+}
+
 async function main() {
   await testGlobalSettings()
   await testPageLifecycle()
@@ -326,6 +347,7 @@ async function main() {
   await testLatePaymentResponse()
   await testFinancialActions()
   await testPaymentDuringVerification()
+  await testUiModeActions()
   console.log('Review mode checks passed: three-campus cache isolation, stable normal navigation, cold/warm failures, real mode changes, page lifecycle, late payments and financial guards.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

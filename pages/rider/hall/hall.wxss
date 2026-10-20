@@ -43,7 +43,7 @@
 .filter-panel-count { color:var(--color-hint); font-size:22rpx; }
 .filter-done { padding:14rpx 52rpx; border-radius:21rpx; color: var(--color-on-accent); background:var(--color-primary); font-size:24rpx; font-weight:700; }
 .filter-done-hover { background:var(--color-primary); }
-.order-list { width:100%; height:calc(100vh - 330rpx - env(safe-area-inset-bottom)); }
+.order-list { width:100%; height:calc(100vh - 394rpx - env(safe-area-inset-bottom)); }
 .list-stage { position:relative; width:100%; }
 .list-hidden { visibility:hidden; pointer-events:none; }
 .empty-layer { position:absolute; z-index:2; top:30rpx; left:0; right:0; }

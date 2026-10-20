@@ -99,7 +99,12 @@ if (riderApplicationMarkup.includes('riderLevel') || riderApplicationMarkup.incl
   errors.push('User-side rider application page must not display rider level details')
 }
 const riderHallCode = fs.readFileSync(path.join(root, 'pages/rider/hall/hall.js'), 'utf8')
-if (!riderHallCode.includes('getListViewport(330)')) errors.push('Rider hall viewport must match the compact header layout')
+if (!riderHallCode.includes('getListViewport(394)')) errors.push('Rider hall viewport must include the taller floating tab-bar clearance')
+for (const [route, offset] of [['pages/user/orders/orders',284],['pages/rider/tasks/tasks',309],['pages/rider/hall/hall',394]]) {
+  const code = fs.readFileSync(path.join(root,route+'.js'),'utf8')
+  const style = fs.readFileSync(path.join(root,route+'.wxss'),'utf8')
+  if (!code.includes(`getListViewport(${offset})`) || !style.includes(`100vh - ${offset}rpx`)) errors.push(`${route}: JS and WXSS list heights must match the floating tab bar`)
+}
 if (!riderHallMarkup.includes('bindtap="manualRefresh"') || !riderHallMarkup.includes("refreshing?'刷新中':'刷新'")) {
   errors.push('Rider hall must provide a visible manual refresh button with progress feedback')
 }

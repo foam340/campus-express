@@ -11,7 +11,7 @@ const orderApi = require('../../../utils/order-api')
 const { getRiderProgress } = require('../../../utils/rider-level')
 const modeStore = require('../../../utils/mode')
 
-const viewport = getListViewport(330)
+const viewport = getListViewport(394)
 const itemHeight = rpxToPx(448, viewport.windowWidth)
 // 置灰卡多一条原因条：12*2 padding + 32 line-height + 14 margin-bottom = 70rpx（.block-reason 的 line-height 已显式固定，勿改单边）
 const blockedItemHeight = rpxToPx(518, viewport.windowWidth)

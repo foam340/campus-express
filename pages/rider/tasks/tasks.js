@@ -10,7 +10,7 @@ const modeStore = require('../../../utils/mode')
 
 const TASKS_FRESH_MS = 5 * 1000
 
-const viewport = getListViewport(245)
+const viewport = getListViewport(309)
 const itemHeight = rpxToPx(230, viewport.windowWidth)
 const itemGap = rpxToPx(20, viewport.windowWidth)
 const initialProgress = getRiderProgress(0)

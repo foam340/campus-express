@@ -24,7 +24,7 @@
       <view class="hero-action">{{serviceClosed ? '暂停服务' : (reviewMode ? '提交登记' : '现在下单')}}<text wx:if="{{!serviceClosed}}">→</text></view>
     </view>
     <!-- 右上角纸箱贴纸：新设计元素，纯装饰，随整卡一起响应 goCreate -->
-    <view class="hero-box">📦</view>
+    <view wx:if="{{!reviewMode}}" class="hero-box">📦</view>
   </view>
 
   <view class="section-head row between">
@@ -71,12 +71,18 @@
     </view>
   </view>
   <view wx:else class="card empty-card">
-    <view class="empty-icon">📭</view>
+    <view class="empty-icon">{{reviewMode ? '✓' : '📭'}}</view>
     <view class="strong">{{reviewMode ? '暂时没有进行中的登记' : '暂时没有进行中的订单'}}</view>
-
+    <view wx:if="{{reviewMode}}" class="muted small">有需要时，点击上方入口登记快递信息</view>
   </view>
 
-
+  <view wx:if="{{reviewMode}}" class="notice-card">
+    <view class="notice-icon">i</view>
+    <view>
+      <view class="strong">取件凭证仅用于本次登记核对</view>
+      <view class="muted small">凭证不公开展示，提交后仅工作人员可见</view>
+    </view>
+  </view>
 </view>
 
 <view wx:if="{{showCouponGift && !reviewMode}}" class="gift-mask" catchtouchmove="noop">

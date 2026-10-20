@@ -45,6 +45,7 @@ page {
   --color-primary-deep: #D94E10;
   --color-info: #0E8A8A;
   --color-info-soft: #E4F5F5;
+  --tab-active-icon-filter: brightness(0) saturate(100%);
 
   /* 阴影 */
   --shadow-color: rgba(120, 66, 20, 0.18);
@@ -90,6 +91,7 @@ page {
     --color-primary-deep: #FFA46B;
     --color-info: #4FBDBD;
     --color-info-soft: rgba(79, 189, 189, 0.2);
+    --tab-active-icon-filter: brightness(0) saturate(100%) invert(100%);
 
     --shadow-color: rgba(0, 0, 0, 0.5);
   }

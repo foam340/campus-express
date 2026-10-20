@@ -85,9 +85,9 @@
 }
 .tab-label { display: block; height: 26rpx; line-height: 26rpx; }
 .tab-item.active { color: var(--color-primary-deep); font-weight: 900; }
-/* 激活图标压成纯墨色，并定格在「上移 + 微歪」的姿态（对齐原型 .tb.on .ico） */
+/* 激活图标随主题切换明暗，保留「上移 + 微歪」的姿态。 */
 .tab-item.active .tab-icon-image {
-  filter: brightness(0) saturate(100%);
+  filter: var(--tab-active-icon-filter);
   transform: translateY(-2rpx) rotate(-6deg);
   animation: tab-icon-pop 420ms var(--ease-bounce) both;
 }

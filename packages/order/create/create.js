@@ -350,7 +350,7 @@ createPage({
   previewSampleImage() { wx.navigateTo({ url: ROUTES.samplePickup }) },
   viewSizeGuide() { wx.navigateTo({ url: ROUTES.sizeGuide }) },
   /* 超大件提示里的「联系客服 ›」：与「我的」页同一条通道（客服页展示各校区管理员微信号 + 二维码） */
-  goService() { wx.navigateTo({ url: ROUTES.service }) },
+  goService() { if (!this.data.reviewMode) wx.navigateTo({ url: ROUTES.service }) },
   inputNote(event) { this.note = String(event.detail.value || '').slice(0, 100) },
   previewImage(event) {
     const card = this.data.cards.find(item => item.id === Number(event.currentTarget.dataset.id))

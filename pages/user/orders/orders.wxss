@@ -15,7 +15,7 @@
 .filter { display:inline-flex; flex:none; padding:15rpx 25rpx; border:2rpx solid var(--color-divider); border-radius:22rpx; color:var(--color-text-2); background:var(--color-surface); font-size:24rpx; font-weight:700; }
 .filter.active { color:#ffffff; background:var(--color-primary); border-color:var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); }
 
-.order-list { width:100%; height:calc(100vh - 220rpx - env(safe-area-inset-bottom)); }
+.order-list { width:100%; height:calc(100vh - 284rpx - env(safe-area-inset-bottom)); }
 .list-stage { position:relative; width:100%; }
 .list-hidden { visibility:hidden; pointer-events:none; }
 .empty-layer { position:absolute; z-index:2; top:40rpx; left:0; right:0; }

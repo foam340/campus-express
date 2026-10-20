@@ -40,7 +40,8 @@ const LIGHT_VARS = {
   '--shadow-sticker': '0 6rpx 0 rgba(36, 21, 5, 0.9)',
   '--color-primary-deep': '#D94E10',
   '--color-info': '#0E8A8A',
-  '--color-info-soft': '#E4F5F5'
+  '--color-info-soft': '#E4F5F5',
+  '--tab-active-icon-filter': 'brightness(0) saturate(100%)'
 }
 
 const DARK_VARS = {
@@ -73,7 +74,8 @@ const DARK_VARS = {
   '--shadow-sticker': '0 6rpx 0 rgba(0, 0, 0, 0.45)',
   '--color-primary-deep': '#FFA46B',
   '--color-info': '#4FBDBD',
-  '--color-info-soft': 'rgba(79, 189, 189, 0.2)'
+  '--color-info-soft': 'rgba(79, 189, 189, 0.2)',
+  '--tab-active-icon-filter': 'brightness(0) saturate(100%) invert(100%)'
 }
 
 const LIGHT_META_STYLE = Object.keys(LIGHT_VARS).map(key => key + ':' + LIGHT_VARS[key]).join(';')

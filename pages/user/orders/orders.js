@@ -9,7 +9,8 @@ const modeStore = require('../../../utils/mode')
 
 const ORDERS_FRESH_MS = 5 * 1000
 
-const viewport = getListViewport(220)
+// 悬浮导航顶边上移 48rpx，另留 16rpx 间距；JS 高度和 WXSS 必须一起调整。
+const viewport = getListViewport(284)
 const itemHeight = rpxToPx(310, viewport.windowWidth)
 const itemGap = rpxToPx(20, viewport.windowWidth)
 
