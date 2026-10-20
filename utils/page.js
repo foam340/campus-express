@@ -21,12 +21,12 @@ function createPage(definition) {
   source.data = Object.assign({
     pageMetaStyle: theme.getPageMetaStyle(),
     pageBackgroundColor: theme.getPageBackgroundColor()
-  }, source.data || {}, { reviewMode: true })
+  }, source.data || {}, { reviewMode: store.getSettings().reviewMode !== false })
   source.$syncReviewMode = function $syncReviewMode() {
     const reviewMode = store.getSettings().reviewMode !== false
     const changed = this.data.reviewMode !== reviewMode
     const patch = { reviewMode }
-    // 核验期间仅隐藏，确认审核开启后才清空，避免正常模式返回时丢失支付弹窗。
+    // 刷新不改变已确认的展示模式；确认开启审核后才关闭财务弹窗。
     if (reviewMode && !state.getState().reviewModeChecking) {
       for (const key of ['showPayQr', 'showCouponSheet', 'showCouponGift']) {
         if (this.data[key]) patch[key] = false
