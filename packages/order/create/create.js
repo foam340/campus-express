@@ -17,7 +17,7 @@ const ORDER_DISCOUNTS = [
   { threshold: 10, amount: 1 },
   { threshold: 5, amount: 0.5 }
 ]
-const URGENCY_FEES = { today: 0, urgent: 4 }
+const URGENCY_FEES = { today: 0, soon: 2, urgent: 4 }
 const DELIVERY_FEES = { downstairs: 0, door: 1, upperFloorDoor: 1.5 }
 const BUILDING_9_FEE = 0.5
 const TARGET_PRICING_VERSION = 3
@@ -47,6 +47,7 @@ function normalizePricing(value) {
     medium: { campus: safePrice(activeSource.medium && activeSource.medium.campus, ITEM_PRICES.medium.campus), off_campus: safePrice(activeSource.medium && activeSource.medium.off_campus, ITEM_PRICES.medium.off_campus) },
     large: { campus: safePrice(activeSource.large && activeSource.large.campus, ITEM_PRICES.large.campus), off_campus: safePrice(activeSource.large && activeSource.large.off_campus, ITEM_PRICES.large.off_campus) },
     urgentFee: safePrice(activeSource.urgentFee, URGENCY_FEES.urgent),
+    soonFee: safePrice(activeSource.soonFee, URGENCY_FEES.soon),
     doorFee: safePrice(activeSource.doorFee, DELIVERY_FEES.door),
     upperFloorDoorFee: safePrice(activeSource.upperFloorDoorFee, DELIVERY_FEES.upperFloorDoor),
     building9Fee: safePrice(activeSource.building9Fee, BUILDING_9_FEE),
@@ -123,6 +124,7 @@ createPage({
     deliveryFeeText: '0.00',
     buildingFeeText: '0.00',
     urgentOptionFeeText: '4.00',
+    soonOptionFeeText: '2.00',
     doorOptionFeeText: '1.00',
     doorOptionHint: '1-3楼',
     originalTotalText: '0.00',
@@ -213,6 +215,7 @@ createPage({
   },
   onReviewModeChanged() {
     this.applyReviewTitle()
+    if (this.data.reviewMode && this.data.urgency === 'soon') this.refresh(this.data.cards, { urgency: 'today' })
   },
   refreshCoupons(force) {
     if (this.couponRefreshTask) return this.couponRefreshTask
@@ -238,7 +241,7 @@ createPage({
     const pricing = nextState.pricing || this.data.pricing || normalizePricing(null)
     const user = nextState.user || this.data.user || {}
     const coupons = Object.prototype.hasOwnProperty.call(nextState, 'coupons') ? nextState.coupons : (this.data.coupons || [])
-    const urgency = nextState.urgency === 'urgent' ? 'urgent' : (nextState.urgency === 'today' ? 'today' : this.data.urgency)
+    const urgency = ['today', 'soon', 'urgent'].includes(nextState.urgency) ? nextState.urgency : this.data.urgency
     const deliveryMode = nextState.deliveryMode === 'door' ? 'door' : (nextState.deliveryMode === 'downstairs' ? 'downstairs' : this.data.deliveryMode)
     let subtotal = 0
     let selectedCount = 0
@@ -263,7 +266,7 @@ createPage({
         complete: Boolean(card.image && config)
       })
     })
-    const urgencyFee = urgency === 'urgent' ? pricing.urgentFee : 0
+    const urgencyFee = urgency === 'urgent' ? pricing.urgentFee : urgency === 'soon' ? pricing.soonFee : 0
     const building9 = isBuilding9(user)
     const selectedDoorFee = doorFeeFor(user, pricing)
     const deliveryFee = deliveryMode === 'door' ? selectedDoorFee : 0
@@ -312,6 +315,7 @@ createPage({
       deliveryFeeText: money(deliveryFee),
       buildingFeeText: money(buildingFee),
       urgentOptionFeeText: money(pricing.urgentFee),
+      soonOptionFeeText: money(pricing.soonFee),
       doorOptionFeeText: money(selectedDoorFee),
       doorOptionHint: building9 ? '9栋有电梯' : (dormFloor(user.room) >= 4 ? '4楼及以上' : '1-3楼'),
       originalTotalText: money(originalTotal),
@@ -425,7 +429,9 @@ createPage({
     this.refresh(cards)
   },
   selectUrgency(event) {
-    const urgency = event.currentTarget.dataset.value === 'urgent' ? 'urgent' : 'today'
+    const value = event.currentTarget.dataset.value
+    if (this.data.reviewMode && value === 'soon') return
+    const urgency = ['today', 'soon', 'urgent'].includes(value) ? value : 'today'
     this.refresh(this.data.cards, { urgency })
   },
   selectDeliveryMode(event) {
@@ -470,7 +476,9 @@ createPage({
     }
     const stationLabel = (this.data.stations.find(item => item.value === this.data.pickupStation) || {}).label || ''
     const stationLine = stationLabel ? `\n取件：${stationLabel}` : ''
-    const urgencyText = this.data.urgency === 'urgent' ? '很急' : (this.data.reviewMode ? '今天取件' : '今天送达')
+    const urgencyText = this.data.reviewMode ? (this.data.urgency === 'urgent' ? '很急' : '今天取件')
+      : this.data.urgency === 'urgent' ? '很急 · 下单后1小时内'
+        : this.data.urgency === 'soon' ? '稍急 · 下单后4小时内' : '今天23:00前送达'
     const deliveryLine = this.data.deliveryMode === 'door' ? (this.data.reviewMode ? '宿舍门口' : '送到指定位置门口') : (this.data.reviewMode ? '宿舍楼下' : '送到宿舍楼下')
     wx.showModal({
       title: this.data.reviewMode ? '确认提交登记' : '确认提交订单',

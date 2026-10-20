@@ -52,7 +52,7 @@ createPage({
     if (this.filterCampus !== campus) {
       this.filterCampus = campus
       const filters = emptyFilters(campus, stations)
-      this.setData(Object.assign({ filters }, buildFilterView(filters, campus, stations)))
+      this.setData(Object.assign({ filters }, buildFilterView(filters, campus, stations, settings.reviewMode !== false)))
     }
     this.$setDataChanged({
       serviceClosed: settings.serviceStatus === 'closed',
@@ -135,7 +135,14 @@ createPage({
       maxActiveOrders: this.maxActiveOrders || initialProgress.maxActiveOrders,
       riderProgress: this.riderProgress || initialProgress,
       hasMore: result.hasMore, loading: false
-    }, buildFilterView(active, this.campus, this.stations)))
+    }, buildFilterView(active, this.campus, this.stations, this.data.reviewMode)))
+  },
+  onReviewModeChanged() {
+    const filters = Object.assign({}, this.data.filters)
+    if (this.data.reviewMode && filters.urgency === 'soon') filters.urgency = ''
+    this.setData({ filters })
+    if (Array.isArray(this.allOrders)) this.applyFilter(filters, false)
+    else this.setData(buildFilterView(filters, this.campus, this.stations, this.data.reviewMode))
   },
   toggleFilterPanel() { this.setData({ filterOpen: !this.data.filterOpen }) },
   closeFilterPanel() { if (this.data.filterOpen) this.setData({ filterOpen: false }) },
@@ -143,6 +150,7 @@ createPage({
   pickFilterOption(event) {
     const { group, value } = event.currentTarget.dataset
     if (!group || !value) return
+    if (this.data.reviewMode && group === 'urgency' && value === 'soon') return
     const filters = Object.assign({}, this.data.filters)
     filters[group] = filters[group] === value ? '' : value
     this.setData({ filters })
@@ -179,7 +187,7 @@ createPage({
     if (order.blocked) { wx.showToast({ title: order.blockReason || '该订单暂不可接', icon: 'none' }); return }
     wx.showModal({
       title: '确认抢单？',
-      content: `${order.pieces}件快递\n${order.isLarge ? '包含大件\n' : ''}送至${order.building}\n需在${order.deadline}前送达${this.data.reviewMode ? '' : `\n本单收入 ¥${order.price.toFixed(2)}`}`,
+      content: `${order.pieces}件快递\n${order.isLarge ? '包含大件\n' : ''}送至${order.building}\n需在${this.data.reviewMode ? order.deadline : (order.deliveryDeadline || order.deadline)}前送达${this.data.reviewMode ? '' : `\n本单收入 ¥${order.price.toFixed(2)}`}`,
       confirmText: '确认抢单',
       success: result => {
         if (!result.confirm) return

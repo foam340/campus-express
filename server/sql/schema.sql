@@ -178,7 +178,7 @@ CREATE TABLE IF NOT EXISTS orders (
   pickup_station VARCHAR(16) NULL,
   pieces INT UNSIGNED NOT NULL DEFAULT 1,
   is_large TINYINT(1) NOT NULL DEFAULT 0,
-  urgency ENUM('urgent','today','tomorrow') NOT NULL,
+  urgency ENUM('urgent','today','tomorrow','soon') NOT NULL,
   pickup_scope ENUM('campus','off_campus') NULL DEFAULT NULL,
   deadline_at DATETIME NULL,
   note VARCHAR(100) NOT NULL DEFAULT '',

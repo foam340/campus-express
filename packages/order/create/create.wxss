@@ -74,6 +74,8 @@
 .segment.selected text { color:var(--color-primary-deep); }
 .segment.urgent-selected { border-color:var(--color-ink); background:var(--color-warning-soft); box-shadow:0 6rpx 0 rgba(36,21,5,.9); }
 .segment.urgent-selected view { color:var(--color-warning); }
+.urgency-option text { white-space:normal; line-height:1.5; }
+.urgency-option .urgency-price { margin-top:10rpx; font-size:20rpx; font-weight:700; }
 .scope-segment text { white-space:pre-line; line-height:1.35; }
 .size-segment { min-height:106rpx; }
 /* 校外取件 chip 用冷青语义色（校内暖橙 / 校外冷青，对齐原型 .chip[data-loc="off"]） */

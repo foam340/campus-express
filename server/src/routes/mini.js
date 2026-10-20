@@ -26,6 +26,7 @@ const {
   ITEM_SCOPES,
   ITEM_SIZES,
   ITEMIZED_PRICING_CURRENT_VERSION,
+  SOON_URGENCY_FEE,
   calculateItemizedPrice
 } = require('../item-pricing')
 const {
@@ -348,7 +349,7 @@ const refundStatusText = Object.freeze({
   pending: '退款待处理', processing: '退款处理中', succeeded: '退款已完成',
   retryable: '退款等待重试', manual_review: '退款需人工核对'
 })
-const urgencyText = Object.freeze({ urgent: '很急', today: '今天', tomorrow: '明天' })
+const urgencyText = Object.freeze({ urgent: '很急', soon: '稍急', today: '今天', tomorrow: '明天' })
 const pickupScopeText = Object.freeze({ campus: '校内', campus_7: '校内', off_campus: '校外' })
 const itemSizeText = Object.freeze({ small: '小件', medium: '中件', large: '大件' })
 
@@ -453,6 +454,9 @@ function mapOrder(row, options = {}) {
     riderPhone: options.includeRiderPhone ? (row.rider_phone || '') : '',
     deadlineAt: unixMilliseconds(row.deadline_at),
     deadline: row.deadline_text || deadlineText(row.urgency, row.close_time),
+    // 保留 deadline 供审核及旧包使用，正常模式的新包展示从下单起算的时限。
+    deliveryDeadline: row.urgency === 'urgent' ? '下单后 1 小时'
+      : row.urgency === 'soon' ? '下单后 4 小时' : (row.deadline_text || deadlineText(row.urgency, row.close_time)),
     createdAtMs: unixMilliseconds(row.created_at),
     acceptedAtMs: unixMilliseconds(row.accepted_at),
     deliveredAtMs,
@@ -499,6 +503,7 @@ function formatCloseTime(value) {
 
 function deadlineText(urgency, closeTime) {
   if (urgency === 'urgent') return '接单后 1 小时'
+  if (urgency === 'soon') return '下单后 4 小时'
   const close = formatCloseTime(closeTime)
   return urgency === 'tomorrow' ? `明天 ${close}` : `今天 ${close}`
 }
@@ -506,7 +511,10 @@ function deadlineText(urgency, closeTime) {
 // 计算订单预订送达时间的 UTC 时间戳（存库用，供「超时未接单自动退款」判断）
 function computeDeadlineAt(urgency, closeTime) {
   const now = Date.now()
-  if (urgency === 'urgent') return new Date(now + 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')
+  if (urgency === 'urgent' || urgency === 'soon') {
+    const hours = urgency === 'soon' ? 4 : 1
+    return new Date(now + hours * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ')
+  }
   // today/tomorrow：按北京日期的 close_time 截止；北京 = UTC + 8 小时
   const [hour, minute] = formatCloseTime(closeTime).split(':').map(Number)
   const closeHour = Number.isFinite(hour) ? hour : 22
@@ -728,6 +736,7 @@ async function readMiniSettings(executor = pool, campus = 'nanhai') {
       medium: { campus: Number(item.item_medium_campus_price), off_campus: Number(item.item_medium_off_campus_price) },
       large: { campus: Number(item.item_large_campus_price), off_campus: Number(item.item_large_off_campus_price) },
       urgentFee: Number(item.item_urgent_fee),
+      soonFee: SOON_URGENCY_FEE,
       doorFee: Number(item.item_door_fee),
       building9Fee: Number(item.item_building_9_fee),
       upperFloorDoorFee: Number(item.item_upper_floor_door_fee),
@@ -752,7 +761,7 @@ function readOrderInput(body, campus) {
     if (!Array.isArray(body.items) || !body.items.length || body.items.length > MAX_ITEMIZED_ORDER_ITEMS) {
       throw new HttpError(400, `每单应包含1至${MAX_ITEMIZED_ORDER_ITEMS}件快递`, 'INVALID_ORDER_ITEMS')
     }
-    if (!['today', 'urgent'].includes(urgency)) throw new HttpError(400, '新版订单送达时限无效', 'INVALID_URGENCY')
+    if (!['today', 'soon', 'urgent'].includes(urgency)) throw new HttpError(400, '新版订单送达时限无效', 'INVALID_URGENCY')
     const items = body.items.map((item, index) => ({
       index: index + 1,
       scope: validate.oneOf(item && item.scope, `第${index + 1}件取件地点`, ITEM_SCOPES),
@@ -769,6 +778,9 @@ function readOrderInput(body, campus) {
     const quotedTotal = [2, ITEMIZED_PRICING_CURRENT_VERSION].includes(pricingVersion)
       ? validate.numeric(body.quotedTotal, '前端报价', { min: 0, max: 10000 })
       : null
+    if (urgency === 'soon' && pricingVersion !== ITEMIZED_PRICING_CURRENT_VERSION) {
+      throw new HttpError(400, '请更新小程序后使用稍急配送', 'INVALID_URGENCY')
+    }
     return {
       pricingModel: 'itemized_v1',
       urgency,
@@ -789,6 +801,7 @@ function readOrderInput(body, campus) {
   }
   const scope = validate.oneOf(body && body.scope, '取件地点', ['campus', 'off_campus'])
   const pieces = validate.integer(body && body.pieces, '快递件数', { min: 1, max: MAX_ORDER_PIECES })
+  if (urgency === 'soon') throw new HttpError(400, '请更新小程序后使用稍急配送', 'INVALID_URGENCY')
   const uploadIds = Array.isArray(body && body.uploadIds) ? body.uploadIds : []
   if (!uploadIds.length || uploadIds.length > MAX_PICKUP_IMAGES) {
     throw new HttpError(400, `请上传1至${MAX_PICKUP_IMAGES}张取件截图`, 'INVALID_PICKUP_IMAGES')

@@ -85,12 +85,17 @@
       <view wx:for="{{stations}}" wx:key="value" class="segment station-segment {{pickupStation===item.value?'selected':''}}" data-value="{{item.value}}" hover-class="tap-soft" bindtap="selectStation"><view>{{item.label}}</view></view>
     </view>
     <view wx:if="{{stations.length}}" class="sub-divider"></view>
-    <view class="field-title no-top"><text>{{reviewMode ? '计划什么时候取件？' : '希望什么时候送到？'}}</text></view>
-    <view class="segment-grid two-column">
+    <view class="field-title no-top"><text>{{reviewMode ? '计划什么时候取件？' : '希望什么时候送达？'}}</text></view>
+    <view wx:if="{{reviewMode}}" class="segment-grid two-column">
       <view class="segment {{urgency==='today'?'selected':''}}" data-value="today" hover-class="tap-soft" bindtap="selectUrgency"><view>今天</view><text wx:if="{{!reviewMode}}">不加价</text></view>
       <view class="segment {{urgency==='urgent'?'urgent-selected':''}}" data-value="urgent" hover-class="tap-soft" bindtap="selectUrgency"><view>很急</view><text wx:if="{{!reviewMode}}">整单 +¥{{urgentOptionFeeText}}</text></view>
     </view>
-    <view class="urgency-hint">{{reviewMode ? '节假日或驿站繁忙时，可能次日可取' : '节假日或骑手较少时，可能次日送达'}}</view>
+    <view wx:else class="segment-grid three-column urgency-grid">
+      <view class="segment urgency-option {{urgency==='today'?'selected':''}}" data-value="today" hover-class="tap-soft" bindtap="selectUrgency"><view>今天</view><text>今天23:00前</text><text class="urgency-price">不加价</text></view>
+      <view class="segment urgency-option {{urgency==='soon'?'selected':''}}" data-value="soon" hover-class="tap-soft" bindtap="selectUrgency"><view>稍急</view><text>下单后4小时内</text><text class="urgency-price">整单 +¥{{soonOptionFeeText}}</text></view>
+      <view class="segment urgency-option {{urgency==='urgent'?'urgent-selected':''}}" data-value="urgent" hover-class="tap-soft" bindtap="selectUrgency"><view>很急</view><text>下单后1小时内</text><text class="urgency-price">整单 +¥{{urgentOptionFeeText}}</text></view>
+    </view>
+    <view class="urgency-hint">{{reviewMode ? '节假日或驿站繁忙时，可能次日可取' : '稍急、很急的配送时限从下单时开始计算'}}</view>
     <view class="sub-divider"></view>
     <view class="address-line">
       <view class="address-icon">⌖</view>
@@ -112,7 +117,7 @@
   <view wx:if="{{!reviewMode}}" class="summary-card">
     <view class="summary-row"><text>{{selectedCount}} 件快递小计</text><text>¥{{subtotalText}}</text></view>
     <view class="summary-row discount-row"><text>多件满减</text><text>-¥{{discountText}}</text></view>
-    <view wx:if="{{urgency==='urgent'}}" class="summary-row"><text>很急服务</text><text>+¥{{urgencyFeeText}}</text></view>
+    <view wx:if="{{urgency==='urgent' || urgency==='soon'}}" class="summary-row"><text>{{urgency==='soon'?'稍急服务':'很急服务'}}</text><text>+¥{{urgencyFeeText}}</text></view>
     <view wx:if="{{deliveryMode==='door'}}" class="summary-row"><text>送到宿舍门口</text><text>+¥{{deliveryFeeText}}</text></view>
     <view wx:if="{{isBuilding9}}" class="summary-row"><text>9栋距离附加费</text><text>+¥{{buildingFeeText}}</text></view>
     <view class="discount-hint">{{nextDiscountText}}</view>

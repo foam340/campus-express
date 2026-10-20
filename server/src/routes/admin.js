@@ -15,6 +15,7 @@ const { attachmentDownloadName, resolveAttachmentPath } = require('../admin-atta
 const { cancelLockedOrder, processRefundByOrderId } = require('../payment-refunds')
 const { awardCompletedOrderExperience } = require('./mini')
 const { sendRiderWithdrawalEmail } = require('../urgent-email')
+const { SOON_URGENCY_FEE } = require('../item-pricing')
 const { buildWithdrawalEmail } = require('../rider-notify')
 const { isKnownCampus, DEFAULT_CAMPUS, normalizeCampusLenient, stationLabel, CAMPUS_CONFIG } = require('../campus-config')
 
@@ -26,7 +27,7 @@ const statusLabels = {
   delivered: '待确认', completed: '已完成', cancelled: '已取消', disputed: '售后中',
   pending: '等待审核', approved: '审核通过', rejected: '审核未通过', suspended: '已暂停'
 }
-const urgencyLabels = { urgent: '很急', today: '今天', tomorrow: '明天' }
+const urgencyLabels = { urgent: '很急', soon: '稍急', today: '今天', tomorrow: '明天' }
 const pickupScopeLabels = { campus: '校内', off_campus: '校外' }
 const DORM_BUILDING_GENDER = CAMPUS_CONFIG.nanhai.buildingGender
 const BUILDING_GENDER_TEXT = { male: '男', female: '女', mixed: '混宿' }
@@ -175,6 +176,7 @@ async function readSettings(executor = pool, campus = 'nanhai') {
     itemLargeOffCampusPrice: Number(item.item_large_off_campus_price),
     itemPricingVersion: Math.max(1, Math.floor(Number(item.item_pricing_version) || 1)),
     itemUrgentFee: Number(item.item_urgent_fee),
+    itemSoonFee: SOON_URGENCY_FEE,
     itemDoorFee: Number(item.item_door_fee),
     itemBuilding9Fee: Number(item.item_building_9_fee),
     itemUpperFloorDoorFee: Number(item.item_upper_floor_door_fee),
@@ -1393,7 +1395,7 @@ router.get('/settings', requireRoles('admin', 'auditor'), asyncRoute(async (requ
 const READ_ONLY_PRICING_FIELDS = Object.freeze([
   'campusPrice', 'offCampusPrice', 'campusUrgentPrice', 'offCampusUrgentPrice', 'extraPiecePrice', 'largePrice',
   'itemSmallCampusPrice', 'itemSmallOffCampusPrice', 'itemMediumCampusPrice', 'itemMediumOffCampusPrice',
-  'itemLargeCampusPrice', 'itemLargeOffCampusPrice', 'itemUrgentFee', 'itemDoorFee',
+  'itemLargeCampusPrice', 'itemLargeOffCampusPrice', 'itemUrgentFee', 'itemSoonFee', 'itemDoorFee',
   'itemBuilding9Fee', 'itemUpperFloorDoorFee',
   'bundleTier0Threshold', 'bundleTier0Discount',
   'bundleTier1Threshold', 'bundleTier1Discount', 'bundleTier2Threshold', 'bundleTier2Discount',
