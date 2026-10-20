@@ -54,7 +54,7 @@
   height: 100%;
   padding: 10rpx;
   pointer-events: none;
-  transition: transform 300ms var(--ease-bounce);
+  transition: transform 130ms cubic-bezier(0.42, 0, 0.58, 1);
   will-change: transform;
   z-index: 0;
   box-sizing: border-box;
