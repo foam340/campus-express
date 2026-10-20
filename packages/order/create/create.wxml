@@ -61,8 +61,8 @@
         <view class="segment size-segment {{item.size==='medium'?'selected':''}}" data-id="{{item.id}}" data-value="medium" hover-class="tap-soft" bindtap="selectSize"><view>中件</view><text>双手可拿</text></view>
         <view class="segment size-segment {{item.size==='large'?'selected':''}}" data-id="{{item.id}}" data-value="large" hover-class="tap-soft" bindtap="selectSize"><view>大件</view><text>箱装/较重</text></view>
       </view>
-      <!-- 超大件提示：右侧「联系客服 ›」用小程序原生客服会话按钮（open-type="contact"，不依赖 JS） -->
-      <view class="size-hint"><text>超过20kg或体积超过0.3m³的超大件？</text><button class="size-hint-action" open-type="contact" hover-class="tap-soft">联系客服 ›</button></view>
+      <!-- 超大件提示：右侧「联系客服 ›」跳到客服页（与「我的」页一致，展示各校区管理员微信/二维码） -->
+      <view class="size-hint"><text>超过20kg或体积超过0.3m³的超大件？</text><button class="size-hint-action" hover-class="tap-soft" bindtap="goService">联系客服 ›</button></view>
 
       <view class="card-actions">
         <view class="delete-action" data-id="{{item.id}}" bindtap="removeCard">删除这件</view>
@@ -120,7 +120,6 @@
       <view class="coupon-picker-value {{selectedCouponId?'coupon-active':''}}"><text>{{couponRowText}}</text><text class="coupon-arrow">〉</text></view>
     </view>
     <view wx:if="{{selectedCouponId}}" class="summary-row discount-row"><text>优惠券抵扣</text><text>-¥{{couponDiscountText}}</text></view>
-    <view class="sub-divider"></view>
     <view class="summary-total"><view><view>应付金额</view><text>原价 ¥{{originalTotalText}}，优惠券由平台承担</text></view><text class="{{flipTick % 2 ? 'flip-a' : 'flip-b'}}">¥{{totalText}}</text></view>
   </view>
 </view>

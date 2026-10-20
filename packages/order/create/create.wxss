@@ -133,6 +133,7 @@
 .size-hint-action::after { border:0; }
 .urgency-hint { margin-top:12rpx; color:var(--color-hint); font-size:21rpx; }
 .privacy-hint { margin-top:8rpx; color:var(--color-hint); font-size:20rpx; }
+/* 优惠券行：上方虚线是源文件自带的分隔线（与满减提示之间），保留；下方另有票根打孔线 */
 .coupon-picker { display:flex; align-items:center; justify-content:space-between; gap:20rpx; margin-top:18rpx; padding:18rpx 2rpx 4rpx; border-top:2rpx dashed var(--color-divider); transition:transform 90ms ease, opacity 90ms ease; }
 .coupon-picker>view:first-child { flex:1; }
 .coupon-picker>view:first-child>view { color:var(--color-text); font-size:24rpx; font-weight:750; }
@@ -141,16 +142,18 @@
 .coupon-picker-value.coupon-active { color:var(--color-success); }
 .coupon-arrow { color:var(--color-muted); font-size:25rpx; }
 
-/* 合计：上方打孔虚线 + 两侧缺口（缺口填页面底色，配合卡片裁切形成穿孔效果） */
-.summary-total { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:18rpx; margin-top:20rpx; padding-top:22rpx; border-top:2rpx dashed var(--color-divider); }
+/* 合计：票根打孔线（对齐原型 .perf 的做法）——
+   负 margin 把虚线拉通到卡片两侧内缘，孔是「奶底 + 墨环」的圆、圆心压在卡片边缘上，
+   被费用卡的 overflow:hidden 裁掉外侧一半，剩下才是干净的半圆缺口 */
+.summary-total { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:18rpx; margin:20rpx -22rpx 0; padding:22rpx 22rpx 0; border-top:2rpx dashed var(--color-divider); }
 .summary-total>view { flex:1; }
 .summary-total>view>view { color:var(--color-text); font-size:26rpx; font-weight:800; }
 .summary-total>view>text { display:block; margin-top:7rpx; color:var(--color-muted); font-size:18rpx; line-height:1.45; }
 .summary-total>text { flex:none; color:var(--color-primary-deep); font-size:44rpx; font-weight:850; }
 .summary-total::before,
-.summary-total::after { content:''; position:absolute; top:-11rpx; width:22rpx; height:22rpx; border-radius:50%; background:var(--color-bg); }
-.summary-total::before { left:-33rpx; }
-.summary-total::after { right:-33rpx; }
+.summary-total::after { content:''; position:absolute; top:-16rpx; width:32rpx; height:32rpx; border-radius:50%; background:var(--color-bg); border:var(--border-ink-width) solid var(--color-ink); box-sizing:border-box; }
+.summary-total::before { left:-16rpx; }
+.summary-total::after { right:-16rpx; }
 
 /* ---------- 底部结算 ---------- */
 .submit-bar { position:fixed; z-index:40; left:0; right:0; bottom:0; display:flex; align-items:center; gap:22rpx; min-height:132rpx; padding:18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:0 -8rpx 24rpx rgba(36,21,5,.10); }
