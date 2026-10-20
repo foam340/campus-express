@@ -13,11 +13,14 @@ const TAIL_GROUPS = [
 ]
 
 // 位置维度按校区：石牌 = 驿站列表，其余 = 校内/校外
-function buildFilterGroups(campus, stations) {
+function buildFilterGroups(campus, stations, reviewMode = false) {
   const positionGroup = campus === 'shipai'
     ? { key: 'station', label: '驿站', options: (Array.isArray(stations) ? stations : []).map(s => ({ value: s.value, label: s.label })) }
     : { key: 'scope', label: '位置', options: [{ value: 'campus', label: '校内' }, { value: 'off_campus', label: '校外' }] }
-  return [...BASE_GROUPS, positionGroup, ...TAIL_GROUPS]
+  const baseGroups = BASE_GROUPS.map(group => group.key === 'urgency' && !reviewMode
+    ? Object.assign({}, group, { options: [group.options[0], { value: 'soon', label: '稍急' }, group.options[1]] })
+    : group)
+  return [...baseGroups, positionGroup, ...TAIL_GROUPS]
 }
 
 function emptyFilters(campus, stations) {
@@ -27,11 +30,11 @@ function emptyFilters(campus, stations) {
 }
 
 // 面板高亮与收起态 chip 同源，都从 filters 推出，避免两处各判一次而不一致
-function buildFilterView(filters, campus, stations) {
+function buildFilterView(filters, campus, stations, reviewMode = false) {
   const active = filters || emptyFilters(campus, stations)
   const filterGroups = []
   const activeChips = []
-  buildFilterGroups(campus, stations).forEach(group => {
+  buildFilterGroups(campus, stations, reviewMode).forEach(group => {
     let picked = null
     const options = group.options.map(option => {
       const isActive = active[group.key] === option.value

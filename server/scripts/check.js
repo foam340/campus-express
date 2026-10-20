@@ -11,6 +11,7 @@ const requiredFiles = [
   'src/routes/auth.js', 'src/routes/admin.js', 'src/routes/mini.js', 'src/routes/payments.js',
   'scripts/create-admin.js', 'scripts/security-regression.js', 'scripts/verify-admin-attachments.js', 'scripts/verify-urgent-email.js', 'sql/schema.sql', 'sql/migrations/20260714_01_mini_auth.sql', 'sql/migrations/20260715_01_order_sync.sql', 'sql/migrations/20260715_02_order_actions.sql', 'sql/migrations/20260715_03_rider_settlement.sql',
   'sql/migrations/20260826_01_order_deadline.sql',
+  'sql/migrations/20261020_01_order_soon_urgency.sql',
   'sql/migrations/20260827_01_expand_order_input_limits.sql',
   'sql/migrations/20260827_02_schema_alignment.sql',
   'sql/migrations/20260827_03_payment_refund_safety.sql',

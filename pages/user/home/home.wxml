@@ -50,7 +50,7 @@
     <view class="row between">
       <view>
         <view class="deadline-label">{{reviewMode ? '预计完成' : '预计送达'}}</view>
-        <view class="deadline">{{activeOrder.deadline}}</view>
+        <view class="deadline">{{reviewMode ? activeOrder.deadline : (activeOrder.deliveryDeadline || activeOrder.deadline)}}</view>
       </view>
       <view class="detail-btn">查看进度</view>
     </view>

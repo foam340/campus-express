@@ -4,7 +4,7 @@
   <view class="status-hero {{order.status==='completed'?'done-hero':order.status==='disputed'?'danger-hero':''}}">
     <view class="status-kicker">{{reviewMode ? '登记状态' : '订单状态'}}</view>
     <view class="status-title">{{reviewMode && order.status==='unpaid' ? '已登记' : order.statusText}}</view>
-    <view class="status-sub">{{reviewMode && order.status==='unpaid' ? '登记已提交，请等待工作人员处理' : (order.status==='unpaid'?'支付处理中，请稍候…':order.status==='waiting'?'订单已进入接单大厅':order.status==='delivered'?'等待用户确认收货':order.status==='completed'?(order.observationHours+'小时内可申请理赔'):order.deadline+' 前送达')}}</view>
+    <view class="status-sub">{{reviewMode && order.status==='unpaid' ? '登记已提交，请等待工作人员处理' : (order.status==='unpaid'?'支付处理中，请稍候…':order.status==='waiting'?'订单已进入接单大厅':order.status==='delivered'?'等待用户确认收货':order.status==='completed'?(order.observationHours+'小时内可申请理赔'):(reviewMode ? order.deadline : (order.deliveryDeadline || order.deadline))+' 前送达')}}</view>
     <view wx:if="{{order.afterSale}}" class="after-pill">{{order.afterSale}}{{order.exceptionText?' · '+order.exceptionText:''}}</view>
     <view wx:if="{{observationText && !reviewMode}}" class="after-pill">{{observationText}}</view>
     <view wx:if="{{order.refundStatusText && !reviewMode}}" class="after-pill">{{order.refundStatusText}}{{order.refundAmount?' · ¥'+order.refundAmount:''}}</view>
@@ -41,13 +41,13 @@
       </view>
     </block>
     <view wx:else class="info-row"><text>大件</text><text>{{order.isLarge?(reviewMode?'是':'是（已含大件附加费）'):'否'}}</text></view>
-    <view class="info-row"><text>{{reviewMode ? '完成时限' : '送达时限'}}</text><text>{{order.deadline}}</text></view>
+    <view class="info-row"><text>{{reviewMode ? '完成时限' : '送达时限'}}</text><text>{{reviewMode ? order.deadline : (order.deliveryDeadline || order.deadline)}}</text></view>
     <view class="info-row"><text>{{order.campus === 'shipai' ? '取件驿站' : '取件地点'}}</text><text>{{order.campus === 'shipai' ? (order.pickupStationText || '—') : (order.pickupScopeText || '—')}}</text></view>
     <block wx:if="{{role==='user' && !reviewMode}}">
       <block wx:if="{{order.pricingModel==='itemized_v1'}}">
         <view class="info-row"><text>快递小计</text><text>¥{{order.itemSubtotal}}</text></view>
         <view wx:if="{{order.bundleDiscount>0}}" class="info-row"><text>多件满减</text><text class="discount-price">-¥{{order.bundleDiscount}}</text></view>
-        <view wx:if="{{order.urgencyFee>0}}" class="info-row"><text>很急服务</text><text>+¥{{order.urgencyFee}}</text></view>
+        <view wx:if="{{order.urgencyFee>0}}" class="info-row"><text>{{order.urgency==='soon'?'稍急服务':'很急服务'}}</text><text>+¥{{order.urgencyFee}}</text></view>
         <view wx:if="{{order.doorFee>0}}" class="info-row"><text>送到宿舍门口</text><text>+¥{{order.doorFee}}</text></view>
         <view wx:if="{{order.buildingFee>0}}" class="info-row"><text>9栋距离附加费</text><text>+¥{{order.buildingFee}}</text></view>
       </block>

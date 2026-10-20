@@ -1,6 +1,7 @@
 const ITEM_SCOPES = Object.freeze(['campus', 'campus_7', 'off_campus'])
 const ITEM_SIZES = Object.freeze(['small', 'medium', 'large'])
 const ITEMIZED_PRICING_CURRENT_VERSION = 3
+const SOON_URGENCY_FEE = 2
 
 function moneyToCents(value) {
   const numeric = Number(value)
@@ -49,6 +50,7 @@ function bundleTiers(settings) {
 function calculateItemizedPrice(items, urgency, noUpstairs, settings, address = {}, building9Fee = true) {
   if (!Array.isArray(items) || !items.length) throw new Error('ITEMS_REQUIRED')
   const pricingVersion = Math.max(1, Math.floor(Number(settings && settings.item_pricing_version) || 1))
+  if (urgency === 'soon' && pricingVersion < 3) throw new Error('INVALID_URGENCY')
   const pricedItems = items.map((item, index) => {
     if (!ITEM_SCOPES.includes(item.scope) || !ITEM_SIZES.includes(item.size)) throw new Error('INVALID_ITEM')
     const unitPriceCents = settingCents(settings, itemPriceKey(item))
@@ -61,7 +63,8 @@ function calculateItemizedPrice(items, urgency, noUpstairs, settings, address = 
     }
   })
   const itemSubtotalCents = pricedItems.reduce((sum, item) => sum + moneyToCents(item.unitPrice), 0)
-  const urgencyFeeCents = urgency === 'urgent' ? settingCents(settings, 'item_urgent_fee') : 0
+  const urgencyFeeCents = urgency === 'urgent' ? settingCents(settings, 'item_urgent_fee')
+    : urgency === 'soon' ? moneyToCents(SOON_URGENCY_FEE) : 0
   const building9 = building9Fee !== false && normalizedBuilding(address.building) === '9'
   const buildingFeeCents = building9 ? optionalSettingCents(settings, 'item_building_9_fee') : 0
   let doorFeeCents = 0
@@ -95,5 +98,6 @@ module.exports = {
   ITEM_SCOPES,
   ITEM_SIZES,
   ITEMIZED_PRICING_CURRENT_VERSION,
+  SOON_URGENCY_FEE,
   calculateItemizedPrice
 }

@@ -56,7 +56,7 @@ function seedState() {
       { id:'LE1002', entryDate:mockDayOffset(0), direction:'expense', category:'flyer', categoryText:'传单印刷', amount:120, note:'开学季传单 500 份', createdByName:'客服小周', updatedByName:'', createdAtMs:now-5*3600000, updatedAtMs:now-5*3600000 },
       { id:'LE1003', entryDate:mockDayOffset(45), direction:'income', category:'other_income', categoryText:'其他收入', amount:300, note:'校外商家合作分成', createdByName:'系统管理员', updatedByName:'', createdAtMs:now-45*86400000, updatedAtMs:now-45*86400000 }
     ],
-    settings:{ campusPrice:1, offCampusPrice:2, campusUrgentPrice:8, offCampusUrgentPrice:9, extraPiecePrice:1.5, largePrice:7, itemSmallCampusPrice:1, itemSmallOffCampusPrice:2, itemMediumCampusPrice:3, itemMediumOffCampusPrice:4, itemLargeCampusPrice:5, itemLargeOffCampusPrice:6, itemPricingVersion:2, itemUrgentFee:4, itemDoorFee:1, itemBuilding9Fee:0.5, itemUpperFloorDoorFee:1.5, bundleTier0Threshold:5, bundleTier0Discount:0.5, bundleTier1Threshold:10, bundleTier1Discount:1, bundleTier2Threshold:20, bundleTier2Discount:3, autoConfirmHours:12, observationHours:24, claimLimit:200, commissionRate:0, serviceStatus:'open', serviceNotice:'', reviewMode:false },
+    settings:{ campusPrice:1, offCampusPrice:2, campusUrgentPrice:8, offCampusUrgentPrice:9, extraPiecePrice:1.5, largePrice:7, itemSmallCampusPrice:1, itemSmallOffCampusPrice:2, itemMediumCampusPrice:3, itemMediumOffCampusPrice:4, itemLargeCampusPrice:5, itemLargeOffCampusPrice:6, itemPricingVersion:2, itemUrgentFee:4, itemSoonFee:2, itemDoorFee:1, itemBuilding9Fee:0.5, itemUpperFloorDoorFee:1.5, bundleTier0Threshold:5, bundleTier0Discount:0.5, bundleTier1Threshold:10, bundleTier1Discount:1, bundleTier2Threshold:20, bundleTier2Discount:3, autoConfirmHours:12, observationHours:24, claimLimit:200, commissionRate:0, serviceStatus:'open', serviceNotice:'', reviewMode:false },
     auditLogs:[]
   }
 }
@@ -419,7 +419,7 @@ export async function handleMockRequest(options) {
     writeState(state);return state.settings
   }
   if (path === '/admin/settings' && method === 'PUT') {
-    const priceFields=['campusPrice','offCampusPrice','campusUrgentPrice','offCampusUrgentPrice','extraPiecePrice','largePrice','itemSmallCampusPrice','itemSmallOffCampusPrice','itemMediumCampusPrice','itemMediumOffCampusPrice','itemLargeCampusPrice','itemLargeOffCampusPrice','itemPricingVersion','itemUrgentFee','itemDoorFee','itemBuilding9Fee','itemUpperFloorDoorFee','bundleTier0Threshold','bundleTier0Discount','bundleTier1Threshold','bundleTier1Discount','bundleTier2Threshold','bundleTier2Discount','commissionRate']
+    const priceFields=['campusPrice','offCampusPrice','campusUrgentPrice','offCampusUrgentPrice','extraPiecePrice','largePrice','itemSmallCampusPrice','itemSmallOffCampusPrice','itemMediumCampusPrice','itemMediumOffCampusPrice','itemLargeCampusPrice','itemLargeOffCampusPrice','itemPricingVersion','itemUrgentFee','itemSoonFee','itemDoorFee','itemBuilding9Fee','itemUpperFloorDoorFee','bundleTier0Threshold','bundleTier0Discount','bundleTier1Threshold','bundleTier1Discount','bundleTier2Threshold','bundleTier2Discount','commissionRate']
     const priceChanged=priceFields.some(key=>Object.prototype.hasOwnProperty.call(data,key)&&Number(data[key])!==Number(state.settings[key]))
     if(priceChanged)throw new Error('正式价格随小程序版本发布，不能在管理台单独修改')
     const allowed=['observationHours','claimLimit','serviceStatus','serviceNotice']

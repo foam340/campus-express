@@ -70,13 +70,14 @@ function discountFor(total) { return total >= 20 ? 3 : total >= 10 ? 1 : total >
 
 function testParity() {
   const { page, normalizePricing } = loadPage()
+  page.data.reviewMode = false
   let cases = 0
   for (const campus of ['nanhai', 'shipai', 'gqg']) {
     const settings = settingsFor(campus)
     const cfg = getCampusConfig(campus)
     for (const cachedVersion of [2, 3]) for (const size of ['small', 'medium', 'large']) {
       for (const scope of ['campus', 'off_campus']) for (const count of [1, 2, 4, 8]) {
-        for (const urgency of ['today', 'urgent']) for (const toDoor of [false, true]) {
+        for (const urgency of ['today', 'soon', 'urgent']) for (const toDoor of [false, true]) {
           for (const building of campus === 'shipai' ? ['东2栋'] : ['7', '9']) for (const room of ['321', '421']) {
             const items = Array.from({ length: count }, (_, index) => ({ scope, size, uploadId: String(index).padStart(16, '0'), image: 'local' }))
             const user = { campus, building, room }
@@ -139,13 +140,13 @@ function testBoundariesAndCoupons() {
   assert.equal(Number(page.data.totalText), 0, 'Frontend and backend cap bundle discounts at the eligible total')
 }
 
-function routeHarness(campus, version, quote, coupon) {
+function routeHarness(campus, version, quote, coupon, now = '2026-10-20T04:00:00Z') {
   const settings = settingsFor(campus)
   const rows = []
   const uploads = [{ id: 'a'.repeat(16) }]
   const user = { id: 123, campus, nickname: 'fixture', phone: '13800000000', building: campus === 'shipai' ? '东2栋' : '9', room: '421' }
   const db = { async execute(sql, values) {
-    if (sql.includes('WHERE o.id = ?')) return [rows]
+    if (sql.includes('WHERE o.id = ?')) return [rows.map(row => ({ ...row, close_time: settings.close_time }))]
     if (sql.includes('FROM platform_settings')) {
       if (sql.includes('commission_rate')) assert.equal(values[0], campus, 'Read authenticated campus pricing')
       return [[settings]]
@@ -164,8 +165,8 @@ function routeHarness(campus, version, quote, coupon) {
   const router = {}
   for (const method of ['get', 'post', 'put']) router[method] = (route, ...handlers) => routes.set(method + ':' + route, handlers.at(-1))
   class FixedDate extends Date {
-    constructor(...args) { super(...(args.length ? args : ['2026-10-20T04:00:00Z'])) }
-    static now() { return Date.parse('2026-10-20T04:00:00Z') }
+    constructor(...args) { super(...(args.length ? args : [now])) }
+    static now() { return Date.parse(now) }
   }
   vm.runInNewContext(fs.readFileSync(path.join(root, 'server/src/routes/mini.js'), 'utf8'), {
     module: { exports: {} }, console, Date: FixedDate, Buffer,
@@ -238,10 +239,71 @@ async function testRoutes() {
   await Promise.resolve()
 }
 
+async function testDeliveryOptions() {
+  const { buildFilterGroups, filterOrders } = require('../utils/order-filters')
+  for (const campus of ['nanhai', 'shipai', 'gqg']) {
+    assert.deepEqual(buildFilterGroups(campus).find(group => group.key === 'urgency').options.map(option => option.value), ['urgent', 'soon', 'today'])
+    assert.deepEqual(buildFilterGroups(campus, [], true).find(group => group.key === 'urgency').options.map(option => option.value), ['urgent', 'today'])
+    for (const now of ['2026-10-20T00:00:00Z', '2026-10-20T11:59:30Z']) {
+      for (const [urgency, hours, fee] of [['today', 0, 0], ['soon', 4, 2], ['urgent', 1, 4]]) {
+        const fixture = routeHarness(campus, 3, 0, null, now)
+        fixture.body.urgency = urgency
+        const expected = calculateItemizedPrice(fixture.body.items, urgency, false, { ...fixture.settings, item_pricing_version: 3 }, fixture.user, getCampusConfig(campus).building9Fee)
+        fixture.body.quotedTotal = expected.total
+        const result = await fixture.order()
+        const row = fixture.rows[0]
+        assert.equal(row.urgency_fee, fee)
+        const deadline = hours ? new Date(Date.parse(now) + hours * 3600000).toISOString().slice(0, 19).replace('T', ' ') : '2026-10-20 15:00:00'
+        assert.equal(row.deadline_at, deadline, 'Deadline starts at order creation and is not reset by acceptance or payment')
+        assert.equal(result.order.urgencyText, urgency === 'soon' ? '稍急' : urgency === 'urgent' ? '很急' : '今天')
+        assert.equal(result.order.deliveryDeadline, hours ? `下单后 ${hours} 小时` : '今天 23:00')
+        if (urgency === 'urgent') assert.equal(result.order.deadline, '接单后 1 小时', 'Retain review and old-client deadline wording')
+        const settings = await fixture.readSettings()
+        assert.equal(settings.data.itemPricing.soonFee, 2)
+      }
+    }
+    for (const urgency of ['today', 'soon', 'urgent']) {
+      const closed = routeHarness(campus, 3, 0, null, '2026-10-20T12:00:00Z')
+      closed.body.urgency = urgency
+      await assert.rejects(closed.order, error => error.code === 'ORDER_WINDOW_CLOSED')
+      assert.equal(closed.rows.length, 0)
+    }
+  }
+  for (const version of [1, 2]) {
+    const old = routeHarness('nanhai', version, 0)
+    old.body.urgency = 'soon'
+    await assert.rejects(old.order, error => error.code === 'INVALID_URGENCY')
+    assert.equal(old.rows.length, 0)
+  }
+  const legacy = routeHarness('nanhai', 3, 0)
+  delete legacy.body.items
+  Object.assign(legacy.body, { urgency: 'soon', scope: 'campus', pieces: 1, uploadIds: ['a'.repeat(16)] })
+  await assert.rejects(legacy.order, error => error.code === 'INVALID_URGENCY')
+  assert.throws(() => calculateItemizedPrice([{ scope: 'campus', size: 'small' }], 'soon', true, baseSettings), /INVALID_URGENCY/)
+  const client = loadPage()
+  client.page.data.cards = [{ scope: 'campus', size: 'medium', image: 'local' }]
+  client.page.data.reviewMode = false
+  client.page.selectUrgency({ currentTarget: { dataset: { value: 'soon' } } })
+  assert.equal(client.page.data.urgency, 'soon')
+  assert.equal(client.page.data.urgencyFeeText, '2.00')
+  assert.equal(client.page.data.discountText, '0.50', 'Slightly urgent service fee participates in bundle threshold')
+  assert.equal(client.page.data.totalText, '4.50')
+  client.page.data.reviewMode = true
+  client.page.applyReviewTitle = () => {}
+  client.page.onReviewModeChanged()
+  assert.equal(client.page.data.urgency, 'today')
+  client.page.selectUrgency({ currentTarget: { dataset: { value: 'soon' } } })
+  assert.equal(client.page.data.urgency, 'today', 'Review mode cannot select the new delivery tier')
+  assert.deepEqual(filterOrders([{ id: 1, urgency: 'soon' }, { id: 2, urgency: 'urgent' }], { urgency: 'soon' }).map(order => order.id), [1])
+  const beforeSchema = fs.readFileSync(path.join(root, 'server/sql/schema.sql'), 'utf8')
+  assert(beforeSchema.includes("urgency ENUM('urgent','today','tomorrow','soon') NOT NULL"))
+}
+
 async function main() {
   const cases = testParity()
   testBoundariesAndCoupons()
   await testRoutes()
-  console.log(`Itemized bundle checks passed: ${cases} frontend/backend cases, fee thresholds, coupons, V2 compatibility, V3 snapshots and quote validation.`)
+  await testDeliveryOptions()
+  console.log(`Itemized bundle checks passed: ${cases} frontend/backend cases, three delivery options, creation-based deadlines, review guards, fee thresholds, coupons, V2 compatibility, V3 snapshots and quote validation.`)
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

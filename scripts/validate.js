@@ -204,7 +204,7 @@ if (!createOrderCode.includes('viewSizeGuide()') || !sourceText.includes('/packa
 if (!createOrderCode.includes('{ threshold: 5, amount: 0.5 }') || !createOrderCode.includes('{ threshold: 10, amount: 1 }') || !createOrderCode.includes('{ threshold: 20, amount: 3 }')) {
   errors.push('Normal order page must retain all three confirmed bundle-discount tiers')
 }
-if (!createOrderCode.includes("const URGENCY_FEES = { today: 0, urgent: 4 }") || !createOrderCode.includes("const DELIVERY_FEES = { downstairs: 0, door: 1, upperFloorDoor: 1.5 }") || !createOrderCode.includes('const BUILDING_9_FEE = 0.5')) {
+if (!createOrderCode.includes("const URGENCY_FEES = { today: 0, soon: 2, urgent: 4 }") || !createOrderCode.includes("const DELIVERY_FEES = { downstairs: 0, door: 1, upperFloorDoor: 1.5 }") || !createOrderCode.includes('const BUILDING_9_FEE = 0.5')) {
   errors.push('Normal order page must retain the confirmed whole-order urgency and door fees')
 }
 if (!createOrderCode.includes('function doorFeeFor(user, pricing)') || !createOrderCode.includes('if (isBuilding9(user)) return pricing.doorFee') || !createOrderCode.includes('dormFloor(user && user.room) >= 4 ? pricing.upperFloorDoorFee : pricing.doorFee')) {
