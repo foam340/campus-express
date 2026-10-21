@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
 }
 
 const REVIEW_REGISTRATION_PROFILE = Object.freeze({
+  campus: 'nanhai',
   name: '审核用户',
   phone: '13800000000',
   building: '1栋',
