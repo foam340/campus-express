@@ -220,6 +220,7 @@ function testValidation() {
   assert.strictEqual(validateRegistration({ name: '小林', phone: '13800009718', building: '9栋', room: '123' }), '')
   assert.strictEqual(validateRegistration({ name: '小林', phone: '13800009718', building: '25号楼', room: '123' }), '')
   assert.strictEqual(validateRegistration(REVIEW_REGISTRATION_PROFILE), '')
+  assert.strictEqual(REVIEW_REGISTRATION_PROFILE.campus, 'nanhai')
   assert.strictEqual(REVIEW_REGISTRATION_PROFILE.building, '1栋')
   assert.strictEqual(REVIEW_REGISTRATION_PROFILE.room, '111')
   assert.match(validateRegistration({ name: '小林', phone: '13800009718', building: 'A栋', room: '123' }), /宿舍楼/)
