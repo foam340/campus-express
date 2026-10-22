@@ -51,7 +51,7 @@ createPage({
     this.stations = stations
     if (this.filterCampus !== campus) {
       this.filterCampus = campus
-      const filters = emptyFilters(campus, stations)
+      const filters = emptyFilters(campus, stations, settings.reviewMode !== false)
       this.setData(Object.assign({ filters }, buildFilterView(filters, campus, stations, settings.reviewMode !== false)))
     }
     this.$setDataChanged({
@@ -61,6 +61,8 @@ createPage({
       riderProgress,
       maxActiveOrders: riderProgress.maxActiveOrders
     })
+    // 返回大厅时同步当前模式的筛选，即使仍在5秒缓存期也清掉已隐藏的条件。
+    if (Array.isArray(this.allOrders)) this.applyFilter(this.data.filters, false)
     const access = getRiderAccess(user)
     if (!access.allowed) {
       wx.showModal({
@@ -125,13 +127,16 @@ createPage({
     this.refresh({ manual: true })
   },
   applyFilter(filters, resetPage) {
-    const active = filters || this.data.filters
-    this.filteredOrders = filterOrders(this.allOrders, active)
+    const active = Object.assign({}, filters || this.data.filters)
+    if (this.campus === 'shipai' && !this.data.reviewMode) delete active.gender
+    if (this.campus === 'gqg' && !this.data.reviewMode && active.gender === 'mixed') active.gender = ''
+    if (this.data.reviewMode && ['small', 'medium'].includes(active.type)) active.type = ''
+    this.filteredOrders = filterOrders(this.allOrders, active, this.data.reviewMode)
     this.currentPage = resetPage ? 1 : (this.currentPage || 1)
     const result = paginate(this.filteredOrders, this.currentPage, 20)
     this.pendingOrders = result.items
     renderRecycleData(this, this.recycleContext, result.items, Object.assign({
-      listTotal: result.items.length, taskCount: this.taskCount || 0,
+      filters: active, listTotal: result.items.length, taskCount: this.taskCount || 0,
       maxActiveOrders: this.maxActiveOrders || initialProgress.maxActiveOrders,
       riderProgress: this.riderProgress || initialProgress,
       hasMore: result.hasMore, loading: false
@@ -140,6 +145,9 @@ createPage({
   onReviewModeChanged() {
     const filters = Object.assign({}, this.data.filters)
     if (this.data.reviewMode && filters.urgency === 'soon') filters.urgency = ''
+    if (this.data.reviewMode && ['small', 'medium'].includes(filters.type)) filters.type = ''
+    if (this.campus === 'shipai' && !this.data.reviewMode) delete filters.gender
+    if (this.campus === 'gqg' && !this.data.reviewMode && filters.gender === 'mixed') filters.gender = ''
     this.setData({ filters })
     if (Array.isArray(this.allOrders)) this.applyFilter(filters, false)
     else this.setData(buildFilterView(filters, this.campus, this.stations, this.data.reviewMode))
@@ -165,7 +173,7 @@ createPage({
     this.applyFilter(filters, true)
   },
   resetFilters() {
-    const filters = emptyFilters(this.campus, this.stations)
+    const filters = emptyFilters(this.campus, this.stations, this.data.reviewMode)
     this.setData({ filters })
     this.applyFilter(filters, true)
   },

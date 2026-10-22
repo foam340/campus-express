@@ -22,11 +22,14 @@
 
 /* 字号统一按预览稿换算（375px 稿：1px = 2rpx），见原型 .home-top h2 / .addr / .edit-link */
 .hello {
-  font-size: 60rpx;
+  font-size: 40rpx;
   font-weight: 900;
   letter-spacing: -2rpx;
   line-height: 1.2;
   color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .address {
   margin-top: 12rpx;

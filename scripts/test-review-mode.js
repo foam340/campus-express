@@ -338,6 +338,115 @@ async function testUiModeActions() {
   }
 }
 
+async function testShipaiGenderFilter() {
+  const orders = ['male', 'female', 'mixed'].map((buildingGender, index) => ({ id: String(index), buildingGender, urgency: 'today', noUpstairs: index > 0 }))
+  for (const campus of ['nanhai', 'shipai', 'gqg']) for (const reviewMode of [false, true]) {
+    const instance = page('pages/rider/hall/hall.js', {
+      '../../../utils/system': { getListViewport: () => ({ windowWidth: 375, width: 351, height: 500 }), rpxToPx: value => value / 2 },
+      '../../../utils/store': {}, '../../../utils/order-api': {}, '../../../utils/mode': {}
+    })
+    instance.campus = campus
+    instance.stations = [{ value: 'south', label: '南区菜鸟驿站' }]
+    instance.allOrders = orders
+    instance.data.reviewMode = reviewMode
+    instance.data.filters = { gender: 'female', floor: 'noUpstairs' }
+    instance.applyFilter(instance.data.filters, true)
+    const hideGender = campus === 'shipai' && !reviewMode
+    assert.deepEqual(Array.from(instance.filteredOrders, order => order.id), hideGender ? ['1', '2'] : ['1'])
+    assert.equal(Object.hasOwn(instance.data.filters, 'gender'), !hideGender, 'Hidden filters must not affect results')
+    assert.equal(instance.data.activeChips.some(chip => chip.key === 'gender'), !hideGender)
+    if (campus === 'shipai') {
+      instance.data.reviewMode = !reviewMode
+      instance.onReviewModeChanged()
+      assert.equal(instance.data.filterGroups.some(group => group.key === 'gender'), !reviewMode)
+      assert.equal(Object.hasOwn(instance.data.filters, 'gender'), false, 'A removed selection must not reappear after a mode change')
+      assert.deepEqual(Array.from(instance.filteredOrders, order => order.id), ['1', '2'])
+      instance.data.reviewMode = false
+      delete instance.allOrders
+      instance.data.filters = { gender: 'male' }
+      instance.onReviewModeChanged()
+      assert.equal(Object.hasOwn(instance.data.filters, 'gender'), false, 'Clear stale filters before orders load too')
+    }
+  }
+}
+
+async function testHallSizeFilterModes() {
+  const orders = [
+    { id: 'small', items: [{ size: 'small' }], noUpstairs: true },
+    { id: 'medium', items: [{ size: 'medium' }], noUpstairs: true },
+    { id: 'mixed', items: [{ size: 'small' }, { size: 'large' }], isLarge: true, noUpstairs: true }
+  ]
+  for (const campus of ['nanhai', 'shipai', 'gqg']) {
+    const instance = page('pages/rider/hall/hall.js', {
+      '../../../utils/system': { getListViewport: () => ({ windowWidth: 375, width: 351, height: 500 }), rpxToPx: value => value / 2 },
+      '../../../utils/store': {}, '../../../utils/order-api': {}, '../../../utils/mode': {}
+    })
+    instance.campus = campus
+    instance.stations = []
+    instance.allOrders = orders
+    instance.data.reviewMode = false
+    instance.data.filters = { floor: 'noUpstairs' }
+    const pick = type => instance.pickFilterOption({ currentTarget: { dataset: { group: 'type', value: type } } })
+    pick('small')
+    assert.deepEqual(Array.from(instance.filteredOrders, order => order.id), ['small', 'mixed'])
+    pick('medium')
+    assert.deepEqual(Array.from(instance.filteredOrders, order => order.id), ['medium'])
+    pick('medium')
+    assert.equal(instance.filteredOrders.length, 3, 'Clicking the selected size again clears it')
+    pick('small')
+    instance.data.reviewMode = true
+    instance.onReviewModeChanged()
+    assert.equal(instance.data.filters.type, '')
+    assert.equal(instance.data.filters.floor, 'noUpstairs')
+    assert.equal(instance.filteredOrders.length, 3, 'Hidden size selection must not filter review orders')
+    pick('large')
+    assert.deepEqual(Array.from(instance.filteredOrders, order => order.id), ['mixed'])
+    delete instance.allOrders
+    instance.data.filters.type = 'medium'
+    instance.onReviewModeChanged()
+    assert.equal(instance.data.filters.type, '', 'Clear hidden size even before orders load')
+  }
+}
+
+async function testGqgMixedGenderFilter() {
+  const orders = ['male', 'female'].map((buildingGender, index) => ({ id: String(index), buildingGender, noUpstairs: true }))
+  for (const campus of ['nanhai', 'gqg']) for (const reviewMode of [false, true]) {
+    const instance = page('pages/rider/hall/hall.js', {
+      '../../../utils/system': { getListViewport: () => ({ windowWidth: 375, width: 351, height: 500 }), rpxToPx: value => value / 2 },
+      '../../../utils/store': {}, '../../../utils/order-api': {}, '../../../utils/mode': {}
+    })
+    instance.campus = campus
+    instance.stations = []
+    instance.allOrders = orders
+    instance.data.reviewMode = reviewMode
+    instance.data.filters = { gender: 'mixed', floor: 'noUpstairs' }
+    instance.applyFilter(instance.data.filters, true)
+    const removed = campus === 'gqg' && !reviewMode
+    assert.equal(instance.data.filters.gender, removed ? '' : 'mixed')
+    assert.equal(instance.filteredOrders.length, removed ? 2 : 0)
+    assert.equal(instance.data.activeChips.some(chip => chip.key === 'gender'), !removed)
+    if (!removed) continue
+    for (const [gender, id] of [['male', '0'], ['female', '1']]) {
+      instance.pickFilterOption({ currentTarget: { dataset: { group: 'gender', value: gender } } })
+      assert.deepEqual(Array.from(instance.filteredOrders, item => item.id), [id], 'Male/female filtering must remain usable')
+    }
+    instance.data.reviewMode = true
+    instance.data.filters.gender = 'mixed'
+    instance.onReviewModeChanged()
+    assert.equal(instance.data.filters.gender, 'mixed', 'Review mode preserves the existing mixed option')
+    assert.equal(instance.filteredOrders.length, 0)
+    instance.data.reviewMode = false
+    instance.onReviewModeChanged()
+    assert.equal(instance.data.filters.gender, '')
+    assert.equal(instance.data.filters.floor, 'noUpstairs')
+    assert.equal(instance.filteredOrders.length, 2)
+    delete instance.allOrders
+    instance.data.filters.gender = 'mixed'
+    instance.onReviewModeChanged()
+    assert.equal(instance.data.filters.gender, '', 'Clear stale mixed selection before orders load too')
+  }
+}
+
 async function main() {
   await testGlobalSettings()
   await testPageLifecycle()
@@ -348,6 +457,9 @@ async function main() {
   await testFinancialActions()
   await testPaymentDuringVerification()
   await testUiModeActions()
+  await testShipaiGenderFilter()
+  await testHallSizeFilterModes()
+  await testGqgMixedGenderFilter()
   console.log('Review mode checks passed: three-campus cache isolation, stable normal navigation, cold/warm failures, real mode changes, page lifecycle, late payments and financial guards.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

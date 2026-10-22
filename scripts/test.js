@@ -396,6 +396,44 @@ function testHallFilters() {
   assert.strictEqual(view.filterGroups.every(group => group.options.every(option => !option.active)), false)
   assert.strictEqual(buildFilterView(emptyFilters()).activeCount, 0)
   assert.strictEqual(buildFilterView(emptyFilters()).filterGroups.every(group => group.options.every(option => !option.active)), true)
+  const stations = [{ value: 'south', label: '南区菜鸟驿站' }]
+  const shipai = buildFilterView({ gender: 'female', station: 'south' }, 'shipai', stations, false)
+  assert.deepStrictEqual(shipai.filterGroups.map(group => group.key), ['urgency', 'type', 'station', 'floor'])
+  assert.deepStrictEqual(shipai.activeChips, [{ key: 'station', label: '南区菜鸟驿站' }])
+  assert.strictEqual(Object.hasOwn(emptyFilters('shipai', stations, false), 'gender'), false)
+  for (const campus of ['nanhai', 'shipai', 'gqg']) for (const reviewMode of [false, true]) {
+    const type = buildFilterView({}, campus, stations, reviewMode).filterGroups.find(group => group.key === 'type')
+    assert.deepStrictEqual(type.options.map(option => option.label), reviewMode ? ['大件'] : ['小件', '中件', '大件'])
+    if (campus === 'shipai' && !reviewMode) continue
+    const view = buildFilterView({ gender: 'female' }, campus, stations, reviewMode)
+    assert.strictEqual(view.filterGroups.some(group => group.key === 'gender'), true)
+    assert.deepStrictEqual(view.filterGroups.find(group => group.key === 'gender').options.map(option => option.value),
+      campus === 'gqg' && !reviewMode ? ['male', 'female'] : ['male', 'female', 'mixed'])
+    assert.deepStrictEqual(view.activeChips, [{ key: 'gender', label: '女' }])
+    assert.strictEqual(Object.hasOwn(emptyFilters(campus, stations, reviewMode), 'gender'), true)
+    const mixed = buildFilterView({ gender: 'mixed' }, campus, stations, reviewMode)
+    assert.strictEqual(mixed.activeCount, campus === 'gqg' && !reviewMode ? 0 : 1)
+  }
+  const sized = [
+    { id: 'small', items: [{ size: 'small' }], noUpstairs: false },
+    { id: 'medium', items: [{ size: 'medium' }], noUpstairs: true },
+    { id: 'large', items: [{ size: 'large' }], isLarge: true, noUpstairs: true },
+    { id: 'mixed', items: [{ size: 'small' }, { size: 'medium' }, { size: 'large' }], isLarge: true, noUpstairs: true },
+    { id: 'legacy-large', isLarge: true },
+    { id: 'legacy-unknown', isLarge: false },
+    { id: 'invalid', items: [null, {}, { size: 'invalid' }] }
+  ]
+  assert.deepStrictEqual(ids(filterOrders(sized, { type: 'small' })), ['small', 'mixed'])
+  assert.deepStrictEqual(ids(filterOrders(sized, { type: 'medium' })), ['medium', 'mixed'])
+  assert.deepStrictEqual(ids(filterOrders(sized, { type: 'large' })), ['large', 'mixed', 'legacy-large'])
+  assert.deepStrictEqual(ids(filterOrders(sized, { type: 'small', floor: 'noUpstairs' })), ['mixed'])
+  assert.deepStrictEqual(ids(filterOrders(sized, {})), ids(sized))
+  assert.deepStrictEqual(ids(filterOrders(sized, { type: 'large' }, true)), ['large', 'mixed', 'legacy-large'])
+  for (const [type, label] of [['small', '小件'], ['medium', '中件'], ['large', '大件']]) {
+    const view = buildFilterView({ type }, 'shipai', stations, false)
+    assert.deepStrictEqual(view.activeChips, [{ key: 'type', label }])
+    assert.strictEqual(view.filterGroups.find(group => group.key === 'type').options.filter(option => option.active).length, 1)
+  }
 }
 
 function testPagination() {
