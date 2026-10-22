@@ -17,7 +17,7 @@
     <view class="deadline">{{reviewMode ? order.deadline : (order.deliveryDeadline || order.deadline)}}</view>
   </view>
   <view class="hall-info"><view class="destination"><text class="destination-label">送至</text>{{order.building}}</view><view class="meta">{{sizeSummary}}</view></view>
-  <view wx:if="{{order.blocked}}" class="block-reason">{{order.blockReason}}</view>
+  <view wx:if="{{order.blocked}}" class="block-reason">{{reviewMode === false && order.blockCode === 'SHIPAI_BUILDING_MISMATCH' ? '仅可接骑手所住栋楼或其他楼下自取订单' : order.blockReason}}</view>
   <view class="privacy"><view class="privacy-lock">锁</view><text class="privacy-copy">截图、门牌号和手机号接单后解锁</text></view>
   <view class="divider"></view>
   <view class="row between"><view wx:if="{{!reviewMode}}"><text class="income-label">本单收入</text><text class="income">¥{{order.price}}</text></view><view wx:else></view><button class="grab {{order.blocked || taskCount>=maxTaskCount ? 'disabled' : ''}}" catchtap="handleGrab">{{order.blocked ? '不可接' : (taskCount>=maxTaskCount?'已达上限':'立即抢单')}}</button></view>

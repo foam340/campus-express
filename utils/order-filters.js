@@ -11,27 +11,35 @@ const TAIL_GROUPS = [
   { key: 'gender', label: '性别', options: [{ value: 'male', label: '男' }, { value: 'female', label: '女' }, { value: 'mixed', label: '混宿' }] },
   { key: 'floor', label: '楼层', options: [{ value: 'upstairs', label: '送上楼' }, { value: 'noUpstairs', label: '不送上楼' }] }
 ]
+const SIZE_OPTIONS = [{ value: 'small', label: '小件' }, { value: 'medium', label: '中件' }, { value: 'large', label: '大件' }]
 
 // 位置维度按校区：石牌 = 驿站列表，其余 = 校内/校外
 function buildFilterGroups(campus, stations, reviewMode = false) {
   const positionGroup = campus === 'shipai'
     ? { key: 'station', label: '驿站', options: (Array.isArray(stations) ? stations : []).map(s => ({ value: s.value, label: s.label })) }
     : { key: 'scope', label: '位置', options: [{ value: 'campus', label: '校内' }, { value: 'off_campus', label: '校外' }] }
-  const baseGroups = BASE_GROUPS.map(group => group.key === 'urgency' && !reviewMode
-    ? Object.assign({}, group, { options: [group.options[0], { value: 'soon', label: '稍急' }, group.options[1]] })
-    : group)
-  return [...baseGroups, positionGroup, ...TAIL_GROUPS]
+  const baseGroups = BASE_GROUPS.map(group => {
+    if (reviewMode) return group
+    if (group.key === 'urgency') return Object.assign({}, group, { options: [group.options[0], { value: 'soon', label: '稍急' }, group.options[1]] })
+    if (group.key === 'type') return Object.assign({}, group, { options: SIZE_OPTIONS })
+    return group
+  })
+  const tailGroups = TAIL_GROUPS
+    .filter(group => !(campus === 'shipai' && !reviewMode && group.key === 'gender'))
+    .map(group => campus === 'gqg' && !reviewMode && group.key === 'gender'
+      ? Object.assign({}, group, { options: group.options.filter(option => option.value !== 'mixed') }) : group)
+  return [...baseGroups, positionGroup, ...tailGroups]
 }
 
-function emptyFilters(campus, stations) {
+function emptyFilters(campus, stations, reviewMode = false) {
   const filters = {}
-  buildFilterGroups(campus, stations).forEach(group => { filters[group.key] = '' })
+  buildFilterGroups(campus, stations, reviewMode).forEach(group => { filters[group.key] = '' })
   return filters
 }
 
 // 面板高亮与收起态 chip 同源，都从 filters 推出，避免两处各判一次而不一致
 function buildFilterView(filters, campus, stations, reviewMode = false) {
-  const active = filters || emptyFilters(campus, stations)
+  const active = filters || emptyFilters(campus, stations, reviewMode)
   const filterGroups = []
   const activeChips = []
   buildFilterGroups(campus, stations, reviewMode).forEach(group => {
@@ -49,12 +57,18 @@ function buildFilterView(filters, campus, stations, reviewMode = false) {
 
 // 各维度按需判，未选（空值）即跳过该维度。
 // 「送上楼」= 非 noUpstairs，含历史单未落该字段（undefined）的情况，与原单选逻辑一致。
-function filterOrders(orders, filters) {
+function filterOrders(orders, filters, reviewMode = false) {
   const list = Array.isArray(orders) ? orders : []
   const active = filters || {}
   return list.filter(item => {
     if (active.urgency && item.urgency !== active.urgency) return false
-    if (active.type === 'large' && !item.isLarge) return false
+    if (reviewMode) {
+      if (active.type === 'large' && !item.isLarge) return false
+    } else if (SIZE_OPTIONS.some(option => option.value === active.type)) {
+      // 混合订单包含对应尺寸即可命中；老单缺明细时只保留原大件标记，不猜小/中件。
+      const sizes = (Array.isArray(item.items) ? item.items : []).filter(detail => detail && SIZE_OPTIONS.some(option => option.value === detail.size)).map(detail => detail.size)
+      if (sizes.length ? !sizes.includes(active.type) : !(active.type === 'large' && item.isLarge)) return false
+    }
     if (active.scope) {
       const scopes = Array.isArray(item.pickupScopes) && item.pickupScopes.length ? item.pickupScopes : [item.pickupScope]
       if (!scopes.includes(active.scope)) return false

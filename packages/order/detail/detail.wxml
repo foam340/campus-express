@@ -6,7 +6,7 @@
     <view class="status-title">{{reviewMode && order.status==='unpaid' ? '已登记' : order.statusText}}</view>
     <view class="status-sub">{{reviewMode && order.status==='unpaid' ? '登记已提交，请等待工作人员处理' : (order.status==='unpaid'?'支付处理中，请稍候…':order.status==='waiting'?'订单已进入接单大厅':order.status==='delivered'?'等待用户确认收货':order.status==='completed'?(order.observationHours+'小时内可申请理赔'):(reviewMode ? order.deadline : (order.deliveryDeadline || order.deadline))+' 前送达')}}</view>
     <view wx:if="{{order.afterSale}}" class="after-pill">{{order.afterSale}}{{order.exceptionText?' · '+order.exceptionText:''}}</view>
-    <view wx:if="{{observationText && !reviewMode}}" class="after-pill">{{observationText}}</view>
+    <view wx:if="{{role==='rider' && observationText && !reviewMode}}" class="after-pill">{{observationText}}</view>
     <view wx:if="{{order.refundStatusText && !reviewMode}}" class="after-pill">{{order.refundStatusText}}{{order.refundAmount?' · ¥'+order.refundAmount:''}}</view>
   </view>
 

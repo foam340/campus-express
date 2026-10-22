@@ -2,7 +2,7 @@
 .hall-head { display:flex; align-items:center; justify-content:space-between; gap:18rpx; margin:0 4rpx 24rpx; }
 .hall-head>view:first-child { flex:1; min-width:0; }
 .hall-head>view:first-child .small { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.hall-title { font-size:42rpx; font-weight:800; }
+.hall-title { font-size:34rpx; font-weight:800; white-space:nowrap; }
 .hall-actions { flex:none; display:flex; align-items:center; gap:10rpx; }
 .refresh-button { display:flex; align-items:center; justify-content:center; gap:5rpx; width:132rpx; height:58rpx; margin:0; padding:0 12rpx; border-radius:20rpx; color:var(--color-primary); background:var(--color-primary-soft); font-size:22rpx; font-weight:700; line-height:1; box-sizing:border-box; }
 .refresh-button::after { border:0; }
