@@ -22,6 +22,11 @@
 .contact-main { display:flex; align-items:center; margin:24rpx 0; }.contact-avatar { width:74rpx; height:74rpx; line-height:74rpx; margin-right:18rpx; text-align:center; color: var(--color-on-accent); background:var(--color-primary); border-radius:23rpx; font-size:28rpx; font-weight:800; }.rider-avatar { background:#20b486; }.call-btn { height:76rpx; line-height:76rpx; }.note-box { margin-top:18rpx; padding:18rpx; border-radius:16rpx; color:var(--color-text-2); background:var(--color-surface-2); font-size:23rpx; }
 .add-shot { display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--color-primary); background:var(--color-surface-2); border:2rpx dashed var(--color-divider); font-size:36rpx; }.add-shot text { margin-top:8rpx; color:var(--color-muted); font-size:21rpx; }.delivery-tip { margin-top:18rpx; line-height:1.6; }
 .action-area { margin-top:28rpx; }.text-action { padding:26rpx; text-align:center; color:var(--color-text-2); font-size:24rpx; }.danger-text { color:var(--color-danger); }
+.rider-support-actions { display:flex; flex-direction:column; gap:18rpx; margin-top:22rpx; }
+.rider-support-button { width:100%; height:auto; min-height:44px; justify-content:space-between; gap:18rpx; margin:0; padding:20rpx 24rpx; border:var(--border-ink-width) solid var(--color-ink); box-shadow:0 4rpx 0 var(--color-ink); color:var(--color-primary-deep); font-size:26rpx; line-height:1.4; }
+.rider-support-button>text:first-child { flex:1; min-width:0; text-align:left; }
+.rider-support-arrow { flex:none; font-size:34rpx; line-height:1; }
+.rider-support-button-pressed { opacity:.85; }
 .hidden-card { display:flex; align-items:center; gap:18rpx; }.hidden-icon { display:flex; flex:none; align-items:center; justify-content:center; width:62rpx; height:62rpx; background:var(--color-primary-soft); border-radius:20rpx; }.hidden-icon image { width:34rpx; height:34rpx; }.hidden-card .muted { margin-top:7rpx; line-height:1.5; }
 
 /* v3: progress and image grids scale down cleanly on narrow devices. */
@@ -46,6 +51,7 @@
 .pay-qr-modal.show { transform:translateY(0); }
 
 @media (prefers-reduced-motion: reduce) {
+  .rider-support-button:active { transform:none; }
   .pay-qr-mask { transition: opacity 120ms linear; }
   .pay-qr-modal { opacity: 0; transform: none; transition: opacity 120ms linear; }
   .pay-qr-modal.show { opacity: 1; }

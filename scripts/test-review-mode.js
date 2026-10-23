@@ -447,6 +447,55 @@ async function testGqgMixedGenderFilter() {
   }
 }
 
+async function testRiderSupportActions() {
+  const { CAMPUS_SERVICE, ROUTES } = require('../config/constants')
+  for (const campus of ['nanhai', 'shipai', 'gqg']) {
+    const sheets = [], modals = [], calls = [], navigations = []
+    const store = { getUser: () => ({ campus }), getSettings: () => ({ reviewMode: false }) }
+    const wx = { showActionSheet(options) { sheets.push(options) }, showModal(options) { modals.push(options) },
+      navigateTo(options) { navigations.push(options.url) }, showToast() {} }
+    const instance = page('packages/order/detail/detail.js', {
+      '../../../utils/store': store,
+      '../../../utils/order-api': { transferOrder(id, reason) { calls.push({ id, reason }); return Promise.resolve({ id, status: 'waiting' }) } }
+    }, wx)
+    instance.id = 'RIDER-SUPPORT-FIXTURE'
+    instance.data.reviewMode = false
+    instance.data.role = 'rider'
+    instance.data.order = { id: instance.id, status: 'accepted', price: 3, campus: campus === 'nanhai' ? 'gqg' : 'nanhai' }
+    let updated
+    instance.replaceOrder = order => { updated = order; return Promise.resolve(order) }
+    instance.transferOrder()
+    assert.equal(sheets.length, 1)
+    assert.equal(calls.length, 0, 'Tapping transfer only opens the reason sheet')
+    assert.equal(modals.length, 0)
+    sheets[0].success({ tapIndex: 0 })
+    assert.equal(calls.length, 0, 'Selecting a reason must still wait for confirmation')
+    assert(modals[0].content.includes('失去本单收入'))
+    modals[0].success({ confirm: false })
+    assert.equal(calls.length, 0, 'Cancelling confirmation must not transfer')
+    instance.transferOrder()
+    sheets[1].success({ tapIndex: 2 })
+    modals[1].success({ confirm: true })
+    await new Promise(resolve => setImmediate(resolve))
+    assert.equal(calls.length, 1)
+    assert.equal(calls[0].id, instance.id)
+    assert.equal(calls[0].reason, sheets[1].itemList[2])
+    assert.equal(updated.status, 'waiting')
+    assert.equal(modals.at(-1).title, '已转单')
+    instance.service()
+    assert.equal(navigations.length, 1)
+    const url = new URL(navigations[0], 'https://fixture.invalid')
+    assert.equal(url.pathname, ROUTES.service)
+    assert.equal(url.searchParams.get('orderId'), instance.id)
+    const service = page('packages/account/service/service.js', { '../../../utils/store': store }, wx)
+    service.onLoad(Object.fromEntries(url.searchParams))
+    assert.equal(service.data.adminWechat, CAMPUS_SERVICE[campus].wechat, 'Contact must use the logged-in rider campus, not the order campus')
+    assert.equal(service.data.qr, CAMPUS_SERVICE[campus].qr)
+    assert.equal(service.data.orderId, instance.id)
+    assert.deepEqual(JSON.parse(JSON.stringify(service.data.additionalContacts)), CAMPUS_SERVICE[campus].additionalContacts || [])
+  }
+}
+
 async function main() {
   await testGlobalSettings()
   await testPageLifecycle()
@@ -460,6 +509,7 @@ async function main() {
   await testShipaiGenderFilter()
   await testHallSizeFilterModes()
   await testGqgMixedGenderFilter()
+  await testRiderSupportActions()
   console.log('Review mode checks passed: three-campus cache isolation, stable normal navigation, cold/warm failures, real mode changes, page lifecycle, late payments and financial guards.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

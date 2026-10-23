@@ -129,10 +129,14 @@
         <view class="notice-dot"></view>
         <text>等待用户确认收货</text>
       </view>
-      <view wx:if="{{showExceptionHint}}" class="text-action danger-text">订单遇到问题？请联系客服</view>
-      <!-- 转单入口：仅「已接单、未取件」出现。用 .text-action 灰色纯文字，刻意弱于上面的主按钮。
-           （试过做成「发短信给用户」那种浅蓝按钮，底部变成两个按钮夹一行灰字，观感更差，已改回。） -->
-      <view wx:if="{{canTransfer}}" class="text-action" bindtap="transferOrder">临时有事？转单给其他骑手</view>
+      <block wx:if="{{reviewMode}}">
+        <view wx:if="{{showExceptionHint}}" class="text-action danger-text">订单遇到问题？请联系客服</view>
+        <view wx:if="{{canTransfer}}" class="text-action" bindtap="transferOrder">临时有事？转单给其他骑手</view>
+      </block>
+      <view wx:elif="{{showExceptionHint}}" class="rider-support-actions">
+        <button wx:if="{{canTransfer}}" class="secondary-btn rider-support-button" hover-class="rider-support-button-pressed" bindtap="transferOrder"><text>临时有事？转单给其他骑手</text><text class="rider-support-arrow" aria-hidden="true">›</text></button>
+        <button class="secondary-btn rider-support-button" hover-class="rider-support-button-pressed" bindtap="service"><text>订单遇到问题？请联系客服</text><text class="rider-support-arrow" aria-hidden="true">›</text></button>
+      </view>
     </block>
   </view>
 
