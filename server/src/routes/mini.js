@@ -19,7 +19,7 @@ const { uploadMiddleware, persistUpload, deleteUpload } = require('../uploads')
 const { ensureThumbnail } = require('../thumbnail')
 const { cancelLockedOrder, cancelUserOrder, processRefundByOrderId } = require('../payment-refunds')
 const { queueUrgentOrderAlert, skipUrgentOrderAlert, requeueUrgentOrderAlert } = require('../urgent-alert-queue')
-const { queueNewOrderRiderEmail, skipNewOrderRiderEmail, requeueNewOrderRiderEmail } = require('../rider-notify')
+const { queueNewOrderRiderEmail, skipNewOrderRiderEmail, requeueNewOrderRiderEmail, notifyWithdrawalRequest } = require('../rider-notify')
 const { observationEndsAt, observationHours, riderPrivateVisible } = require('../order-privacy')
 const { EXPERIENCE_PER_COMPLETED_ORDER, getRiderProgress } = require('../rider-level')
 const {
@@ -1281,6 +1281,7 @@ router.post('/rider/withdrawals', authenticateMini, requireMiniIdempotency, asyn
     )
     return { id: String(created.insertId), amount, status: 'pending' }
   })
+  notifyWithdrawalRequest(result.id)
   return sendIdempotent(request, response, { withdrawal: result }, 201)
 }))
 

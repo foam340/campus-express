@@ -7,7 +7,7 @@
  */
 const { pool, transaction } = require('./db')
 const config = require('./config')
-const { sendRiderNotificationEmail } = require('./urgent-email')
+const { sendRiderNotificationEmail, sendWithdrawalRequestEmail } = require('./urgent-email')
 const { formatDormBuilding } = require('./business-rules')
 const { campusLabel, normalizeCampusLenient, stationLabel, getCampusConfig } = require('./campus-config')
 
@@ -336,11 +336,63 @@ function buildWithdrawalEmail(amount, orders) {
   }
 }
 
+// 仅由新申请提交成功后触发一次；不扫描、不持久排队、不重试。
+function notifyWithdrawalRequest(withdrawalId) {
+  if (!config.urgentEmail.enabled || !config.withdrawalRequestEmailTo) return
+  setImmediate(async () => {
+    try {
+      const [rows] = await pool.execute(
+        `SELECT w.id, w.rider_id, w.amount, r.name, r.name_note, r.campus,
+                DATE_FORMAT(DATE_ADD(w.requested_at, INTERVAL 8 HOUR), '%Y-%m-%d %H:%i:%s') AS requested_cn
+           FROM withdrawals w
+           JOIN riders r ON r.id = w.rider_id
+           JOIN platform_settings settings ON settings.campus = r.campus
+          WHERE w.id = ? AND w.status = 'pending' AND settings.review_mode = 0
+          LIMIT 1`,
+        [withdrawalId]
+      )
+      const item = rows[0]
+      if (!item) return
+      const amount = Number(item.amount).toFixed(2)
+      const message = {
+        subject: `[校园递小帮] ${campusLabel(item.campus)}校区有新的提现申请：¥${amount}`,
+        text: [
+          `提现编号：${item.id}`,
+          `校区：${campusLabel(item.campus)}`,
+          `骑手：${item.name_note || item.name || '骑手'}`,
+          `骑手编号：${item.rider_id}`,
+          `申请金额：¥${amount}`,
+          `申请时间：${item.requested_cn}（北京时间）`,
+          '',
+          '请登录管理台「提现审核」核实并处理：',
+          config.adminCorsOrigin,
+          '此邮件仅提醒新申请，实际打款及审核状态以管理台核实结果为准。'
+        ].join('\n')
+      }
+      const result = await sendWithdrawalRequestEmail(message)
+      console.log(JSON.stringify({
+        level: result.ok ? 'info' : 'warn',
+        message: result.ok ? 'withdrawal request email accepted by provider' : 'withdrawal request email rejected by provider',
+        withdrawal_id: String(withdrawalId),
+        provider_code: result.code
+      }))
+    } catch (error) {
+      console.error(JSON.stringify({
+        level: 'error',
+        message: 'withdrawal request email send failed',
+        withdrawal_id: String(withdrawalId),
+        error_code: String(error && (error.code || error.name) || 'EMAIL_ERROR').replace(/[^a-zA-Z0-9_.:-]/g, '').slice(0, 80)
+      }))
+    }
+  })
+}
+
 module.exports = {
   NEW_ORDER_RIDER_SCAN_INTERVAL_MS,
   queueNewOrderRiderEmail,
   skipNewOrderRiderEmail,
   requeueNewOrderRiderEmail,
   processNewOrderRiderEmails,
-  buildWithdrawalEmail
+  buildWithdrawalEmail,
+  notifyWithdrawalRequest
 }

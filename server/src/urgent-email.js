@@ -150,4 +150,36 @@ async function sendRiderWithdrawalEmail(to, message) {
   }
 }
 
-module.exports = { classifySmtpFailure, sendUrgentOrderEmail, sendRiderNotificationEmail, sendRiderWithdrawalEmail, verifyUrgentEmailTransport }
+// 新提现申请提醒：与骑手结清回执使用不同收件人和邮件类型，不重试。
+async function sendWithdrawalRequestEmail(message) {
+  const config = urgentEmailConfig()
+  if (!config.enabled) throw new Error('URGENT_EMAIL_DISABLED')
+  const to = require('./config').withdrawalRequestEmailTo
+  if (!to || to.length > 254 || !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(to)) {
+    return { ok: false, code: 'INVALID_RECIPIENT', messageId: '', response: '' }
+  }
+  let info
+  try {
+    info = await emailTransporter().sendMail({
+      from: config.from,
+      to,
+      subject: String(message && message.subject || '').slice(0, 160),
+      text: String(message && message.text || '').slice(0, 4000),
+      headers: { 'X-Campus-Notification': 'withdrawal-request-email' }
+    })
+  } catch (error) {
+    const rejected = classifySmtpFailure(error)
+    if (rejected) return rejected
+    throw error
+  }
+  const accepted = Array.isArray(info && info.accepted) ? info.accepted : []
+  const responseCode = String(info && info.response || '').match(/^\d{3}/)
+  return {
+    ok: accepted.length > 0,
+    code: accepted.length > 0 ? 'ACCEPTED' : 'RECIPIENT_REJECTED',
+    messageId: String(info && info.messageId || '').slice(0, 128),
+    response: responseCode ? responseCode[0] : ''
+  }
+}
+
+module.exports = { classifySmtpFailure, sendUrgentOrderEmail, sendRiderNotificationEmail, sendRiderWithdrawalEmail, sendWithdrawalRequestEmail, verifyUrgentEmailTransport }
