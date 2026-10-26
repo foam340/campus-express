@@ -86,5 +86,6 @@ module.exports = Object.freeze({
   adminCorsOrigin: required('ADMIN_CORS_ORIGIN'),
   manualPayoutMode: String(process.env.MANUAL_PAYOUT_MODE || 'false') === 'true',
   urgentEmail: Object.freeze(urgentEmail),
+  withdrawalRequestEmailTo: String(process.env.WITHDRAWAL_REQUEST_EMAIL_TO || '').trim(),
   logLevel: String(process.env.LOG_LEVEL || 'info')
 })
