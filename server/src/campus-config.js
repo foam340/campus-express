@@ -34,9 +34,9 @@ const NANHAI_BUILDING_GENDER = Object.freeze({
   '6栋': 'female', '7栋': 'mixed', '8栋': 'male', '9栋': 'mixed', '25号楼': 'mixed'
 })
 
-// —— 广轻工南海北区宿舍楼（归一化键：纯数字，1–48）——
-const GQG_BUILDING_KEYS = Object.freeze(Array.from({ length: 48 }, (_, i) => String(i + 1)))
-// 楼栋性别：9–24 栋女生，其余男生（无混宿、无楼层细分）。
+// —— 广轻工南海北区宿舍楼（归一化键：1–48及独立的东一）——
+const GQG_BUILDING_KEYS = Object.freeze([...Array.from({ length: 48 }, (_, i) => String(i + 1)), '东一'])
+// 楼栋性别：9–24栋女生，其余及东一栋男生（无混宿、无楼层细分）。
 const GQG_BUILDING_GENDER = Object.freeze(
   GQG_BUILDING_KEYS.reduce((acc, key) => {
     acc[`${key}栋`] = (Number(key) >= 9 && Number(key) <= 24) ? 'female' : 'male'
@@ -91,7 +91,7 @@ const CAMPUS_CONFIG = Object.freeze({
     id: 'gqg',
     label: '广轻工南海北区',
     hasOffCampus: true,                 // 有校内/校外件（定价同南海）
-    buildingKeys: GQG_BUILDING_KEYS,    // 楼栋白名单（归一化键，1–48）
+    buildingKeys: GQG_BUILDING_KEYS,    // 楼栋白名单（归一化键，1–48、东一）
     buildingKeysNumeric: true,
     roomRule: 'numeric',                // 数字门牌（同南海）
     stations: Object.freeze([]),        // 无驿站选择器（走校内/校外）

@@ -130,6 +130,19 @@ async function main() {
     assert.equal(resultManual.registered, true)
     assert.equal(resultManual.user.campus, campus, 'Normal manual registration remains campus-specific')
   }
-  console.log('Review registration checks passed: real client bootstrap/session and backend route validation, default campus persistence, strict campus rejection, normal-mode isolation and existing users in three campuses.')
+  const eastOneProfile = { name: '新楼测试', phone: '13800000002', campus: 'gqg', building: '东一栋', room: '222' }
+  assert.equal(require('../utils/validators').validateRegistration(eastOneProfile), '')
+  const eastOne = harness()
+  const eastOneResult = await eastOne.miniAuth.register(eastOneProfile)
+  assert.equal(eastOneResult.user.building, '东一栋', 'Client and backend must round-trip the named GQG building')
+  assert.equal(eastOne.users[0].building, '东一', 'Keep the named building separate from numeric building 1')
+  for (const campus of ['nanhai', 'shipai']) {
+    const invalidEastOne = harness()
+    await assert.rejects(invalidEastOne.invoke('/auth/register', {
+      ...eastOneProfile, campus, registrationToken: invalidEastOne.registrationToken
+    }), error => error.code === 'INVALID_BUILDING')
+    assert.equal(invalidEastOne.writes.length, 0)
+  }
+  console.log('Review registration checks passed: real client bootstrap/session and backend route validation, default campus persistence, strict campus rejection, normal-mode isolation, existing users in three campuses and GQG East One building round-trip.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })
