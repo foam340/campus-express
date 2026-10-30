@@ -64,6 +64,8 @@ function isBuilding9(user) {
 // 上门费：9栋用基础上门费；4楼及以上用「高层上门费」；其余用基础上门费。
 // 石牌等无「9栋」概念、且 doorFee 与 upperFloorDoorFee 同值的校区，此函数自然退化为固定上门费。
 function doorFeeFor(user, pricing) {
+  // 广轻工新客户端先准备提审；上线前须同步后端费率，旧包和其他校区不受影响。
+  if (user && user.campus === 'gqg') return dormFloor(user.room) >= 4 ? 1 : 0.5
   if (isBuilding9(user)) return pricing.doorFee
   return dormFloor(user && user.room) >= 4 ? pricing.upperFloorDoorFee : pricing.doorFee
 }
@@ -270,7 +272,9 @@ createPage({
     const building9 = isBuilding9(user)
     const selectedDoorFee = doorFeeFor(user, pricing)
     const deliveryFee = deliveryMode === 'door' ? selectedDoorFee : 0
-    const buildingFee = building9 ? pricing.building9Fee : 0
+    const campusCfg = getCampusConfig(user.campus)
+    const distanceBuilding = (campusCfg.distanceFeeBuildings || []).includes(String(user.building || '').trim().replace(/(?:号楼|号栋|栋)$/u, ''))
+    const buildingFee = distanceBuilding ? campusCfg.distanceFee : building9 ? pricing.building9Fee : 0
     // V3：快递费和全部服务费共同凑满减，取最高一档，最后叠加优惠券。
     const bundleBase = Number((subtotal + urgencyFee + deliveryFee + buildingFee).toFixed(2))
     const discount = orderDiscount(bundleBase, pricing)
@@ -314,6 +318,8 @@ createPage({
       urgencyFeeText: money(urgencyFee),
       deliveryFeeText: money(deliveryFee),
       buildingFeeText: money(buildingFee),
+      hasBuildingFee: buildingFee > 0,
+      buildingFeeLabel: distanceBuilding ? '校外宿舍距离附加费' : '9栋距离附加费',
       urgentOptionFeeText: money(pricing.urgentFee),
       soonOptionFeeText: money(pricing.soonFee),
       doorOptionFeeText: money(selectedDoorFee),
