@@ -119,7 +119,7 @@
     <view class="summary-row discount-row"><text>多件满减</text><text>-¥{{discountText}}</text></view>
     <view wx:if="{{urgency==='urgent' || urgency==='soon'}}" class="summary-row"><text>{{urgency==='soon'?'稍急服务':'很急服务'}}</text><text>+¥{{urgencyFeeText}}</text></view>
     <view wx:if="{{deliveryMode==='door'}}" class="summary-row"><text>送到宿舍门口</text><text>+¥{{deliveryFeeText}}</text></view>
-    <view wx:if="{{isBuilding9}}" class="summary-row"><text>9栋距离附加费</text><text>+¥{{buildingFeeText}}</text></view>
+    <view wx:if="{{isBuilding9 || (!reviewMode && hasBuildingFee)}}" class="summary-row"><text>{{reviewMode ? '9栋距离附加费' : buildingFeeLabel}}</text><text>+¥{{buildingFeeText}}</text></view>
     <view class="discount-hint">{{nextDiscountText}}</view>
     <view class="coupon-picker" hover-class="tap-soft" bindtap="openCouponSheet">
       <view><view>优惠券</view><text>{{selectedCouponName || '满减后可继续叠加使用'}}</text></view>

@@ -134,8 +134,16 @@ async function main() {
   assert.equal(require('../utils/validators').validateRegistration(eastOneProfile), '')
   const eastOne = harness()
   const eastOneResult = await eastOne.miniAuth.register(eastOneProfile)
-  assert.equal(eastOneResult.user.building, '东一栋', 'Client and backend must round-trip the named GQG building')
+  assert.equal(eastOneResult.user.building, '东1栋', 'Legacy named GQG building must display the new name')
   assert.equal(eastOne.users[0].building, '东一', 'Keep the named building separate from numeric building 1')
+  for (const building of ['东1栋', '东2栋']) {
+    const profile = { ...eastOneProfile, building }
+    assert.equal(require('../utils/validators').validateRegistration(profile), '')
+    const registration = harness()
+    const result = await registration.miniAuth.register(profile)
+    assert.equal(result.user.building, building)
+    assert.equal(registration.users[0].building, building === '东1栋' ? '东一' : '东2')
+  }
   for (const campus of ['nanhai', 'shipai']) {
     const invalidEastOne = harness()
     await assert.rejects(invalidEastOne.invoke('/auth/register', {

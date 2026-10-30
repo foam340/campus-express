@@ -60,7 +60,8 @@ const loginLimiter = rateLimit({
 
 function normalizeBuilding(value, buildingKeys) {
   const keys = Array.isArray(buildingKeys) && buildingKeys.length ? buildingKeys : CAMPUS_CONFIG.nanhai.buildingKeys
-  const building = String(value || '').trim().replace(/(?:号楼|号栋|栋)$/u, '').toUpperCase()
+  let building = String(value || '').trim().replace(/(?:号楼|号栋|栋)$/u, '').toUpperCase()
+  if (keys.includes('东一') && building === '东1') building = '东一'
   if (!keys.includes(building)) throw new HttpError(400, '请选择宿舍楼', 'INVALID_BUILDING')
   return building
 }

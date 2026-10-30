@@ -72,7 +72,8 @@ function testParity() {
   const { page, normalizePricing } = loadPage()
   page.data.reviewMode = false
   let cases = 0
-  for (const campus of ['nanhai', 'shipai', 'gqg']) {
+  // 广轻工新前端已提前改价，线上后端按负责人要求仍保留旧价，单独验证暂存契约。
+  for (const campus of ['nanhai', 'shipai']) {
     const settings = settingsFor(campus)
     const cfg = getCampusConfig(campus)
     for (const cachedVersion of [2, 3]) for (const size of ['small', 'medium', 'large']) {
@@ -103,6 +104,37 @@ function testParity() {
     }
   }
   return cases
+}
+
+function testGqgStagedFrontend() {
+  const { page, normalizePricing } = loadPage()
+  page.data.reviewMode = false
+  const settings = settingsFor('gqg') // 故意用旧服务端费率，模拟提审期间线上状态。
+  let cases = 0
+  for (const building of ['1栋', '9栋', '东一栋', '东1栋', '东2栋']) {
+    for (const room of ['121', '321', '421']) for (const toDoor of [false, true]) {
+      for (const size of ['small', 'medium', 'large']) for (const scope of ['campus', 'off_campus']) {
+        for (const count of [1, 4]) for (const urgency of ['today', 'soon', 'urgent']) {
+          const items = Array.from({ length: count }, () => ({ scope, size, image: 'local' }))
+          const user = { campus: 'gqg', building, room }
+          const doorFee = toDoor ? (Number(room[0]) >= 4 ? 1 : 0.5) : 0
+          const buildingFee = ['东一栋', '东1栋', '东2栋'].includes(building) ? 0.5 : 0
+          const before = count * settings[`item_${size}_${scope}_price`] + doorFee + buildingFee + (urgency === 'urgent' ? 4 : urgency === 'soon' ? 2 : 0)
+          const expected = before - discountFor(before)
+          page.refresh(items, { pricing: normalizePricing(clientPricing(settings)), user, urgency,
+            deliveryMode: toDoor ? 'door' : 'downstairs', coupons: [] })
+          assert.equal(Number(page.data.deliveryFeeText), doorFee)
+          assert.equal(Number(page.data.buildingFeeText), buildingFee)
+          assert.equal(Number(page.data.totalText), expected)
+          const oldServer = calculateItemizedPrice(items, urgency, !toDoor, { ...settings, item_pricing_version: 3 }, user, false)
+          assert.equal(oldServer.buildingFee, 0, 'Backend distance fee must remain disabled until approval')
+          assert.equal(oldServer.doorFee, toDoor ? (Number(room[0]) >= 4 ? 1.5 : 1) : 0, 'Backend retains old door prices')
+          cases++
+        }
+      }
+    }
+  }
+  console.log(`GQG staged frontend checks passed: ${cases} new-price cases; backend remains at old prices pending approval.`)
 }
 
 function testBoundariesAndCoupons() {
@@ -301,6 +333,7 @@ async function testDeliveryOptions() {
 
 async function main() {
   const cases = testParity()
+  testGqgStagedFrontend()
   testBoundariesAndCoupons()
   await testRoutes()
   await testDeliveryOptions()

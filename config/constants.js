@@ -10,21 +10,22 @@ const DORM_BUILDINGS = ['1栋','2栋','3栋','4栋','5栋','6栋','7栋','8栋',
 const DORM_BUILDING_LABELS = ['1栋（原A栋）','2栋（原B栋）','3栋（原C栋）','4栋（原D栋）','5栋（原E栋）','6栋（原F栋）','7栋（原G栋）','8栋（原H栋）','9栋（新宿舍楼）','25号楼']
 // 石牌宿舍楼：32 栋（「中区」「东19栋南」都是独立一栋）。石牌不标性别。
 const SHIPAI_DORM_BUILDINGS = ['东2栋','东3栋','东4栋','东5栋','东9栋','东10栋','东11栋','东12栋','东13栋','东14栋','东19栋','东19栋南','西1栋','西2栋','西3栋','西4栋','西5栋','西6栋','中区','中区20栋','中区22栋','中区23栋','中区34栋','中区35栋','研究生公寓A座','研究生公寓B座','研究生公寓C座','陶北','陶南','沁园','星河楼','留学生公寓']
-// 广轻工南海北区宿舍楼：1–48栋及独立的东一栋（男生宿舍）。
-const GQG_DORM_BUILDINGS = [...Array.from({ length: 48 }, (_, i) => `${i + 1}栋`), '东一栋']
+// 广轻工南海北区宿舍楼：1–48栋及东1栋、东2栋（均为男生宿舍）。
+const GQG_DORM_BUILDINGS = [...Array.from({ length: 48 }, (_, i) => `${i + 1}栋`), '东1栋', '东2栋']
 function getDormBuildings(campus) { return campus === 'shipai' ? SHIPAI_DORM_BUILDINGS : (campus === 'gqg' ? GQG_DORM_BUILDINGS : DORM_BUILDINGS) }
 function getDormBuildingLabels(campus) { return campus === 'shipai' ? SHIPAI_DORM_BUILDINGS : (campus === 'gqg' ? GQG_DORM_BUILDINGS : DORM_BUILDING_LABELS) }
 const DORM_BUILDING_GENDER = {
   '1栋': 'female', '2栋': 'male', '3栋': 'male', '4栋': 'female', '5栋': 'male',
   '6栋': 'female', '7栋': 'mixed', '8栋': 'male', '9栋': 'mixed', '25号楼': 'mixed'
 }
-// 广轻工南海北区：9–24栋女生，其余及末尾东一栋男生（无混宿、无楼层细分）。
+// 广轻工南海北区：9–24栋女生，其余及东1栋、东2栋男生（无混宿、无楼层细分）。
 const GQG_BUILDING_GENDER = GQG_DORM_BUILDINGS.reduce((map, label, i) => {
   const n = i + 1
   map[label] = (n >= 9 && n <= 24) ? 'female' : 'male'
   return map
 }, {})
 const BUILDING_GENDER_TEXT = { male: '男', female: '女', mixed: '混宿' }
+GQG_BUILDING_GENDER['东一栋'] = 'male' // 兼容已有资料缓存
 
 // 校区：nanhai=南海、shipai=石牌；注册时二选一，老用户默认南海。
 const CAMPUSES = ['nanhai', 'shipai', 'gqg']
@@ -86,6 +87,8 @@ const CAMPUS_CONFIG = Object.freeze({
   gqg: Object.freeze({
     id: 'gqg',
     label: '广轻工南海北区',
+    distanceFeeBuildings: Object.freeze(['东一', '东1', '东2']),
+    distanceFee: 0.5,
     hasOffCampus: true,
     roomRule: 'numeric',
     stations: Object.freeze([]),

@@ -8,6 +8,15 @@ const modeStore = require('../../../utils/mode')
 
 const HOME_FRESH_MS = 5 * 1000
 
+function getHomeShareOptions() {
+  const normalMode = store.getSettings().reviewMode === false
+  return {
+    title: normalMode ? '快递到宿舍，少跑一趟路' : '校园快递代拿，送到宿舍门口',
+    imageUrl: normalMode
+      ? '/assets/share-cover-refined.jpg' : '/assets/share-cover.jpg'
+  }
+}
+
 function getLastCouponSeenAt() {
   try { return Number(wx.getStorageSync('campus_last_coupon_seen')) || 0 } catch (_) { return 0 }
 }
@@ -100,6 +109,6 @@ createPage({
   goOrder() { if (this.data.activeOrder) wx.navigateTo({ url:`${ROUTES.orderDetail}?id=${encodeURIComponent(this.data.activeOrder.id)}&role=user` }) },
   goOrders() { wx.switchTab({ url:ROUTES.orders }) },
   goProfile() { wx.switchTab({ url:ROUTES.profile }) },
-  onShareAppMessage() { return createShareMessage({ title:'校园快递代拿，送到宿舍门口', imageUrl:'/assets/share-cover.jpg' }) },
-  onShareTimeline() { return { title:'校园快递代拿，送到宿舍门口', imageUrl:'/assets/share-cover.jpg' } }
+  onShareAppMessage() { return createShareMessage(getHomeShareOptions()) },
+  onShareTimeline() { return getHomeShareOptions() }
 })

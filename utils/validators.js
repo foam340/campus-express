@@ -59,6 +59,7 @@ function emailSuspicion(email) {
 
 function validateRegistration(data) {
   if (!data || typeof data !== 'object') return '请完整填写注册信息'
+  if (data.campus === 'gqg' && data.building === '东一栋') data = { ...data, building: '东1栋' }
   if (!isName(data.name)) return '请输入1—12个字的称呼'
   if (!isPhone(data.phone)) return '请输入正确的11位手机号'
   const campusCfg = getCampusConfig(data.campus)
