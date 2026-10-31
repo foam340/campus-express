@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方案B · 暖橙快递站 — 校园代拿</title>
+<style>
+/* ============ 定调：暖橙快递站 ============
+   受众：大学生，C 端轻应用
+   方向：玩趣 + 快递站票据感 —— 奶油底、墨色描边、贴纸式徽章
+   记忆点：票券打孔线 + 微微旋转的贴纸标签，像一张「取件凭据」
+========================================= */
+:root{
+  --stage:#1A1109;
+  --app-bg:#FFF7EE;           /* 奶油底 */
+  --surface:#FFFFFF;
+  --ink:#241505;              /* 暖调墨色 */
+  --muted:#8C7A66;
+  --primary:#FF6B2C;          /* 快递橙 */
+  --primary-deep:#D94E10;
+  --primary-soft:#FFEDE0;
+  --accent:#1E9E6A;           /* 抹茶绿：成功/优惠 */
+  --line:#EBDCCB;
+  --ink-line:2px solid #241505;
+  --r-lg:24px; --r-md:18px; --r-sm:12px;
+  --shadow-1:0 3px 0 rgba(36,21,5,.9);      /* 贴纸式硬投影 */
+  --shadow-2:0 10px 30px rgba(120,66,20,.18);
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--stage);color:#F5EADB;
+  font-family:"PingFang SC","HarmonyOS Sans SC","MiSans","Microsoft YaHei",sans-serif;
+  padding:56px 40px 80px}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:
+    radial-gradient(64rem 40rem at 10% -10%, rgba(255,107,44,.24), transparent 60%),
+    radial-gradient(50rem 36rem at 95% 8%, rgba(30,158,106,.10), transparent 55%)}
+.num{font-family:"Bahnschrift","DIN Alternate",sans-serif;font-variant-numeric:tabular-nums}
+
+.masthead{max-width:1720px;margin:0 auto 40px;position:relative}
+.masthead .kicker{letter-spacing:.35em;font-size:12px;color:#E8A06A;margin-bottom:14px}
+.masthead h1{font-size:40px;font-weight:900;letter-spacing:-.01em}
+.masthead h1 em{font-style:normal;color:#FF8B52}
+.masthead p{color:#C9B49C;margin-top:12px;font-size:15px;line-height:1.8;max-width:640px}
+.tokens{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.token{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 14px 7px 8px;font-size:12px;color:#E4D2BC}
+.token i{width:18px;height:18px;border-radius:50%;display:block}
+
+.stage{max-width:1720px;margin:0 auto;display:flex;gap:44px;justify-content:center;flex-wrap:wrap}
+.shot{opacity:0;transform:translateY(26px);animation:in .7s var(--ease) forwards}
+.shot:nth-child(2){animation-delay:.08s}.shot:nth-child(3){animation-delay:.16s}.shot:nth-child(4){animation-delay:.24s}
+@keyframes in{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.shot{opacity:1;transform:none;animation:none}}
+.shot figcaption{margin-top:16px;text-align:center;font-size:13px;color:#C9A47C;letter-spacing:.12em}
+
+.phone{width:375px;height:812px;background:var(--app-bg);border-radius:46px;
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 30px 80px rgba(0,0,0,.55);
+  overflow:hidden;position:relative;color:var(--ink)}
+.statusbar{height:44px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;font-size:13px;font-weight:700;position:relative;z-index:5}
+.statusbar .sig{display:flex;gap:5px;align-items:center}
+.statusbar svg{display:block}
+.screen{height:calc(100% - 44px);overflow-y:auto;padding:0 16px 120px;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+
+/* 贴纸徽章 */
+.sticker{display:inline-block;background:var(--primary);color:#fff;font-size:11px;font-weight:800;
+  padding:4px 12px;border-radius:10px;transform:rotate(-2deg);box-shadow:var(--shadow-1)}
+.card{background:var(--surface);border:var(--ink-line);border-radius:var(--r-lg);box-shadow:var(--shadow-1)}
+.sec-head{display:flex;align-items:center;gap:8px;margin:22px 2px 12px;font-size:15px;font-weight:800}
+.sec-head .idx{width:22px;height:22px;border-radius:8px;background:var(--ink);color:#FFD9A8;
+  font-size:12px;display:grid;place-items:center;font-weight:800}
+.sec-head .aside{margin-left:auto;font-size:12px;color:var(--muted);font-weight:500}
+.chip{border:2px solid var(--line);border-radius:16px;padding:10px 6px;text-align:center;
+  font-size:13px;font-weight:700;color:var(--ink);background:#fff;transition:.15s}
+.chip small{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:3px}
+.chip.on{border-color:var(--ink);background:var(--primary-soft);box-shadow:var(--shadow-1)}
+.chip.on::after{content:"✓";position:absolute;margin:-24px 0 0 6px;font-size:10px;color:var(--primary-deep);font-weight:900}
+.btn-primary{display:block;width:100%;background:var(--primary);color:#fff;border:none;
+  border-radius:16px;height:52px;font-size:16px;font-weight:800;letter-spacing:.05em;
+  box-shadow:var(--shadow-1);transform:translateY(-2px)}
+.btn-primary:active{transform:translateY(0);box-shadow:none}
+.tag{font-size:10px;padding:3px 8px;border-radius:8px;font-weight:700}
+
+/* ---------- 首页 ---------- */
+.home-top{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 2px 16px}
+.home-top h2{font-size:27px;font-weight:900}
+.home-top .addr{font-size:12px;color:var(--muted);margin-top:6px}
+.home-top .addr b{color:var(--primary-deep)}
+.avatar{width:46px;height:46px;border-radius:16px;border:var(--ink-line);box-shadow:var(--shadow-1);
+  background:#FFD9A8;color:var(--ink);display:grid;place-items:center;font-weight:900;font-size:17px}
+.hero{border:var(--ink-line);border-radius:26px;padding:22px 20px 20px;position:relative;overflow:hidden;
+  background:repeating-linear-gradient(-45deg,#FF7A3D 0 14px,#FF6B2C 14px 28px);box-shadow:var(--shadow-1)}
+.hero .inner{background:rgba(36,21,5,.16);border-radius:18px;padding:16px;color:#fff}
+.hero .en{font-size:10px;letter-spacing:.3em;opacity:.85}
+.hero h3{font-size:28px;font-weight:900;margin-top:6px;text-shadow:0 2px 0 rgba(36,21,5,.25)}
+.hero p{font-size:12px;opacity:.92;margin-top:6px}
+.hero .cta{margin-top:14px;display:inline-flex;background:#fff;color:var(--primary-deep);
+  border:var(--ink-line);border-radius:999px;padding:9px 18px;font-size:14px;font-weight:800;box-shadow:0 3px 0 rgba(36,21,5,.9)}
+.hero .box{position:absolute;right:14px;top:18px;font-size:44px;transform:rotate(8deg);filter:drop-shadow(0 4px 0 rgba(36,21,5,.35))}
+.stats{display:flex;gap:10px;margin-top:14px}
+.stat{flex:1;background:#fff;border:var(--ink-line);border-radius:18px;padding:13px 0;text-align:center;box-shadow:var(--shadow-1)}
+.stat b{font-size:19px;display:block}
+.stat span{font-size:11px;color:var(--muted)}
+.order-card{padding:16px;position:relative}
+/* 记忆点：票券打孔线 */
+.order-card::before{content:"";position:absolute;left:0;right:0;top:58px;border-top:2px dashed var(--line)}
+.recruit{margin-top:14px;border:2px dashed var(--primary);border-radius:20px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;background:#FFF1E5}
+.recruit b{font-size:13px;color:var(--primary-deep)}
+.recruit span{font-size:11px;color:#A96B3F;display:block;margin-top:2px}
+.recruit .go{margin-left:auto;font-weight:800;font-size:12px;color:var(--primary-deep)}
+
+/* ---------- 发布订单 ---------- */
+.form-tip{font-size:11px;color:var(--muted);padding:12px 2px 0}
+.parcel{padding:16px;margin-top:12px}
+.parcel-head{display:flex;align-items:center;gap:8px}
+.parcel-head .p-no{width:24px;height:24px;border-radius:9px;border:var(--ink-line);background:#FFD9A8;
+  font-size:12px;font-weight:900;display:grid;place-items:center;box-shadow:var(--shadow-1)}
+.parcel-head b{font-size:14px}
+.parcel-head .p-fee{margin-left:auto;font-size:13px;color:var(--primary-deep);font-weight:900}
+.upload{margin-top:12px;border:2px dashed #D9A97C;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:center;background:#FFFDF9}
+.upload .thumb{width:64px;height:64px;border-radius:12px;background:#fff;border:var(--ink-line);
+  display:grid;place-items:center;position:relative;flex-shrink:0;box-shadow:var(--shadow-1)}
+.upload .thumb .mini{font-size:9px;color:var(--muted);text-align:center;line-height:1.5}
+.upload .thumb .ok{position:absolute;right:-8px;top:-8px;width:18px;height:18px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid #fff}
+.upload .u-txt b{font-size:13px;display:block}
+.upload .u-txt span{font-size:11px;color:var(--muted);display:block;margin-top:4px;line-height:1.6}
+.upload .u-txt .legend{color:var(--primary-deep);font-weight:800}
+.upload .plus{margin-left:auto;width:36px;height:36px;border-radius:12px;background:var(--primary);color:#fff;
+  display:grid;place-items:center;font-size:20px;flex-shrink:0;border:var(--ink-line);box-shadow:var(--shadow-1)}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.oversize{margin-top:10px;border-radius:14px;background:#FFF6EC;border:2px solid #F3C99A;
+  padding:10px 12px;display:flex;align-items:center;gap:8px;font-size:11px;color:#9A5A20;font-weight:600}
+.oversize b{color:var(--primary-deep)}
+.oversize a{margin-left:auto;color:var(--primary-deep);font-weight:800;text-decoration:none;font-size:11px}
+.p-actions{display:flex;gap:12px;margin-top:14px;align-items:center}
+.p-actions .del{font-size:12px;color:#D5453C;font-weight:700}
+.p-actions .done{flex:1;height:44px;border-radius:14px;border:var(--ink-line);color:#fff;font-size:14px;font-weight:800;
+  background:var(--primary);box-shadow:var(--shadow-1)}
+.add-parcel{margin-top:12px;width:100%;border:2px dashed var(--primary);background:#FFF1E5;
+  color:var(--primary-deep);border-radius:16px;height:48px;font-size:14px;font-weight:800}
+.fee-card{padding:0;overflow:hidden}
+.fee-card .pad{padding:16px 16px 4px}
+/* 费用票券：打孔线 */
+.fee-card .perf{border-top:2px dashed var(--line);margin:12px 0 0;position:relative}
+.fee-card .perf::before,.fee-card .perf::after{content:"";position:absolute;top:-9px;width:16px;height:16px;
+  border-radius:50%;background:var(--app-bg);border:var(--ink-line)}
+.fee-card .perf::before{left:-9px}.fee-card .perf::after{right:-9px}
+.fee-row{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:7px 0}
+.fee-row b{color:var(--ink);font-weight:700}
+.fee-row.discount b{color:var(--accent)}
+.fee-total{padding:12px 16px 16px;display:flex;align-items:baseline}
+.fee-total span{font-size:13px;font-weight:800}
+.fee-total .amt{margin-left:auto;font-size:26px;font-weight:900;color:var(--primary-deep)}
+.bottombar{position:absolute;left:0;right:0;bottom:0;height:96px;z-index:6;
+  background:linear-gradient(transparent,var(--app-bg) 32%);padding:14px 16px 0;display:flex;align-items:center;gap:14px}
+.bottombar .pay b{font-size:23px;font-weight:900;color:var(--primary-deep);display:block}
+.bottombar .pay span{font-size:10px;color:var(--muted)}
+.bottombar .go{flex:1}
+
+/* ---------- 订单列表 ---------- */
+.tabs{display:flex;gap:8px;padding:14px 0 6px}
+.tabs .t{padding:8px 15px;border-radius:12px;font-size:13px;background:#fff;color:var(--muted);
+  font-weight:600;border:2px solid var(--line)}
+.tabs .t.on{background:var(--ink);color:#FFD9A8;border-color:var(--ink);box-shadow:var(--shadow-1)}
+.olist .card{margin-bottom:14px;padding:15px 16px}
+.o-head{display:flex;align-items:center;font-size:12px;color:var(--muted)}
+.o-head .st{margin-left:auto;font-weight:900;font-size:12px}
+.o-head .st.doing{color:var(--primary-deep)}
+.o-head .st.done{color:var(--accent)}
+.o-body{display:flex;align-items:center;gap:10px;margin-top:11px}
+.o-body .icon{width:44px;height:44px;border-radius:14px;border:var(--ink-line);background:#FFD9A8;display:grid;place-items:center;font-size:19px;box-shadow:var(--shadow-1)}
+.o-body .t b{font-size:14px;display:block}
+.o-body .t span{font-size:11px;color:var(--muted);display:block;margin-top:3px}
+.o-body .amt{margin-left:auto;font-size:17px;font-weight:900}
+.o-foot{display:flex;gap:8px;margin-top:12px}
+.o-foot .mini-btn{height:34px;padding:0 14px;border-radius:12px;border:2px solid var(--line);
+  background:#fff;font-size:12px;color:var(--ink);font-weight:700}
+.o-foot .mini-btn.pri{border-color:var(--ink);color:#fff;background:var(--primary);box-shadow:var(--shadow-1)}
+.track{margin-top:12px;border-radius:12px;background:#FFF1E5;padding:11px 13px;font-size:11px;color:#9A6B3C;display:flex;gap:8px;align-items:center;font-weight:600}
+.track b{color:var(--primary-deep)}
+
+/* ---------- 我的 ---------- */
+.me-head{padding:20px 18px;display:flex;align-items:center;gap:14px;background:#FFD9A8;
+  border:var(--ink-line);border-radius:26px;box-shadow:var(--shadow-1)}
+.me-head .avatar{width:54px;height:54px;background:#fff}
+.me-head b{font-size:19px;display:block}
+.me-head span{font-size:12px;color:#8C6B42}
+.me-head .edit{margin-left:auto;font-size:11px;font-weight:800;background:#fff;border:var(--ink-line);
+  padding:6px 12px;border-radius:999px;box-shadow:var(--shadow-1)}
+.addr-card{margin-top:12px;border-radius:18px;padding:14px 16px;background:#fff;border:var(--ink-line);box-shadow:var(--shadow-1)}
+.addr-card .lb{font-size:10px;color:var(--muted);letter-spacing:.1em}
+.addr-card b{font-size:17px;display:block;margin-top:4px}
+.addr-card span{font-size:11px;color:var(--muted)}
+.mode-card{margin-top:12px;border-radius:18px;padding:15px 16px;background:var(--ink);color:#fff;
+  display:flex;align-items:center;box-shadow:var(--shadow-1)}
+.mode-card .lb{font-size:10px;opacity:.65;letter-spacing:.1em}
+.mode-card b{font-size:15px;display:block;margin-top:3px}
+.mode-card .sw{margin-left:auto;font-size:11px;font-weight:700;border-radius:999px;padding:7px 13px;
+  background:#FFD9A8;color:var(--ink);box-shadow:0 3px 0 rgba(0,0,0,.4)}
+.menu{margin-top:14px}
+.menu .card{padding:4px 16px}
+.mi{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:2px dashed var(--line);font-size:14px;font-weight:600}
+.mi:last-child{border-bottom:none}
+.mi .ic{width:36px;height:36px;border-radius:12px;border:var(--ink-line);display:grid;place-items:center;font-size:15px}
+.mi .hint{margin-left:auto;font-size:12px;color:var(--muted)}
+.mi .arw{color:#C4AE93;font-size:12px;font-weight:800}
+.seg{margin-left:auto;display:flex;background:#F5EADC;border-radius:12px;padding:3px;font-size:11px;border:2px solid var(--line)}
+.seg i{font-style:normal;padding:5px 11px;border-radius:9px;color:var(--muted);font-weight:600}
+.seg i.on{background:var(--ink);color:#FFD9A8;font-weight:800}
+
+/* ---------- TabBar ---------- */
+.tabbar{position:absolute;left:16px;right:16px;bottom:20px;height:62px;background:#fff;
+  border:var(--ink-line);border-radius:999px;box-shadow:var(--shadow-1);
+  display:flex;align-items:center;z-index:7}
+.tabbar .tb{flex:1;text-align:center;font-size:10px;color:var(--muted);font-weight:600;position:relative;padding-top:2px}
+.tabbar .tb .ico{font-size:19px;display:block;margin-bottom:2px}
+.tabbar .tb.on{color:var(--primary-deep);font-weight:900}
+.tabbar .tb.on .ico{transform:translateY(-2px) rotate(-6deg);display:inline-block}
+
+/* ---------- 方案说明 ---------- */
+.notes{max-width:1720px;margin:64px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.note{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:22px}
+.note h4{font-size:14px;color:#E8A06A;letter-spacing:.15em;margin-bottom:14px}
+.note li{list-style:none;font-size:13px;color:#DCCBB4;line-height:1.9;padding-left:16px;position:relative}
+.note li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--primary)}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="kicker">CAMPUS EXPRESS · UI PROPOSAL</div>
+  <h1>方案 B <em>· 暖橙快递站</em></h1>
+  <p>把「快递站票据」做成视觉语言：奶油底、墨色描边、贴纸式硬投影、票券打孔线。比方案 A 更有性格、更年轻，适合想在同学间做出辨识度的定位。绿色只留给「优惠 / 成功」，钱永远用深橙表示。</p>
+  <div class="tokens">
+    <span class="token"><i style="background:#FF6B2C"></i>主色 快递橙 #FF6B2C</span>
+    <span class="token"><i style="background:#FFF7EE"></i>底色 奶油 #FFF7EE</span>
+    <span class="token"><i style="background:#241505"></i>描边 暖墨 #241505</span>
+    <span class="token"><i style="background:#1E9E6A"></i>优惠 抹茶绿 #1E9E6A</span>
+    <span class="token">卡片 = 2px 墨线 + 3px 硬投影（贴纸感）</span>
+  </div>
+</header>
+
+<main class="stage">
+
+  <!-- ============ 01 首页 ============ -->
+  <figure class="shot">
+    <div class="phone">
+      <div class="statusbar"><span class="num">12:51</span>
+        <span class="sig"><svg width="15" height="11" viewBox="0 0 15 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h1V0h-1z" fill="#241505"/></svg>
+        <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0" y="0" width="19" height="11" rx="3" fill="none" stroke="#241505"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="#241505"/><rect x="20" y="3.5" width="2" height="4" rx="1" fill="#241505"/></svg></span></div>
+      <div class="screen">
+        <div class="home-top">
+          <div>
+            <h2>你好，217 👋</h2>
+            <div class="addr">默认地址 <b>4栋501</b> · 可下单 08:00–20:00</div>
+          </div>
+          <div class="avatar">2</div>
+        </div>
+
+        <div class="hero">
+          <span class="box">📦</span>
+          <div class="inner">
+            <div class="en">CAMPUS EXPRESS</div>
+            <h3>我要找代拿</h3>
+            <p>上传截图，最快 1 小时送到宿舍楼下</p>
+            <span class="cta">现在下单 →</span>
+          </div>
+        </div>
+        <div style="text-align:right;margin-top:8px"><span class="sticker">⚡ 今日爆单中 · 骑手充足</span></div>
+
+        <div class="stats">
+          <div class="stat"><b class="num">2</b><span>进行中</span></div>
+          <div class="stat"><b class="num">18</b><span>已完成</span></div>
+          <div class="stat"><b class="num">3</b><span>优惠券</span></div>
+        </div>
+
+        <div class="sec-head">当前订单<span class="aside">全部订单 ›</span></div>
+        <div class="card order-card">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:20px">🛵</span><b style="font-size:14px">骑手小吴 · 派送中</b>
+            <span class="sticker" style="margin-left:auto;transform:rotate(2deg);background:var(--accent)">预计14:30</span>
+          </div>
+          <div style="padding-top:14px;font-size:13px;font-weight:700">菜鸟驿站 → 4栋501 · 快递 ×2</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">已取件，正在赶往你们楼下</div>
+        </div>
+
+        <div class="recruit">
+          <div><b>想赚零花钱？</b><span>顺路带一件，一单 2–5 元</span></div>
+          <span class="go">去接单 ›</span>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tb on"><span class="ico">⌂</span>首页</div>
+        <div class="tb"><span class="ico">▤</span>订单</div>
+        <div class="tb"><span class="ico">☺</span>我的</div>
+      </div>
+    </div>
+    <figcaption>01 · 首页</figcaption>
+  </figure>
+
+  <!-- ============ 02 发布订单 ============ -->
+  <figure class="shot">
+    <div class="phone">
+      <div class="statusbar"><span class="num">12:51</span>
+        <span class="sig"><svg width="15" height="11" viewBox="0 0 15 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h1V0h-1z" fill="#241505"/></svg>
+        <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0" y="0" width="19" height="11" rx="3" fill="none" stroke="#241505"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="#241505"/><rect x="20" y="3.5" width="2" height="4" rx="1" fill="#241505"/></svg></span></div>
+      <div class="screen">
+        <div class="sec-head" style="margin-top:14px;font-size:17px">发布代拿订单<span class="aside num">2 件</span></div>
+        <div class="form-tip">校内外可混合添加，最后一次结算</div>
+
+        <div class="sec-head"><span class="idx">1</span>快递信息</div>
+        <div class="card parcel">
+          <div class="parcel-head"><span class="p-no">1</span><b>快递 1</b><span class="p-fee num">¥2.00</span></div>
+          <div class="upload">
+            <div class="thumb"><div class="mini">取件码<br>1234-5678</div><span class="ok">✓</span></div>
+            <div class="u-txt"><b>上传这一件的截图</b>
+              <span>仅本次核验用，<span class="legend">看看合格图例 ›</span></span></div>
+            <span class="plus">+</span>
+          </div>
+          <div style="font-size:12px;font-weight:800;margin-top:14px">在哪里取？</div>
+          <div class="grid3">
+            <div class="chip on">校内<small>菜鸟驿站</small></div>
+            <div class="chip">校内<small>7栋后门</small></div>
+            <div class="chip">校外<small>国尧艺术村</small></div>
+          </div>
+          <div style="font-size:12px;font-weight:800;margin-top:14px">大概多大？</div>
+          <div class="grid3">
+            <div class="chip">小件<small>单手可拿</small></div>
+            <div class="chip on">中件<small>双手可拿</small></div>
+            <div class="chip">大件<small>箱装/较重</small></div>
+          </div>
+          <div class="oversize">🏋️ 超大件：30kg+ / 冰箱、洗衣机等<a href="#">找客服估价 ›</a></div>
+          <div class="p-actions"><span class="del">删除这件</span><button class="done">完成这件</button></div>
+        </div>
+        <button class="add-parcel">＋ 再添加一件快递</button>
+
+        <div class="sec-head"><span class="idx">2</span>整单配送</div>
+        <div class="card" style="padding:16px">
+          <div style="font-size:12px;font-weight:800">希望什么时候送到？</div>
+          <div class="grid3" style="grid-template-columns:1fr 1fr">
+            <div class="chip on">今天<small>正常价</small></div>
+            <div class="chip">加急<small>整单 +¥4.00</small></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">节假日或骑手较少时，可能次日送达</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px;border-radius:14px;background:#FFF1E5;border:2px solid #F3C99A">
+            <span style="font-size:16px">📍</span>
+            <div><b style="font-size:13px">送到 4栋501</b><div style="font-size:11px;color:var(--muted)">示例用户 · 13800000000</div></div>
+            <span style="margin-left:auto;font-size:12px;color:var(--primary-deep);font-weight:800">修改地址</span>
+          </div>
+          <div class="grid3" style="grid-template-columns:1fr 1fr">
+            <div class="chip on">宿舍楼下</div>
+            <div class="chip">宿舍门口<small>4楼及以上 +¥1.50</small></div>
+          </div>
+          <div style="display:flex;align-items:center;margin-top:14px;font-size:12px;font-weight:800">备注<span style="margin-left:auto;font-weight:500;color:var(--muted)">最多100字</span></div>
+          <div style="margin-top:8px;border-radius:14px;background:#FFFDF9;border:2px dashed #E3CBB0;padding:12px;font-size:12px;color:var(--muted);min-height:56px">例如：到门口后请敲门</div>
+        </div>
+
+        <div class="sec-head"><span class="idx">3</span>费用明细</div>
+        <div class="card fee-card">
+          <div class="pad">
+            <div class="fee-row">快递 1（校内 · 中件）<b class="num">¥2.00</b></div>
+            <div class="fee-row">快递 2（校内 · 小件）<b class="num">¥1.50</b></div>
+            <div class="fee-row discount">多件满减<b class="num">−¥0.50</b></div>
+            <div class="fee-row">优惠券 · 满减后可叠加<span style="margin-left:auto;color:var(--muted);font-size:12px">暂无可用 ›</span></div>
+          </div>
+          <div class="perf"></div>
+          <div class="fee-total"><span>应付金额</span><span class="amt num">¥3.00</span></div>
+        </div>
+      </div>
+      <div class="bottombar">
+        <div class="pay"><span>应付</span><b class="num">¥3.00</b></div>
+        <button class="btn-primary go">去支付 →</button>
+      </div>
+    </div>
+    <figcaption>02 · 发布代拿订单</figcaption>
+  </figure>
+
+  <!-- ============ 03 我的订单 ============ -->
+  <figure class="shot">
+    <div class="phone">
+      <div class="statusbar"><span class="num">12:52</span>
+        <span class="sig"><svg width="15" height="11" viewBox="0 0 15 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h1V0h-1z" fill="#241505"/></svg>
+        <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0" y="0" width="19" height="11" rx="3" fill="none" stroke="#241505"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="#241505"/><rect x="20" y="3.5" width="2" height="4" rx="1" fill="#241505"/></svg></span></div>
+      <div class="screen">
+        <div class="sec-head" style="margin-top:14px;font-size:17px">我的订单</div>
+        <div class="tabs">
+          <span class="t on">全部</span><span class="t">进行中</span><span class="t">已完成</span><span class="t">退款/售后</span>
+        </div>
+        <div class="olist">
+          <div class="card">
+            <div class="o-head"><span class="num">No.20261019-0058</span><span class="st doing">派送中</span></div>
+            <div class="o-body"><span class="icon">🛵</span>
+              <div class="t"><b>菜鸟驿站 → 4栋501</b><span>快递 ×2 · 中件+小件 · 骑手 小吴</span></div>
+              <span class="amt num" style="color:var(--primary-deep)">¥3.00</span></div>
+            <div class="track">⏱ 已取件 · 预计 <b class="num">14:30</b> 送达宿舍楼下</div>
+            <div class="o-foot"><button class="mini-btn">联系骑手</button><button class="mini-btn pri">查看详情</button></div>
+          </div>
+          <div class="card">
+            <div class="o-head"><span class="num">No.20261018-0431</span><span class="st done">已完成</span></div>
+            <div class="o-body"><span class="icon">📦</span>
+              <div class="t"><b>7栋后门 → 4栋501</b><span>快递 ×1 · 大件 · 骑手 阿伦</span></div>
+              <span class="amt num">¥3.50</span></div>
+            <div class="o-foot"><button class="mini-btn">再来一单</button><button class="mini-btn">去评价</button></div>
+          </div>
+          <div class="card">
+            <div class="o-head"><span class="num">No.20261017-0207</span><span class="st done">已完成</span></div>
+            <div class="o-body"><span class="icon">📦</span>
+              <div class="t"><b>菜鸟驿站 → 4栋501</b><span>快递 ×1 · 小件 · 骑手 小吴</span></div>
+              <span class="amt num">¥2.00</span></div>
+            <div class="o-foot"><button class="mini-btn">再来一单</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tb"><span class="ico">⌂</span>首页</div>
+        <div class="tb on"><span class="ico">▤</span>订单</div>
+        <div class="tb"><span class="ico">☺</span>我的</div>
+      </div>
+    </div>
+    <figcaption>03 · 我的订单</figcaption>
+  </figure>
+
+  <!-- ============ 04 我的 ============ -->
+  <figure class="shot">
+    <div class="phone">
+      <div class="statusbar"><span class="num">12:52</span>
+        <span class="sig"><svg width="15" height="11" viewBox="0 0 15 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h1V0h-1z" fill="#241505"/></svg>
+        <svg width="22" height="11" viewBox="0 0 22 11"><rect x="0" y="0" width="19" height="11" rx="3" fill="none" stroke="#241505"/><rect x="2" y="2" width="13" height="7" rx="1.5" fill="#241505"/><rect x="20" y="3.5" width="2" height="4" rx="1" fill="#241505"/></svg></span></div>
+      <div class="screen">
+        <div class="sec-head" style="margin-top:14px;font-size:17px">我的</div>
+        <div class="me-head">
+          <div class="avatar">2</div>
+          <div><b>示例用户</b><span>13800000000</span></div>
+          <span class="edit">编辑</span>
+        </div>
+        <div class="addr-card">
+          <div class="lb">默认收货地址 · 下单自动填入</div>
+          <b>4栋501</b><span>可临时修改</span>
+        </div>
+        <div class="mode-card">
+          <div><div class="lb">当前模式</div><b>普通用户</b></div>
+          <span class="sw">切换至骑手</span>
+        </div>
+        <div class="menu">
+          <div class="card">
+            <div class="mi"><span class="ic" style="background:#FFD9A8">🎫</span>我的券包<span class="hint" style="color:var(--accent);font-weight:800">3张可用</span><span class="arw">›</span></div>
+            <div class="mi"><span class="ic" style="background:#FFF1E5">🎧</span>联系客服<span class="arw">›</span></div>
+            <div class="mi"><span class="ic" style="background:#E5F5EC">✏️</span>意见反馈<span class="arw">›</span></div>
+            <div class="mi"><span class="ic" style="background:#F0E6FF">🚲</span>骑手申请与审核<span class="hint" style="color:var(--primary-deep);font-weight:800">去申请</span><span class="arw">›</span></div>
+            <div class="mi"><span class="ic" style="background:#F5EADC">🛡️</span>服务规则与隐私说明<span class="arw">›</span></div>
+            <div class="mi"><span class="ic" style="background:#FFF1E5">⇄</span>申请变更校区<span class="arw">›</span></div>
+          </div>
+        </div>
+        <div class="mi" style="padding:16px 4px 0;font-size:13px;color:var(--muted)">外观</div>
+        <div class="card" style="margin-top:10px;border-radius:18px;padding:14px 16px;display:flex;align-items:center;font-size:14px;font-weight:700">
+          深色模式
+          <span class="seg"><i class="on">跟随系统</i><i>浅色</i><i>深色</i></span>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tb"><span class="ico">⌂</span>首页</div>
+        <div class="tb"><span class="ico">▤</span>订单</div>
+        <div class="tb on"><span class="ico">☺</span>我的</div>
+      </div>
+    </div>
+    <figcaption>04 · 我的</figcaption>
+  </figure>
+</main>
+
+<section class="notes">
+  <div class="note"><h4>手写批注 · 逐条回应</h4>
+    <ul>
+      <li>「图例」→ 上传区内置示例缩略图（墨线描边 + 绿✓），文案「看看合格图例 ›」。</li>
+      <li>「超大件」→ 独立贴纸条：30kg+ / 冰箱洗衣机，「找客服估价」就在旁边。</li>
+      <li>「快递1、2金钱区分」→ 卡片右上角单件价格 + 费用明细分行；票券打孔线把「明细」与「应付」分开，金额感更强。</li>
+      <li>「缩短」→ 首页首屏完成下单主路径，当前订单状态一眼可读。</li>
+    </ul>
+  </div>
+  <div class="note"><h4>记忆点与差异</h4>
+    <ul>
+      <li>票券打孔线：费用卡片和订单卡片都有「撕票」细节。</li>
+      <li>贴纸徽章微旋转（-2°~2°）：爆单提醒、预计时间像手贴的小标签。</li>
+      <li>条纹 Hero + 描边包裹 emoji：活泼但克制，不堆 3D 元素。</li>
+    </ul>
+  </div>
+  <div class="note"><h4>落地提示</h4>
+    <ul>
+      <li>描边 + 硬投影在低端安卓上渲染开销极低，无模糊阴影。</li>
+      <li>对比度：暖墨 #241505 / 奶油底 ≈ 13:1；描边文字均 ≥ 4.5:1。</li>
+      <li>如觉得「贴纸感」过强，可把描边降为 1.5px、去掉旋转，即成中间态。</li>
+    </ul>
+  </div>
+</section>
+
+</body>
+</html>

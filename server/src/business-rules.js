@@ -24,6 +24,7 @@ function formatDormBuilding(value, campus) {
   const keys = (cfg && cfg.buildingKeys) || CAMPUS_CONFIG.nanhai.buildingKeys
   const building = raw.replace(/(?:号楼|号栋|栋)$/u, '').toUpperCase()
   if (!keys.includes(building)) return ''
+  if (building === '教师公寓A座' || building === '教师公寓B座') return building
   // 南海（或未指定校区时按南海默认）的 25 显示为「25号楼」；广轻工等纯数字校区显示「25栋」
   if (cfg && cfg.id === 'gqg' && building === '东一') return '东1栋'
   return (!cfg || cfg.id === 'nanhai') && building === '25' ? '25号楼' : `${building}栋`
