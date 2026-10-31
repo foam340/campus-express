@@ -151,6 +151,22 @@ async function main() {
     }), error => error.code === 'INVALID_BUILDING')
     assert.equal(invalidEastOne.writes.length, 0)
   }
+  for (const building of ['教师公寓A座', '教师公寓B座']) {
+    const profile = { ...eastOneProfile, campus: 'nanhai', building }
+    assert.equal(require('../utils/validators').validateRegistration(profile), '')
+    const registration = harness()
+    const result = await registration.miniAuth.register(profile)
+    assert.equal(result.user.building, building, 'Teacher apartment name must not gain a 栋 suffix')
+    assert.equal(registration.users[0].building, building)
+    assert(getCampusConfig('nanhai').grabRules.genderRestriction.exemptBuildings.includes(building))
+    for (const campus of ['shipai', 'gqg']) {
+      const rejected = harness()
+      await assert.rejects(rejected.invoke('/auth/register', {
+        ...profile, campus, registrationToken: rejected.registrationToken
+      }), error => error.code === 'INVALID_BUILDING')
+      assert.equal(rejected.writes.length, 0)
+    }
+  }
   console.log('Review registration checks passed: real client bootstrap/session and backend route validation, default campus persistence, strict campus rejection, normal-mode isolation, existing users in three campuses and GQG East One building round-trip.')
 }
 main().catch(error => { console.error(error); process.exitCode = 1 })

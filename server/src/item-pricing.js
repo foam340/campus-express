@@ -1,3 +1,4 @@
+const { getCampusConfig } = require('./campus-config')
 const ITEM_SCOPES = Object.freeze(['campus', 'campus_7', 'off_campus'])
 const ITEM_SIZES = Object.freeze(['small', 'medium', 'large'])
 const ITEMIZED_PRICING_CURRENT_VERSION = 3
@@ -66,7 +67,10 @@ function calculateItemizedPrice(items, urgency, noUpstairs, settings, address = 
   const urgencyFeeCents = urgency === 'urgent' ? settingCents(settings, 'item_urgent_fee')
     : urgency === 'soon' ? moneyToCents(SOON_URGENCY_FEE) : 0
   const building9 = building9Fee !== false && normalizedBuilding(address.building) === '9'
-  const buildingFeeCents = building9 ? optionalSettingCents(settings, 'item_building_9_fee') : 0
+  const campusCfg = getCampusConfig(address.campus || settings.campus)
+  const distanceBuilding = campusCfg && (campusCfg.distanceFeeBuildings || []).includes(normalizedBuilding(address.building))
+  const buildingFeeCents = distanceBuilding ? moneyToCents(campusCfg.distanceFee)
+    : building9 ? optionalSettingCents(settings, 'item_building_9_fee') : 0
   let doorFeeCents = 0
   if (!noUpstairs) {
     const baseDoorFeeCents = settingCents(settings, 'item_door_fee')

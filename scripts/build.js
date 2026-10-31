@@ -27,7 +27,7 @@ fs.rmSync(target, {recursive:true, force:true})
 fs.mkdirSync(target, {recursive:true})
 // .claude / .agents 是本地工具目录（Claude Code 的配置与 skills），不参与小程序运行，但曾被整目录复制进
 // dist/production 并随包上传微信（dist/production/.claude/settings.local.json 实际存在过）。新增工具目录一律加这里。
-const ignored = new Set(['dist','node_modules','.git','.vscode','.claude','.agents','.deploy-tmp','scripts','deploy','docs','admin-web','server','design-prototypes'])
+const ignored = new Set(['dist','node_modules','.git','.vscode','.claude','.agents','.workbuddy','.deploy-tmp','scripts','deploy','docs','admin-web','server','design-prototypes','ui-proposals'])
 const ignoredFiles = new Set(['package.json','package-lock.json','project.private.config.json','jsconfig.json','README.md','CHANGELOG.md'])
 const allowedExtensions = new Set(['.js','.json','.wxml','.wxss','.webp','.png','.jpg','.jpeg','.svg'])
 

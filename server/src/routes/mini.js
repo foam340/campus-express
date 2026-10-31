@@ -702,7 +702,7 @@ async function itemizedPricing(executor, items, urgency, noUpstairs, address, re
     throw new HttpError(409, '价格规则已更新，请重新进入小程序后再下单', 'PRICING_VERSION_MISMATCH')
   }
   const campusCfg = getCampusConfig(campus)
-  return calculateItemizedPrice(items, urgency, noUpstairs, Object.assign({}, current, { item_pricing_version: requestedVersion }), address, Boolean(campusCfg && campusCfg.building9Fee))
+  return calculateItemizedPrice(items, urgency, noUpstairs, Object.assign({}, current, { item_pricing_version: requestedVersion }), { ...address, campus }, Boolean(campusCfg && campusCfg.building9Fee))
 }
 
 async function readServiceStatus(executor = pool) {

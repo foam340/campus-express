@@ -15,8 +15,8 @@
 const CAMPUSES = Object.freeze(['nanhai', 'shipai', 'gqg'])
 const DEFAULT_CAMPUS = CAMPUSES[0]
 
-// —— 南海宿舍楼（归一化键：纯数字，1–9、25）——
-const NANHAI_BUILDING_KEYS = Object.freeze(['1', '2', '3', '4', '5', '6', '7', '8', '9', '25'])
+// —— 南海宿舍楼（数字键1–9、25，教师公寓保留完整名称）——
+const NANHAI_BUILDING_KEYS = Object.freeze(['1', '2', '3', '4', '5', '6', '7', '8', '9', '25', '教师公寓A座', '教师公寓B座'])
 // —— 石牌宿舍楼（原始键：完整中文楼栋名，32 栋）——
 const SHIPAI_BUILDING_KEYS = Object.freeze([
   '东2栋', '东3栋', '东4栋', '东5栋', '东9栋', '东10栋', '东11栋', '东12栋', '东13栋', '东14栋',
@@ -62,7 +62,7 @@ const CAMPUS_CONFIG = Object.freeze({
     buildingGender: NANHAI_BUILDING_GENDER, // 楼栋性别表；null = 不标性别
     grabRules: Object.freeze({
       // 送上楼时：南海 = 同性限制（9栋豁免，§71③-补）；石牌 = 仅本栋。
-      genderRestriction: Object.freeze({ enabled: true, exemptBuildings: Object.freeze(['9']) }),
+      genderRestriction: Object.freeze({ enabled: true, exemptBuildings: Object.freeze(['9', '教师公寓A座', '教师公寓B座']) }),
       ownBuildingOnly: false
     }),
     building9Fee: true,                  // 9栋特殊规则（+0.5、门口费不看楼层）——南海特有
@@ -90,6 +90,8 @@ const CAMPUS_CONFIG = Object.freeze({
   gqg: Object.freeze({
     id: 'gqg',
     label: '广轻工南海北区',
+    distanceFeeBuildings: Object.freeze(['东一', '东1', '东2']),
+    distanceFee: 0.5,
     hasOffCampus: true,                 // 有校内/校外件（定价同南海）
     buildingKeys: GQG_BUILDING_KEYS,    // 楼栋白名单（归一化键，1–48、东一、东2）
     buildingKeysNumeric: true,

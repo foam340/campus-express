@@ -27,7 +27,7 @@ function settingsFor(campus) {
     item_medium_campus_price: 5, item_medium_off_campus_price: 5,
     item_large_campus_price: 8, item_large_off_campus_price: 8,
     item_door_fee: 2, item_upper_floor_door_fee: 2
-  } : {}), campus }
+  } : campus === 'gqg' ? { item_door_fee: 0.5, item_upper_floor_door_fee: 1 } : {}), campus }
 }
 
 function clientPricing(settings) {
@@ -72,8 +72,7 @@ function testParity() {
   const { page, normalizePricing } = loadPage()
   page.data.reviewMode = false
   let cases = 0
-  // 广轻工新前端已提前改价，线上后端按负责人要求仍保留旧价，单独验证暂存契约。
-  for (const campus of ['nanhai', 'shipai']) {
+  for (const campus of ['nanhai', 'shipai', 'gqg']) {
     const settings = settingsFor(campus)
     const cfg = getCampusConfig(campus)
     for (const cachedVersion of [2, 3]) for (const size of ['small', 'medium', 'large']) {
@@ -106,10 +105,10 @@ function testParity() {
   return cases
 }
 
-function testGqgStagedFrontend() {
+function testGqgAlignedPricing() {
   const { page, normalizePricing } = loadPage()
   page.data.reviewMode = false
-  const settings = settingsFor('gqg') // 故意用旧服务端费率，模拟提审期间线上状态。
+  const settings = settingsFor('gqg')
   let cases = 0
   for (const building of ['1栋', '9栋', '东一栋', '东1栋', '东2栋']) {
     for (const room of ['121', '321', '421']) for (const toDoor of [false, true]) {
@@ -126,15 +125,16 @@ function testGqgStagedFrontend() {
           assert.equal(Number(page.data.deliveryFeeText), doorFee)
           assert.equal(Number(page.data.buildingFeeText), buildingFee)
           assert.equal(Number(page.data.totalText), expected)
-          const oldServer = calculateItemizedPrice(items, urgency, !toDoor, { ...settings, item_pricing_version: 3 }, user, false)
-          assert.equal(oldServer.buildingFee, 0, 'Backend distance fee must remain disabled until approval')
-          assert.equal(oldServer.doorFee, toDoor ? (Number(room[0]) >= 4 ? 1.5 : 1) : 0, 'Backend retains old door prices')
+          const server = calculateItemizedPrice(items, urgency, !toDoor, { ...settings, item_pricing_version: 3 }, user, false)
+          assert.equal(server.buildingFee, buildingFee)
+          assert.equal(server.doorFee, doorFee)
+          assert.equal(server.total, expected, 'Approved frontend and backend new prices must agree')
           cases++
         }
       }
     }
   }
-  console.log(`GQG staged frontend checks passed: ${cases} new-price cases; backend remains at old prices pending approval.`)
+  console.log(`GQG pricing checks passed: ${cases} frontend/backend new-price cases including East dorm aliases and floor boundaries.`)
 }
 
 function testBoundariesAndCoupons() {
@@ -231,6 +231,31 @@ function routeHarness(campus, version, quote, coupon, now = '2026-10-20T04:00:00
 }
 
 async function testRoutes() {
+  // Validate the real creation route passes authenticated campus into pricing,
+  // persists East-dorm fees and calculates GQG's existing 20% commission after bundle discount.
+  for (const building of ['东一', '东2']) for (const room of ['321', '421']) {
+    for (const noUpstairs of [false, true]) for (const couponAmount of [0, 2]) {
+      const coupon = couponAmount ? { id: 'gqg-coupon', amount: couponAmount, min_spend: 0, campus: 'gqg' } : null
+      const fixture = routeHarness('gqg', 3, 0, coupon)
+      fixture.settings.commission_rate = 20
+      Object.assign(fixture.user, { building, room })
+      Object.assign(fixture.body, { building, room, noUpstairs })
+      const doorFee = noUpstairs ? 0 : room === '421' ? 1 : 0.5
+      const before = 1 + 4 + 0.5 + doorFee
+      const total = before - discountFor(before)
+      fixture.body.quotedTotal = total - couponAmount
+      await fixture.order()
+      const row = fixture.rows[0]
+      assert.equal(row.building_fee, 0.5)
+      assert.equal(row.door_fee, doorFee)
+      assert.equal(row.original_price, total)
+      assert.equal(row.coupon_discount, couponAmount)
+      assert.equal(row.rider_income, Number((total * 0.8).toFixed(2)))
+      fixture.body.quotedTotal += 1
+      await assert.rejects(fixture.order, error => error.code === 'PRICE_QUOTE_CHANGED')
+      assert.equal(fixture.rows.length, 1, 'Mismatched quote must not create another order')
+    }
+  }
   for (const campus of ['nanhai', 'shipai', 'gqg']) for (const version of [2, 3]) {
     const fixture = routeHarness(campus, version, 0)
     const settingsSnapshot = JSON.stringify(fixture.settings)
@@ -333,7 +358,7 @@ async function testDeliveryOptions() {
 
 async function main() {
   const cases = testParity()
-  testGqgStagedFrontend()
+  testGqgAlignedPricing()
   testBoundariesAndCoupons()
   await testRoutes()
   await testDeliveryOptions()
