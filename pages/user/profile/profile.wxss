@@ -8,10 +8,10 @@
 /* ---------- 合并卡：个人信息 + 默认地址 ---------- */
 .me-card { padding:26rpx 24rpx; border:var(--border-ink-width) solid var(--color-ink); border-radius:32rpx; background:var(--color-surface); box-shadow:var(--shadow-sticker); }
 .profile-head { display:flex; align-items:center; padding:6rpx 4rpx 4rpx; }
-.avatar { display:flex; align-items:center; justify-content:center; width:104rpx; height:104rpx; border-radius:34rpx; color:#ffffff; background:linear-gradient(145deg,#FF8A4D,#FF6B2C); border:var(--border-ink-width) solid var(--color-ink); box-shadow:0 4rpx 0 rgba(36,21,5,.9); font-size:42rpx; font-weight:800; }
+.avatar { display:flex; align-items:center; justify-content:center; width:104rpx; height:104rpx; border-radius:34rpx; color:#ffffff; background:linear-gradient(145deg,#5E93F8,#3478F6); border:var(--border-ink-width) solid var(--color-primary-deep); box-shadow:0 4rpx 0 var(--color-primary-deep); font-size:42rpx; font-weight:800; }
 .profile-copy { flex:1; min-width:0; margin-left:22rpx; }
 .name { margin-bottom:8rpx; color:var(--color-text); font-size:38rpx; font-weight:800; }
-.edit { flex:none; padding:13rpx 22rpx; color:var(--color-primary-deep); background:#ffffff; border:2rpx solid var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); border-radius:18rpx; font-size:23rpx; font-weight:700; }
+.edit { flex:none; padding:13rpx 22rpx; color:var(--color-primary-deep); background:#ffffff; border:2rpx solid var(--color-ink); box-shadow:0 3rpx 0 var(--color-ink); border-radius:18rpx; font-size:23rpx; font-weight:700; }
 /* 票券打孔式的虚线分隔 */
 .me-div { height:0; margin:20rpx 0; border-top:2rpx dashed var(--color-divider); }
 .address-panel { padding:4rpx 4rpx 6rpx; }
@@ -19,7 +19,7 @@
 .address-big { margin:10rpx 0 8rpx; color:var(--color-text); font-size:36rpx; font-weight:800; }
 
 /* ---------- 模式条 ---------- */
-.mode-banner { display:flex; align-items:center; justify-content:space-between; gap:18rpx; margin:22rpx 0; padding:28rpx; color:#ffffff; border:var(--border-ink-width) solid var(--color-ink); border-radius:28rpx; background:linear-gradient(135deg,#3A2A1C,#241505); box-shadow:var(--shadow-sticker); }
+.mode-banner { display:flex; align-items:center; justify-content:space-between; gap:18rpx; margin:22rpx 0; padding:28rpx; color:#ffffff; border:var(--border-ink-width) solid var(--color-ink); border-radius:28rpx; background:linear-gradient(135deg,#1B2A44,#16233B); box-shadow:var(--shadow-sticker); }
 .rider-banner { background:linear-gradient(135deg,#1E6E52,#13563E); }
 .mode-label { color:rgba(255,255,255,.7); }
 .mode-name { margin-top:7rpx; font-size:32rpx; font-weight:800; }
@@ -33,7 +33,7 @@
 .level-cap { flex:none; color:var(--color-text-2); font-size:20rpx; }
 .level-cap text { color:var(--color-primary-deep); font-size:30rpx; font-weight:800; }
 .level-track { height:14rpx; margin-top:22rpx; overflow:hidden; border-radius:999rpx; background:var(--color-divider); }
-.level-progress { height:100%; border-radius:999rpx; background:linear-gradient(90deg,#FF8A4D,#FF6B2C); transition:width .25s ease; }
+.level-progress { height:100%; border-radius:999rpx; background:linear-gradient(90deg,#5E93F8,#3478F6); transition:width .25s ease; }
 .level-meta { display:flex; justify-content:space-between; margin-top:11rpx; color:var(--color-text-2); font-size:19rpx; }
 .level-rule { margin-top:18rpx; padding-top:17rpx; color:var(--color-muted); border-top:2rpx dashed var(--color-divider); font-size:20rpx; }
 
@@ -41,7 +41,7 @@
 .menu-card { padding:0 28rpx; border:var(--border-ink-width) solid var(--color-ink); border-radius:30rpx; background:var(--color-surface); box-shadow:var(--shadow-sticker); }
 .menu-item { display:flex; align-items:center; min-height:108rpx; border-bottom:2rpx dashed var(--color-divider); }
 .menu-item:last-child { border-bottom:0; }
-.menu-icon { display:flex; flex:none; align-items:center; justify-content:center; width:54rpx; height:54rpx; margin-right:20rpx; border-radius:17rpx; border:2rpx solid rgba(36,21,5,.18); }
+.menu-icon { display:flex; flex:none; align-items:center; justify-content:center; width:54rpx; height:54rpx; margin-right:20rpx; border-radius:17rpx; border:2rpx solid rgba(22,35,59,.18); }
 .menu-icon image { display:block; width:31rpx; height:31rpx; }
 .blue { color:var(--color-primary-deep); background:var(--color-primary-soft); }
 .orange { color:var(--color-warning); background:var(--color-warning-soft); }
@@ -57,7 +57,7 @@
 .menu-title { margin:30rpx 6rpx 14rpx; color:var(--color-muted); font-size:22rpx; font-weight:700; }
 
 /* ---------- 规则弹窗 ---------- */
-.rules-mask { position:fixed; z-index:200; left:0; top:0; right:0; bottom:0; background:rgba(36,21,5,.56); display:flex; align-items:flex-end; }
+.rules-mask { position:fixed; z-index:200; left:0; top:0; right:0; bottom:0; background:rgba(22,35,59,.56); display:flex; align-items:flex-end; }
 .rules-modal { width:100%; max-height:85vh; border-radius:36rpx 36rpx 0 0; border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); display:flex; flex-direction:column; overflow:hidden; }
 .rules-head { display:flex; align-items:center; padding:28rpx 28rpx 0; }
 .rules-close { width:52rpx; height:52rpx; line-height:52rpx; text-align:center; color:var(--color-muted); font-size:30rpx; }
