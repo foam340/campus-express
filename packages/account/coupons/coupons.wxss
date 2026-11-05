@@ -1,5 +1,5 @@
 .coupon-page { padding-top:24rpx; }
-.coupon-hero { display:flex; align-items:center; justify-content:space-between; padding:34rpx; color: var(--color-on-accent); border-radius:30rpx; background:linear-gradient(135deg,var(--color-primary),#6a9fff); box-shadow:0 16rpx 38rpx rgba(47,109,246,.18); }
+.coupon-hero { display:flex; align-items:center; justify-content:space-between; padding:34rpx; color: var(--color-on-accent); border-radius:30rpx; background:linear-gradient(135deg,var(--color-primary),#5E93F8); box-shadow:0 16rpx 38rpx rgba(52,120,246,.18); }
 .hero-label { color:rgba(255,255,255,.78); font-size:23rpx; }
 .hero-count { margin-top:5rpx; font-size:58rpx; line-height:1.2; font-weight:800; }
 .hero-count text { margin-left:7rpx; font-size:24rpx; font-weight:600; }

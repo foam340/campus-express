@@ -16,7 +16,7 @@
 .section-head { display:flex; align-items:center; justify-content:space-between; margin:4rpx 4rpx 18rpx; }
 .section-head>view { display:flex; align-items:center; gap:13rpx; }
 /* 贴纸方块：墨底 + 纸色字（对齐原型 .sec-head .idx：墨底杏字） */
-.section-index { display:inline-flex; align-items:center; justify-content:center; width:44rpx; height:44rpx; border-radius:14rpx; color:var(--color-bg); background:var(--color-ink); border:var(--border-ink-width) solid var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); font-size:22rpx; font-weight:800; }
+.section-index { display:inline-flex; align-items:center; justify-content:center; width:44rpx; height:44rpx; border-radius:14rpx; color:var(--color-bg); background:var(--color-ink); border:var(--border-ink-width) solid var(--color-ink); box-shadow:0 3rpx 0 var(--color-ink); font-size:22rpx; font-weight:800; }
 .section-name { color:var(--color-text); font-size:31rpx; font-weight:800; }
 .section-count { color:var(--color-text-2); font-size:23rpx; }
 
@@ -30,7 +30,7 @@
 .item-title { color:var(--color-text); font-size:27rpx; font-weight:800; }
 .item-state { margin-top:5rpx; color:var(--color-text-2); font-size:21rpx; }
 .item-price { flex:none; color:var(--color-primary-deep); font-size:29rpx; font-weight:850; }
-.edit-pill { flex:none; padding:12rpx 18rpx; border-radius:16rpx; color:var(--color-primary-deep); background:#ffffff; border:2rpx solid var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); font-size:21rpx; font-weight:700; }
+.edit-pill { flex:none; padding:12rpx 18rpx; border-radius:16rpx; color:var(--color-primary-deep); background:#ffffff; border:2rpx solid var(--color-ink); box-shadow:0 3rpx 0 var(--color-ink); font-size:21rpx; font-weight:700; }
 .item-body { padding:6rpx 22rpx 24rpx; border-top:2rpx dashed var(--color-divider); animation:body-enter 160ms var(--ease) both; }
 
 .field-title { display:flex; align-items:center; justify-content:space-between; padding-top:23rpx; color:var(--color-text); font-size:24rpx; font-weight:750; }
@@ -46,7 +46,7 @@
 .upload-unit .field-title { padding-top:0; }
 /* 上传行：单元内的一行（无自己的边框），点击整行触发选图 */
 .single-upload { display:flex; flex-direction:row; align-items:center; justify-content:flex-start; gap:18rpx; min-height:0; margin-top:14rpx; padding:4rpx 0; color:var(--color-text); transition:transform 90ms ease, opacity 90ms ease; }
-.upload-plus { display:flex; flex:none; align-items:center; justify-content:center; width:72rpx; height:72rpx; border-radius:20rpx; color:var(--color-on-accent); background:var(--color-primary); border:2rpx solid var(--color-ink); box-shadow:0 4rpx 0 rgba(36,21,5,.9); font-size:38rpx; font-weight:400; line-height:1; }
+.upload-plus { display:flex; flex:none; align-items:center; justify-content:center; width:72rpx; height:72rpx; border-radius:20rpx; color:var(--color-on-accent); background:var(--color-primary); border:2rpx solid var(--color-primary-deep); box-shadow:0 4rpx 0 var(--color-primary-deep); font-size:38rpx; font-weight:400; line-height:1; }
 .upload-copy { flex:1; min-width:0; }
 .upload-copy view { color:var(--color-text); font-size:24rpx; font-weight:800; }
 .upload-copy text { display:block; margin-top:6rpx; color:var(--color-text-2); font-size:19rpx; font-weight:400; }
@@ -69,10 +69,10 @@
 .segment view { color:var(--color-text); font-size:24rpx; font-weight:800; }
 .segment text { display:block; margin-top:6rpx; color:var(--color-muted); font-size:18rpx; white-space:nowrap; }
 /* 选中：墨线 + 软橙底 + 底部硬阴影（对齐原型 .chip.on 的 shadow-1） */
-.segment.selected { border-color:var(--color-ink); background:var(--color-primary-soft); box-shadow:0 6rpx 0 rgba(36,21,5,.9); }
+.segment.selected { border-color:var(--color-ink); background:var(--color-primary-soft); box-shadow:var(--shadow-sticker); }
 .segment.selected view { color:var(--color-primary-deep); }
 .segment.selected text { color:var(--color-primary-deep); }
-.segment.urgent-selected { border-color:var(--color-ink); background:var(--color-warning-soft); box-shadow:0 6rpx 0 rgba(36,21,5,.9); }
+.segment.urgent-selected { border-color:var(--color-ink); background:var(--color-warning-soft); box-shadow:var(--shadow-sticker); }
 .segment.urgent-selected view { color:var(--color-warning); }
 .urgency-option text { white-space:normal; line-height:1.5; }
 .urgency-option .urgency-price { margin-top:10rpx; font-size:20rpx; font-weight:700; }
@@ -88,7 +88,7 @@
 
 .card-actions { display:flex; align-items:center; justify-content:space-between; gap:18rpx; margin-top:24rpx; }
 .delete-action { flex:none; padding:20rpx 10rpx; color:var(--color-danger); font-size:22rpx; }
-.finish-action { display:flex; flex:1; align-items:center; justify-content:center; height:76rpx; border-radius:20rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-ink); box-shadow:var(--shadow-sticker); font-size:25rpx; font-weight:800; transition:transform 90ms ease, opacity 90ms ease; }
+.finish-action { display:flex; flex:1; align-items:center; justify-content:center; height:76rpx; border-radius:20rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-primary-deep); box-shadow:0 6rpx 0 var(--color-primary-deep); font-size:25rpx; font-weight:800; transition:transform 90ms ease, opacity 90ms ease; }
 .finish-action:active { transform:translateY(4rpx); box-shadow:none; }
 
 .add-card { display:flex; align-items:center; justify-content:center; gap:16rpx; min-height:100rpx; margin:20rpx 0 40rpx; border:2rpx dashed var(--color-primary); border-radius:26rpx; color:var(--color-primary-deep); background:var(--color-primary-soft); transition:transform 90ms ease, opacity 90ms ease; }
@@ -98,9 +98,11 @@
 .add-card-disabled { opacity:.45; }
 
 .order-section-head { margin-top:4rpx; }
-.order-card,.summary-card { margin-bottom:34rpx; padding:22rpx; border-radius:30rpx; border:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:var(--shadow-sticker); }
-/* 费用卡要裁掉打孔圆溢出卡片的部分，孔才是「穿孔」而不是贴在外面的白圆 */
-.summary-card { position:relative; overflow:hidden; }
+.order-card { margin-bottom:34rpx; padding:22rpx; border-radius:30rpx; border:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:var(--shadow-sticker); }
+/* 费用卡：边框改用「内描边（inset shadow）」而不是 border —— 这样打孔圆能盖住描边、真正切断左右竖边线。
+   border 画在 overflow:hidden 的裁切边界之外，子元素缺口盖不到它，竖边线就断不开（之前的现象）。
+   外描边（贴纸硬阴影）保留，内描边承担「边线 + 被孔切断」两件事。 */
+.summary-card { margin-bottom:34rpx; padding:22rpx; border-radius:30rpx; position:relative; overflow:hidden; background:var(--color-surface); box-shadow:var(--shadow-sticker), inset 0 0 0 var(--border-ink-width) var(--color-ink); }
 .sub-divider { height:0; margin:24rpx 0; border-top:2rpx dashed var(--color-divider); }
 
 .address-line { display:flex; align-items:center; gap:15rpx; }
@@ -118,9 +120,9 @@
 /* 顶部滚动进度：一条细线连接三个点（无轨道块），经过的点点亮 */
 .pub-progress { position:sticky; top:0; z-index:6; background:var(--color-bg); margin:0 0 2rpx; padding:9rpx 0; }
 .ptrack { position:relative; height:2rpx; border-radius:999rpx; background:var(--color-divider); }
-.pfill { height:100%; width:0; border-radius:999rpx; background:linear-gradient(90deg,#FF8A4D,#FF6B2C); transition:width .12s linear; }
+.pfill { height:100%; width:0; border-radius:999rpx; background:linear-gradient(90deg,#5E93F8,#3478F6); transition:width .12s linear; }
 .pdot { position:absolute; top:50%; width:10rpx; height:10rpx; border-radius:50%; background:var(--color-surface); border:2rpx solid var(--color-divider); transform:translate(-50%,-50%); z-index:2; transition:background-color .2s, border-color .2s; }
-.pdot.on { background:var(--color-primary); border-color:var(--color-ink); }
+.pdot.on { background:var(--color-primary); border-color:var(--color-primary-deep); }
 
 .summary-row { display:flex; align-items:center; justify-content:space-between; padding:8rpx 2rpx; color:var(--color-text-2); font-size:23rpx; }
 .summary-row text:last-child { color:var(--color-text); font-weight:700; }
@@ -128,7 +130,7 @@
 /* 「满5减0.5…」提示：浅暖底 + 橙字 */
 .discount-hint { margin-top:14rpx; padding:15rpx 17rpx; border:2rpx solid var(--color-warning-soft); border-radius:16rpx; color:var(--color-warning); background:var(--color-warning-soft); font-size:20rpx; }
 /* 超大件提示条：左描述 + 右「联系客服 ›」链接式小字（左侧文字不换行，一行放下） */
-.size-hint { display:flex; align-items:center; justify-content:space-between; gap:16rpx; margin-top:14rpx; padding:15rpx 17rpx; border:2rpx solid rgba(255,107,44,.32); border-radius:16rpx; color:var(--color-warning); background:var(--color-warning-soft); font-size:20rpx; font-weight:600; }
+.size-hint { display:flex; align-items:center; justify-content:space-between; gap:16rpx; margin-top:14rpx; padding:15rpx 17rpx; border:2rpx solid rgba(52,120,246,.32); border-radius:16rpx; color:var(--color-warning); background:var(--color-warning-soft); font-size:20rpx; font-weight:600; }
 .size-hint>text { flex:1; min-width:0; white-space:nowrap; }
 /* 右侧「联系客服 ›」：button 需要抹平小程序默认样式 */
 .size-hint-action { flex:none; padding:0; margin:0; border:0; background:transparent; color:var(--color-primary-deep); font-size:20rpx; font-weight:800; line-height:1.4; text-align:right; }
@@ -145,9 +147,11 @@
 .coupon-arrow { color:var(--color-muted); font-size:25rpx; }
 
 /* 合计：票根打孔线（对齐原型 .perf 的做法）——
-   负 margin 把虚线拉通到卡片两侧内缘，孔是「奶底 + 墨环」的圆、圆心压在卡片边缘上，
-   被费用卡的 overflow:hidden 裁掉外侧一半，剩下才是干净的半圆缺口 */
-.summary-total { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:18rpx; margin:20rpx -22rpx 0; padding:22rpx 22rpx 0; border-top:2rpx dashed var(--color-divider); }
+   孔是「奶底 + 墨环」的圆、圆心压在卡片边缘上，被费用卡的 overflow:hidden 裁掉外侧一半，
+   剩下才是干净的半圆缺口；
+   撕票线不再用 border-top（会一直顶到孔环上），改用背景平铺绘制虚线：
+   两端各留 30rpx（孔内缘 16rpx + 14rpx 断口），像真实小票一样「线不碰孔」 */
+.summary-total { position:relative; display:flex; align-items:flex-end; justify-content:space-between; gap:18rpx; margin:20rpx -22rpx 0; padding:22rpx 22rpx 0; background-image:repeating-linear-gradient(90deg, var(--color-divider) 0, var(--color-divider) 10rpx, transparent 10rpx, transparent 20rpx); background-repeat:no-repeat; background-size:calc(100% - 60rpx) 2rpx; background-position:30rpx 0; }
 .summary-total>view { flex:1; }
 .summary-total>view>view { color:var(--color-text); font-size:26rpx; font-weight:800; }
 .summary-total>view>text { display:block; margin-top:7rpx; color:var(--color-muted); font-size:18rpx; line-height:1.45; }
@@ -158,11 +162,11 @@
 .summary-total::after { right:-16rpx; }
 
 /* ---------- 底部结算 ---------- */
-.submit-bar { position:fixed; z-index:40; left:0; right:0; bottom:0; display:flex; align-items:center; gap:22rpx; min-height:132rpx; padding:18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:0 -8rpx 24rpx rgba(36,21,5,.10); }
+.submit-bar { position:fixed; z-index:40; left:0; right:0; bottom:0; display:flex; align-items:center; gap:22rpx; min-height:132rpx; padding:18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom)); border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:0 -8rpx 24rpx rgba(22,35,59,.10); }
 .submit-copy { flex:none; min-width:142rpx; }
 .submit-copy>text { color:var(--color-muted); font-size:19rpx; }
 .submit-copy>view { margin-top:2rpx; color:var(--color-primary-deep); font-size:36rpx; font-weight:850; }
-.submit-button { display:flex; flex:1; align-items:center; justify-content:center; height:86rpx; border-radius:22rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-ink); box-shadow:var(--shadow-sticker); font-size:27rpx; font-weight:800; transition:transform 90ms ease, opacity 90ms ease; }
+.submit-button { display:flex; flex:1; align-items:center; justify-content:center; height:86rpx; border-radius:22rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-primary-deep); box-shadow:0 6rpx 0 var(--color-primary-deep); font-size:27rpx; font-weight:800; transition:transform 90ms ease, opacity 90ms ease; }
 .submit-button:active { transform:translateY(4rpx); box-shadow:none; }
 .submit-incomplete { color:var(--color-text-2); background:var(--color-surface-2); box-shadow:none; }
 
@@ -170,9 +174,9 @@
 .button-pressed { transform:scale(.98); opacity:.88; }
 
 /* ---------- 优惠券半屏 / 支付二维码 ---------- */
-.coupon-mask { position:fixed; z-index:70; left:0; top:0; right:0; bottom:0; pointer-events:none; opacity:0; background:rgba(36,21,5,.55); transition:opacity .2s var(--ease); }
+.coupon-mask { position:fixed; z-index:70; left:0; top:0; right:0; bottom:0; pointer-events:none; opacity:0; background:rgba(22,35,59,.55); transition:opacity .2s var(--ease); }
 .coupon-mask.show { pointer-events:auto; opacity:1; }
-.coupon-sheet { position:fixed; z-index:80; left:0; right:0; bottom:0; max-height:76vh; padding:28rpx 26rpx calc(24rpx + env(safe-area-inset-bottom)); border-radius:34rpx 34rpx 0 0; border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:0 -18rpx 56rpx rgba(36,21,5,.22); transform:translateY(105%); transition:transform .24s var(--ease); }
+.coupon-sheet { position:fixed; z-index:80; left:0; right:0; bottom:0; max-height:76vh; padding:28rpx 26rpx calc(24rpx + env(safe-area-inset-bottom)); border-radius:34rpx 34rpx 0 0; border-top:var(--border-ink-width) solid var(--color-ink); background:var(--color-surface); box-shadow:0 -18rpx 56rpx rgba(22,35,59,.22); transform:translateY(105%); transition:transform .24s var(--ease); }
 .coupon-sheet.show { transform:translateY(0); }
 .coupon-sheet-head { display:flex; align-items:flex-start; justify-content:space-between; gap:20rpx; padding:0 4rpx 22rpx; }
 .coupon-sheet-head>view:first-child>view { color:var(--color-text); font-size:31rpx; font-weight:850; }
@@ -192,7 +196,7 @@
 .coupon-none-option { display:flex; align-items:center; justify-content:space-between; margin-top:4rpx; padding:22rpx 20rpx; border-radius:20rpx; color:var(--color-text-2); background:var(--color-surface-2); font-size:23rpx; font-weight:700; }
 .coupon-none-option.selected { color:var(--color-primary-deep); background:var(--color-primary-soft); }
 
-.pay-qr-mask { position:fixed; z-index:90; left:0; top:0; right:0; bottom:0; pointer-events:none; opacity:0; background:rgba(36,21,5,.55); transition:opacity .22s var(--ease); }
+.pay-qr-mask { position:fixed; z-index:90; left:0; top:0; right:0; bottom:0; pointer-events:none; opacity:0; background:rgba(22,35,59,.55); transition:opacity .22s var(--ease); }
 .pay-qr-mask.show { pointer-events:auto; opacity:1; }
 .pay-qr-modal { position:fixed; z-index:100; left:0; right:0; bottom:0; transform:translateY(105%); transition:transform .24s var(--ease); }
 .pay-qr-modal.show { transform:translateY(0); }
@@ -201,7 +205,7 @@
 .qr-price { margin:12rpx 0 30rpx; color:var(--color-primary-deep); font-size:48rpx; font-weight:800; }
 .qr-image { width:300rpx; height:300rpx; margin:0 auto; border:2rpx solid var(--color-divider); border-radius:16rpx; }
 .qr-tip { margin-top:16rpx; color:var(--color-muted); font-size:22rpx; }
-.qr-done-btn { display:flex; align-items:center; justify-content:center; width:100%; height:88rpx; margin-top:28rpx; padding:0; border-radius:22rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-ink); box-shadow:var(--shadow-sticker); font-size:29rpx; font-weight:700; line-height:1; }
+.qr-done-btn { display:flex; align-items:center; justify-content:center; width:100%; height:88rpx; margin-top:28rpx; padding:0; border-radius:22rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-primary-deep); box-shadow:0 6rpx 0 var(--color-primary-deep); font-size:29rpx; font-weight:700; line-height:1; }
 
 @keyframes card-enter { from { opacity:0; transform:translateY(8rpx); } to { opacity:1; transform:translateY(0); } }
 @keyframes body-enter { from { opacity:0; transform:translateY(-6rpx); } to { opacity:1; transform:translateY(0); } }

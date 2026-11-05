@@ -1,54 +1,55 @@
-/* 设计令牌：暖橙快递站（贴纸感 / 票券感）。
+/* 设计令牌：清爽蓝快递站（贴纸感 / 票券感）。
+   主色对齐小程序图标蓝 #3478F6，语义色对齐图标组配套色（青绿 #109068 / 紫 #7058C8）。
    浅色默认，深色在 @media (prefers-color-scheme: dark) 下覆盖。
    手动切换（跟随系统/浅色/深色）通过 page-meta 的 page-style 注入同一套变量，
    变量值与 utils/theme.js 的 LIGHT_VARS / DARK_VARS 严格保持一致（改一处要同步另一处）。
 
    命名沿用旧版一套（--color-* / --shadow-color / --radius-* / --page-gap），
-   老页面直接换肤不报错；新增的几条是暖橙方案专属：
-     --color-ink / --border-ink-width / --shadow-sticker  贴纸感墨线与硬阴影
+   老页面直接换肤不报错；贴纸方案专属：
+     --color-ink / --border-ink-width / --shadow-sticker  贴纸感墨线与硬阴影（冷墨蓝）
      --color-primary-deep                                 主色加深，用于金额/强调文字
      --color-info / --color-info-soft                     冷青语义色（校外取件点等需与主色区分的场景） */
 page {
   /* 背景与表面 */
-  --color-bg: #FFF7EE;
+  --color-bg: #F1F5FC;
   --color-surface: #FFFFFF;
-  --color-surface-2: #FFF1E5;
-  --color-divider: #EBDCCB;
-  --color-tabbar: rgba(255, 252, 246, 0.9);
+  --color-surface-2: #E8EEF8;
+  --color-divider: #D8E2F0;
+  --color-tabbar: rgba(248, 251, 255, 0.92);
 
   /* 文字层级 */
-  --color-text: #241505;
-  --color-text-2: rgba(36, 21, 5, 0.62);
-  --color-muted: rgba(36, 21, 5, 0.45);
-  --color-hint: rgba(36, 21, 5, 0.34);
+  --color-text: #16233B;
+  --color-text-2: rgba(22, 35, 59, 0.62);
+  --color-muted: rgba(22, 35, 59, 0.45);
+  --color-hint: rgba(22, 35, 59, 0.34);
 
   /* 主色与语义色 */
-  --color-primary: #FF6B2C;
-  --color-primary-soft: #FFEDE0;
+  --color-primary: #3478F6;
+  --color-primary-soft: #E4EDFD;
   --color-on-accent: #FFFFFF;
-  --color-success: #1E9E6A;
-  --color-success-soft: #E5F5EC;
+  --color-success: #109068;
+  --color-success-soft: #E3F2EE;
   --color-warning: #E8890C;
   --color-warning-soft: #FFF1E5;
   --color-danger: #D64545;
   --color-danger-soft: #FDECEC;
-  --color-purple: #7C6BD6;
-  --color-purple-soft: #EFEBFB;
-  --color-gray-soft: #F0E6DA;
-  --color-tabbar-indicator: #FFEDE0;
-  --color-warm: #D94E10;
+  --color-purple: #7058C8;
+  --color-purple-soft: #ECE9FA;
+  --color-gray-soft: #E9EFF8;
+  --color-tabbar-indicator: #E4EDFD;
+  --color-warm: #C97A0A;
 
-  /* 暖橙方案专属 */
-  --color-ink: #241505;
+  /* 贴纸方案专属 */
+  --color-ink: #16233B;
   --border-ink-width: 2rpx;
-  --shadow-sticker: 0 6rpx 0 rgba(36, 21, 5, 0.9);
-  --color-primary-deep: #D94E10;
+  --shadow-sticker: 0 6rpx 0 rgba(22, 35, 59, 0.9);
+  --color-primary-deep: #1D5BD8;
   --color-info: #0E8A8A;
   --color-info-soft: #E4F5F5;
   --tab-active-icon-filter: brightness(0) saturate(100%);
 
   /* 阴影 */
-  --shadow-color: rgba(120, 66, 20, 0.18);
+  --shadow-color: rgba(30, 58, 110, 0.16);
 
   /* 动效 / 布局 */
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
@@ -59,36 +60,36 @@ page {
 
 @media (prefers-color-scheme: dark) {
   page {
-    --color-bg: #17110C;
-    --color-surface: #241B14;
-    --color-surface-2: #2E2318;
-    --color-divider: #3B2E22;
-    --color-tabbar: rgba(41, 31, 22, 0.92);
+    --color-bg: #0F1522;
+    --color-surface: #1A2234;
+    --color-surface-2: #253048;
+    --color-divider: #36435E;
+    --color-tabbar: rgba(21, 28, 44, 0.92);
 
-    --color-text: #FFF6EC;
-    --color-text-2: rgba(255, 246, 236, 0.66);
-    --color-muted: rgba(255, 246, 236, 0.48);
-    --color-hint: rgba(255, 246, 236, 0.36);
+    --color-text: #F0F5FE;
+    --color-text-2: rgba(240, 245, 254, 0.66);
+    --color-muted: rgba(240, 245, 254, 0.48);
+    --color-hint: rgba(240, 245, 254, 0.36);
 
-    --color-primary: #FF8B52;
-    --color-primary-soft: rgba(255, 139, 82, 0.22);
+    --color-primary: #5E93F8;
+    --color-primary-soft: rgba(94, 147, 248, 0.24);
     --color-on-accent: #FFFFFF;
-    --color-success: #4CC38A;
-    --color-success-soft: rgba(76, 195, 138, 0.22);
+    --color-success: #3CC08F;
+    --color-success-soft: rgba(60, 192, 143, 0.22);
     --color-warning: #FFB340;
     --color-warning-soft: rgba(255, 179, 64, 0.18);
     --color-danger: #FF6B6B;
     --color-danger-soft: rgba(255, 107, 107, 0.2);
-    --color-purple: #B794F6;
-    --color-purple-soft: rgba(183, 148, 246, 0.22);
-    --color-gray-soft: rgba(240, 230, 218, 0.14);
-    --color-tabbar-indicator: rgba(255, 139, 82, 0.24);
-    --color-warm: #FF9F5A;
+    --color-purple: #9A85EC;
+    --color-purple-soft: rgba(154, 133, 236, 0.22);
+    --color-gray-soft: rgba(233, 239, 248, 0.14);
+    --color-tabbar-indicator: rgba(94, 147, 248, 0.26);
+    --color-warm: #F2A94C;
 
-    --color-ink: #F3E3D0;
+    --color-ink: #E2EBFA;
     --border-ink-width: 2rpx;
     --shadow-sticker: 0 6rpx 0 rgba(0, 0, 0, 0.45);
-    --color-primary-deep: #FFA46B;
+    --color-primary-deep: #8AB4FA;
     --color-info: #4FBDBD;
     --color-info-soft: rgba(79, 189, 189, 0.2);
     --tab-active-icon-filter: brightness(0) saturate(100%) invert(100%);

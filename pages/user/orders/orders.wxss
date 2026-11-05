@@ -7,13 +7,13 @@
 .login-gate-icon { font-size:72rpx; margin-bottom:24rpx; }
 .login-gate-title { color:var(--color-text); font-size:32rpx; font-weight:700; margin-bottom:12rpx; }
 .login-gate-desc { color:var(--color-muted); font-size:24rpx; margin-bottom:36rpx; line-height:1.6; }
-.login-gate-btn { width:360rpx; height:84rpx; line-height:84rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-ink); box-shadow:var(--shadow-sticker); border-radius:24rpx; font-size:28rpx; font-weight:700; }
+.login-gate-btn { width:360rpx; height:84rpx; line-height:84rpx; color:var(--color-on-accent); background:var(--color-primary); border:var(--border-ink-width) solid var(--color-primary-deep); box-shadow:0 6rpx 0 var(--color-primary-deep); border-radius:24rpx; font-size:28rpx; font-weight:700; }
 
-/* 筛选胶囊：未选白底墨线，选中橙底墨线 */
+/* 筛选胶囊：未选白底墨线，选中蓝底深蓝描边（亮蓝上近黑墨线对比过猛，改同色系深蓝） */
 .filters { width:100%; margin-bottom:20rpx; white-space:nowrap; }
 .filter-row { display:flex; gap:14rpx; }
 .filter { display:inline-flex; flex:none; padding:15rpx 25rpx; border:2rpx solid var(--color-divider); border-radius:22rpx; color:var(--color-text-2); background:var(--color-surface); font-size:24rpx; font-weight:700; }
-.filter.active { color:#ffffff; background:var(--color-primary); border-color:var(--color-ink); box-shadow:0 3rpx 0 rgba(36,21,5,.9); }
+.filter.active { color:#ffffff; background:var(--color-primary); border-color:var(--color-primary-deep); box-shadow:0 3rpx 0 var(--color-primary-deep); }
 
 .order-list { width:100%; height:calc(100vh - 284rpx - env(safe-area-inset-bottom)); }
 .list-stage { position:relative; width:100%; }

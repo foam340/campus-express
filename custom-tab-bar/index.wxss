@@ -1,6 +1,6 @@
-/* 底部悬浮胶囊 · 暖橙快递站（贴纸票券感）
+/* 底部悬浮胶囊 · 清爽蓝快递站（贴纸票券感）
    ① 胶囊：白底 + 墨线描边 + 硬阴影，保持毛玻璃
-   ② 选中滑块：软橙底 + 橙描边，弹性滑动（transform 由 index.js 的 indicatorIndex 驱动，本文件只动外观）
+   ② 选中滑块：软蓝底 + 蓝描边，弹性滑动（transform 由 index.js 的 indicatorIndex 驱动，本文件只动外观）
    ③ 图标弹跳 + 按压回弹；reduced-motion 下只保留必要的位置反馈 */
 
 :host { display: block; }
@@ -28,7 +28,7 @@
   background: var(--color-tabbar);
   -webkit-backdrop-filter: saturate(160%) blur(14px);
   backdrop-filter: saturate(160%) blur(14px);
-  box-shadow: 0 6rpx 0 rgba(36, 21, 5, 0.9);
+  box-shadow: var(--shadow-sticker);
   box-sizing: border-box;
 }
 .tab-item {
@@ -60,13 +60,13 @@
   box-sizing: border-box;
 }
 .tab-indicator.instant { transition: none; }
-/* 选中滑块：软橙底 + 内侧橙环（对齐原型 .tabbar .tbg 的 inset ring） */
+/* 选中滑块：软蓝底 + 内侧蓝环（对齐原型 .tabbar .tbg 的 inset ring） */
 .tab-indicator-pill {
   width: 100%;
   height: 100%;
   border-radius: 999rpx;
   background: var(--color-tabbar-indicator);
-  box-shadow: inset 0 0 0 3rpx rgba(255, 107, 44, 0.35);
+  box-shadow: inset 0 0 0 3rpx rgba(52, 120, 246, 0.35);
 }
 .tab-icon {
   display: flex;
